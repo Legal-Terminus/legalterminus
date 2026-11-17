@@ -54,10 +54,25 @@ None points to broken app behaviour. Not rewritten (UI-only brief); desktop runs
 | D-4 | Low (UI) | Chat Send could rest under the bottom nav | Fixed: scroll margin on the Send row; chat specs pass on phone |
 | T-1 | Low (test) | Signed-in runs left a session that broke pre-login tests | Fixed (teardown signs out) |
 | T-2 | Info | Phone-only Playwright failures (above) | Classified; 3 specs adjusted to phone width |
+| **D-5** | **High** | **Uploading a document fails in the iPhone app.** The record is created ("Awaiting upload") but the file never reaches storage: "1 file(s) skipped. lt-qa-upload.png: Load failed". **Cause (verified with a CORS preflight):** the QA bucket `legal-terminus-web-qa` answers `https://localhost` (Android) and the QA site, but gives no CORS answer for `capacitor://localhost`, the iPhone app's origin, so WebKit blocks the signed PUT (`api/documents.ts`). Not an app-code bug. | **Open: needs a bucket CORS change on QA (owner/someone with Cloud Storage access). Not applied by me: no gcloud/credentials here and I will not create a key.** Production bucket needs the same before any production iPhone build (owner approval) |
 | O-1 | Low | `/api/auth/firebase-config` returns 500 on QA (backend; out of UI scope) | Open |
 | O-4 | Low | Google prompt says "App", not "Legal Terminus QA" | Open |
 | O-3 | Watch | One first launch after install sat on the splash >14s | Not reproduced |
 No Critical or High defects found in what ran.
+
+## How to fix D-5 (QA bucket only)
+Someone with access to project `legal-terminus-web` runs (read first, then add the origin, keep the existing ones):
+```
+gcloud storage buckets describe gs://legal-terminus-web-qa --format="json(cors_config)"
+# add "capacitor://localhost" to the "origin" list of that same entry (methods GET,PUT; headers Content-Type, x-goog-resumable), then:
+gcloud storage buckets update gs://legal-terminus-web-qa --cors-file=cors.json
+```
+Re-check: `curl -si -X OPTIONS https://storage.googleapis.com/legal-terminus-web-qa/x -H "Origin: capacitor://localhost" -H "Access-Control-Request-Method: PUT" -H "Access-Control-Request-Headers: content-type"` must return `access-control-allow-origin: capacitor://localhost`. Then rerun `testAdminCreatesAMatter`: its `XCTExpectFailure` will report an unexpected pass; delete that wrapper.
+
+## Round 3: Create Matter and upload (real app)
+- **Create Matter: PASSED.** Client picker, Organisation, Service and Payment status (native iOS menus), Total Cost / Amount Received / Mode of Payment: the matter is created and opens ("Company Incorporation, iOS QA Org ..."). Test data removed afterwards through the API.
+- **Upload: FAILED (D-5)**: the iOS Photo Library picker works and the file is listed, but the transfer is blocked (above).
+- A phone-UI delete from the list was not completed: my tap on "Delete matter" landed on the bottom nav (Clients tab), nothing was deleted. Not investigated further.
 
 ## Performance / crashes / security (only what was observed)
 - **Launch:** 2.5 s average (5 runs, simulator; not a phone figure). **Crashes:** none observed in any simulator run.

@@ -429,4 +429,106 @@ final class SignedInUITests: XCTestCase {
             attach("client-matter-documents")
         }
     }
+
+
+    /// Choose an option in a native iOS <select>: tap it, then pick from the wheel or the menu.
+    private func pick(valueShown: String, choose option: String, file: StaticString = #filePath, line: UInt = #line) {
+        let sel = web.descendants(matching: .any).matching(NSPredicate(format: "value == %@", valueShown)).firstMatch
+        XCTAssertTrue(sel.waitForExistence(timeout: 15), "select showing '\(valueShown)' not found", file: file, line: line)
+        sel.tap()
+        sleep(1)
+        if app.pickerWheels.firstMatch.waitForExistence(timeout: 3) {
+            app.pickerWheels.firstMatch.adjust(toPickerWheelValue: option)
+            for name in ["Done", "Close"] { let b = app.buttons[name]; if b.exists { b.tap(); break } }
+        } else {
+            let item = app.descendants(matching: .any).matching(NSPredicate(format: "label == %@", option)).firstMatch
+            if !item.waitForExistence(timeout: 5) { attach("select-menu-\(option)") }
+            XCTAssertTrue(item.exists, "option '\(option)' not offered", file: file, line: line)
+            item.tap()
+        }
+        sleep(1)
+    }
+
+    /// Creates a matter through the phone form and checks that it opens (QA data only).
+    func testAdminCreatesAMatter() throws {
+        let org = "iOS QA Org \(Int(Date().timeIntervalSince1970))"
+        try freshSignIn("ADMIN")
+        tap("Matters")
+        waitFor("All Matters")
+        tap("Create")
+        waitFor("Create Matter")
+        // 1. Client from the list
+        let client = web.descendants(matching: .any).matching(NSPredicate(format: "label CONTAINS 'qa-client@legalterminus.test'")).firstMatch
+        XCTAssertTrue(client.waitForExistence(timeout: 20), "E2E Client not in the picker")
+        client.tap()
+        // 2. Organisation
+        let orgField = web.textFields.matching(NSPredicate(format: "placeholderValue CONTAINS 'ABC Technologies'")).firstMatch
+        XCTAssertTrue(orgField.waitForExistence(timeout: 15), "Organisation field missing")
+        orgField.tap(); orgField.typeText(org)
+        attach("create-matter-filled")
+        print("LT_FORM2: \(labels().filter { !$0.isEmpty }.prefix(80).joined(separator: " | "))")
+        // 3. Dismiss the keyboard (tap the dialog title), scroll to Service
+        web.staticTexts.matching(NSPredicate(format: "label == 'Create Matter'")).firstMatch.tap()
+        sleep(1)
+        web.swipeUp(); sleep(1)
+        attach("create-matter-scrolled")
+        // Service: the native iOS select
+        pick(valueShown: "Select a service…", choose: "Company Incorporation")
+        pick(valueShown: "No Payment", choose: "Full Payment")
+        web.swipeUp(); sleep(1)
+        for (name, value) in [("Total Cost of Work", "1000"), ("Amount Received", "1000")] {
+            let f = web.textFields.matching(NSPredicate(format: "label == %@", name)).firstMatch
+            XCTAssertTrue(f.waitForExistence(timeout: 10), "\(name) field missing")
+            f.tap(); f.typeText(value)
+            web.staticTexts.matching(NSPredicate(format: "label == 'Create Matter'")).firstMatch.tap() // dismiss keyboard
+            sleep(1)
+        }
+        pick(valueShown: "Select mode…", choose: "UPI")
+        attach("create-matter-ready")
+        let create = web.buttons.matching(NSPredicate(format: "label CONTAINS 'Create Matter'")).firstMatch
+        XCTAssertTrue(create.waitForExistence(timeout: 10), "Create Matter button missing")
+        create.tap()
+        // The app opens the new matter. Its title carries the organisation name we typed.
+        let title = web.descendants(matching: .any).matching(NSPredicate(format: "label CONTAINS %@", org)).firstMatch
+        XCTAssertTrue(title.waitForExistence(timeout: 40), "The new matter did not open after Create")
+        attach("matter-created")
+        // The matter is on QA data under a unique "iOS QA Org <timestamp>" name; it is removed through the
+        // API afterwards (Portal/e2e/zz-clean pattern), not through the phone UI.
+        print("LT_CREATED_ORG: \(org)")
+        // Documents tab of the brand-new matter: what can be uploaded?
+        tap("Documents")
+        sleep(3)
+        web.swipeUp(); web.swipeUp(); sleep(1)
+        attach("new-matter-documents")
+        print("LT_DOCS: \(labels().filter { $0.range(of: "upload|choose|browse|drop|file|attach|camera|photo", options: [.regularExpression, .caseInsensitive]) != nil && $0.count < 90 }.joined(separator: " | "))")
+        // Upload: tap "Choose file(s)" and see what iOS offers.
+        tap("Choose file(s)")
+        sleep(3)
+        attach("upload-sheet")
+        app.buttons["Photo Library"].tap()
+        // The system photo picker runs in its own process; its photos are images/cells in the app's tree.
+        let photo = app.images.matching(NSPredicate(format: "label BEGINSWITH 'Photo'")).firstMatch
+        XCTAssertTrue(photo.waitForExistence(timeout: 30), "The photo picker showed no photos (is one added to the simulator?)")
+        attach("photo-picker")
+        photo.tap()
+        sleep(1)
+        attach("photo-picker-selected")
+        let add = app.buttons.matching(NSPredicate(format: "label == 'Add' OR label == 'Done'")).firstMatch
+        XCTAssertTrue(add.waitForExistence(timeout: 10), "No Add button in the photo picker")
+        add.tap()
+        // The document record is created; then the file goes by a signed PUT straight to the storage bucket.
+        let listed = web.descendants(matching: .any).matching(NSPredicate(format: "label CONTAINS 'lt-qa-upload.png'")).firstMatch
+        XCTAssertTrue(listed.waitForExistence(timeout: 60), "The picked file never showed in the document list")
+        sleep(4)
+        attach("document-uploaded")
+        // KNOWN DEFECT (found 2026-11-17): the QA bucket legal-terminus-web-qa answers CORS preflight for
+        // https://localhost (Android) and the QA site but NOT for capacitor://localhost (the iPhone app), so
+        // the PUT is blocked ("Load failed", the file stays "Awaiting upload"). Fix is bucket CORS, not app code
+        // (docs/LEGAL_TERMINUS_IOS_QA_REPORT.md, D-5). Once the origin is added this expectation turns into an
+        // unexpected pass: delete the XCTExpectFailure wrapper then.
+        XCTExpectFailure("D-5: QA bucket CORS lacks capacitor://localhost, so uploads from the iPhone app fail") {
+            XCTAssertFalse(labels().contains { $0.contains("skipped") || $0.contains("Load failed") || $0.contains("Awaiting upload") },
+                           "The file did not reach storage (skipped / Load failed / Awaiting upload)")
+        }
+    }
 }
