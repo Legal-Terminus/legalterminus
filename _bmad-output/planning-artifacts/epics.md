@@ -4249,6 +4249,10 @@ secret changed. Team ID `LMD2KSCQZX` set in `Shared.xcconfig` and `ExportOptions
   so it was never in the app); a clean checkout without the file still builds. UI test
   `testGoogleButtonStartsNativeSignIn` confirms Google's native sign-in starts. Results:
   `docs/IOS_QA_REPORT.md`.
+- 2026-11-16 (D-1, iOS keyboard zoom): fields were 14px, so iOS zoomed ~14% on focus and panned the
+  page. `Portal/src/index.css`: `html[data-native="ios"]` form controls are 16px (app only; web and
+  Android unchanged). Guard: UI test `testPageKeepsItsMarginWhileTyping` (failed before, passes
+  after). Open: the website's mobile Safari has the same 14px fields (not changed).
 
 *E29-S03 — the origin.* `corsOrigins.js` accepts exactly `capacitor://localhost` from
 `CORS_ORIGINS` (exported `IOS_APP_ORIGIN`); tests for the near-misses (`:8080`, trailing `/`,

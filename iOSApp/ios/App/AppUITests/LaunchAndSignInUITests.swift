@@ -94,34 +94,72 @@ final class LaunchAndSignInUITests: XCTestCase {
         XCTAssertTrue(control("Continue with Google").waitForExistence(timeout: 10), "Sign-in broke after rotating back")
     }
 
-    /// Every key control must sit fully inside the screen, before AND after typing (the page
-    /// must not scroll sideways when the keyboard opens).
-    private func assertControlsInsideScreen(_ when: String, file: StaticString = #filePath, line: UInt = #line) {
-        let screen = app.windows.firstMatch.frame
-        for label in ["Continue with Google", "Sign in with Apple", "Email me a sign-in link"] {
-            let f = control(label).frame
-            XCTAssertGreaterThanOrEqual(f.minX, -0.5, "\(label) starts off-screen \(when): \(f)", file: file, line: line)
-            XCTAssertLessThanOrEqual(f.maxX, screen.width + 0.5, "\(label) runs off the right edge \(when): \(f) in \(screen)", file: file, line: line)
+    /// D-1 guard. With the keyboard open the page must keep its left margin: iOS zooms into a
+    /// focused field whose font is under 16px and pans the page, so text starts at the very edge
+    /// of the screen. Element frames do not show that (XCUITest reports layout coordinates), so
+    /// this looks at real pixels: a few points in from the left edge, beside the "Welcome back"
+    /// line, the page is blank white when the margin is intact.
+    private func leftMarginPixelsAreBlank(file: StaticString = #filePath, line: UInt = #line) -> Bool {
+        let welcome = web.staticTexts.matching(NSPredicate(format: "label BEGINSWITH 'Welcome back'")).firstMatch
+        guard welcome.waitForExistence(timeout: 10), let cg = XCUIScreen.main.screenshot().image.cgImage,
+              let data = cg.dataProvider?.data, let bytes = CFDataGetBytePtr(data) else { return false }
+        let scale = CGFloat(cg.width) / app.windows.firstMatch.frame.width
+        let bytesPerPixel = cg.bitsPerPixel / 8
+        let y = Int(welcome.frame.midY * scale)
+        for xPoint in stride(from: 2.0, through: 12.0, by: 2.0) {
+            let x = Int(CGFloat(xPoint) * scale)
+            let o = y * cg.bytesPerRow + x * bytesPerPixel
+            let brightness = (Int(bytes[o]) + Int(bytes[o + 1]) + Int(bytes[o + 2])) / 3
+            if brightness < 200 { return false } // dark or grey pixel inside the margin
         }
+        return true
     }
 
-    func testNoHorizontalOverflowBeforeAndAfterTyping() {
+    func testPageKeepsItsMarginWhileTyping() {
         waitForSignIn()
-        assertControlsInsideScreen("on first load")
+        XCTAssertTrue(leftMarginPixelsAreBlank(), "Margin missing on first load")
         let email = web.textFields.firstMatch
         email.tap()
         email.typeText("qa-nobody@legalterminus.test")
-        let password = web.secureTextFields.firstMatch
-        password.tap()
-        password.typeText("definitely-wrong-password")
-        // KNOWN DEFECT (IOS_QA_REPORT.md, D-1): after typing, the page sits ~2 pt too far right in
-        // the real WKWebView (iPhone WebKit in Playwright shows no overflow, so it is the
-        // keyboard-focus scroll, not the layout). Expected to fail until fixed; delete this
-        // wrapper when it is.
-        XCTExpectFailure("D-1: ~2 pt horizontal shift after the keyboard opens") {
-            assertControlsInsideScreen("after typing")
-        }
-        attach("after-typing")
+        web.secureTextFields.firstMatch.tap()
+        XCTAssertTrue(app.keyboards.firstMatch.waitForExistence(timeout: 10))
+        sleep(1) // let any focus zoom/scroll finish
+        // The check only means something with the keyboard up at THIS moment.
+        XCTAssertTrue(app.keyboards.firstMatch.exists, "The keyboard went away before the margin check")
+        attach("margin-with-keyboard")
+        XCTAssertTrue(leftMarginPixelsAreBlank(),
+                      "D-1: the page is zoomed/panned with the keyboard open — the left margin is gone")
+    }
+
+    // MARK: pre-login screens (opened, never submitted: no email is sent, no account is made)
+
+    private func openFromSignIn(_ label: String, name: String) {
+        waitForSignIn()
+        let target = web.descendants(matching: .any).matching(NSPredicate(format: "label == %@", label)).firstMatch
+        XCTAssertTrue(target.waitForExistence(timeout: 10), "\(label) is missing on the sign-in page")
+        target.tap()
+        XCTAssertTrue(web.textFields.firstMatch.waitForExistence(timeout: 20), "\(label) did not open a form with an email/text field")
+        attach(name)
+    }
+
+    func testSignUpScreenOpens() {
+        openFromSignIn("Sign up", name: "sign-up-screen")
+        XCTAssertGreaterThanOrEqual(web.textFields.count + web.secureTextFields.count, 2, "Sign-up should offer several fields")
+        XCTAssertEqual(web.staticTexts.matching(NSPredicate(format: "label CONTAINS 'auth/'")).count, 0)
+    }
+
+    func testForgotPasswordScreenOpens() {
+        openFromSignIn("Forgot password?", name: "forgot-password-screen")
+    }
+
+    /// Asking for a sign-in link with no email must say so, in plain words, on the same page.
+    func testEmailLinkWithoutEmailShowsFriendlyMessage() {
+        waitForSignIn()
+        control("Email me a sign-in link").tap()
+        let message = web.staticTexts.matching(NSPredicate(format: "label CONTAINS[c] 'Enter your email'")).firstMatch
+        XCTAssertTrue(message.waitForExistence(timeout: 10), "No message when asking for a sign-in link without an email")
+        XCTAssertEqual(web.staticTexts.matching(NSPredicate(format: "label CONTAINS 'auth/'")).count, 0, "A raw Firebase code was shown")
+        attach("email-link-needs-email")
     }
 
     /// Tapping Google must open the native Google sign-in (an Apple system prompt, then Google's
@@ -144,7 +182,7 @@ final class LaunchAndSignInUITests: XCTestCase {
         attach("google-sign-in-started")
         XCTAssertFalse(failure.exists, "Google sign-in showed an error instead of starting")
         XCTAssertTrue(started, "Tapping Google did not open the native sign-in")
-        if systemPrompt.exists { systemPrompt.buttons.element(boundBy: 0).tap() } // Cancel/Continue: no account is used
+        if systemPrompt.exists { systemPrompt.buttons.element(boundBy: 0).tap() } // Cancel: no account is used
     }
 
     func testTermsLinkOpensOutsideTheApp() {
