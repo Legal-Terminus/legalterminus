@@ -228,7 +228,7 @@ final class SignedInUITests: XCTestCase {
     override func tearDown() {
         if app.state == .runningForeground, web.exists, !web.textFields.firstMatch.exists {
             let avatar = web.descendants(matching: .any)
-                .matching(NSPredicate(format: "label MATCHES '^[A-Z]{1,2}$'")).firstMatch
+                .matching(NSPredicate(format: "label MATCHES '^[A-Z]{1,2}$' OR label BEGINSWITH 'E2E ' OR label BEGINSWITH 'QA '")).firstMatch
             if avatar.exists {
                 avatar.tap()
                 let out = web.descendants(matching: .any).matching(NSPredicate(format: "label == 'Sign out'")).firstMatch
@@ -290,7 +290,7 @@ final class SignedInUITests: XCTestCase {
 
     private func signOut() {
         let avatar = web.descendants(matching: .any)
-            .matching(NSPredicate(format: "label MATCHES '^[A-Z]{1,2}$'")).firstMatch
+            .matching(NSPredicate(format: "label MATCHES '^[A-Z]{1,2}$' OR label BEGINSWITH 'E2E ' OR label BEGINSWITH 'QA '")).firstMatch
         XCTAssertTrue(avatar.waitForExistence(timeout: 15), "Account button not found")
         avatar.tap()
         let out = web.descendants(matching: .any).matching(NSPredicate(format: "label == 'Sign out'")).firstMatch
