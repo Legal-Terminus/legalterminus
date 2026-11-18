@@ -74,6 +74,29 @@ Re-check: `curl -si -X OPTIONS https://storage.googleapis.com/legal-terminus-web
 - **Upload: FAILED (D-5)**: the iOS Photo Library picker works and the file is listed, but the transfer is blocked (above).
 - A phone-UI delete from the list was not completed: my tap on "Delete matter" landed on the bottom nav (Clients tab), nothing was deleted. Not investigated further.
 
+## Round 4 (2026-11-18): iPhone 14 and iPhone 18 Pro, QA only, all five roles
+Full UI suite (`LaunchAndSignInUITests`, `SignedInUITests`: sign-in, RBAC, every screen per role, matters, tabs, chat, create matter,
+notifications, session, sign-out, header margin) on the simulator against QA (`qa-data`).
+
+| Device | Run | Result |
+|---|---|---|
+| iPhone 14 | full | 28 / 28 passed |
+| iPhone 18 Pro | full, in parallel with iPhone 14 | 20 / 28 (8 failed: dropped characters when typing, blank page; two simulators on one Mac) |
+| iPhone 18 Pro | full, alone | 26 / 28 (2 failed: client sign-in stayed on "Signing in..." for 60 s) |
+| iPhone 18 Pro | the 2 failing tests alone | 2 / 2 passed |
+| iPhone 18 Pro | full, third run | 29 / 29 passed |
+
+- The sign-in hang was seen in two full runs and not in two later runs; cause **not found**, no app change made. If it returns, add a time limit to
+  the email sign-in in `LoginPage.tsx` so the button recovers (not done).
+- **Header (D-6 follow-up):** space between the status bar and the first header content measured on every saved screenshot: 12-15 pt (iPhone 14)
+  and 15-17 pt (iPhone 18 Pro) on all signed-in screens. No residual gap. Not covered: iPhone 13, 15, 16, 17.
+- **D-5 re-checked without touching CORS:** a temporary QA matter, signed upload URL, then the same PNG with the same content type sent with curl:
+  HTTP 200, so the file and signature are fine. A CORS preflight from `capacitor://localhost` gets no `access-control-allow-origin`; the QA site
+  and `https://localhost` do. The only blocker is the bucket's allowed origins. The temporary matter was deleted.
+- Leftover "iOS QA Org" / "Android QA Org" matters were deleted from QA through the API before the runs.
+- Not done: bottom bar checked by eye on two screenshots only; TestFlight Beta App Review for builds 7 and 8 not checked (App Store Connect
+  session expired).
+
 ## Performance / crashes / security (only what was observed)
 - **Launch:** 2.5 s average (5 runs, simulator; not a phone figure). **Crashes:** none observed in any simulator run.
 - **Memory, battery, repeated API calls, dark mode:** not measured.

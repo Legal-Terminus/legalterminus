@@ -5312,6 +5312,11 @@ Verified on the developer Mac (Xcode 26.1.1, Node 26, JDK 21), 2026-11-11:
 - Not run: Playwright (the shared ports 5001/5173 belonged to another session's run), any device
   test, the pipeline job.
 
+**iPhone QA round 4 — 2026-11-18 (QA only).** Full simulator UI suite, all five roles: iPhone 14 28/28; iPhone 18 Pro 29/29 on its third
+full run (the first two had 8 and 2 failures: two simulators at once, then an intermittent client sign-in hang whose cause was not found, no
+app change). Header gap 12-17 pt on every signed-in screen on both devices. Document upload on iPhone (D-5) still fails and is verified to be
+only the QA bucket's allowed origins (the same file uploads with curl); not changed. Detail: `docs/LEGAL_TERMINUS_IOS_QA_REPORT.md` → Round 4.
+
 ### Node.js 26 everywhere and the critical/high npm findings — #218 (2026-10-30) ✅ Released in v1.6.0-lt.9
 
 `npm audit` on 30 Oct reported 2 critical and 28 high findings across the four
