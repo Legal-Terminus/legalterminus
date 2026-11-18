@@ -7,6 +7,21 @@ import XCTest
 /// Run (from iOSApp/ios/App, after `npm run sync:qa` in iOSApp/):
 ///   xcodebuild test -workspace App.xcworkspace -scheme App \
 ///     -destination 'platform=iOS Simulator,name=iPhone 18 Pro' CODE_SIGNING_ALLOWED=NO
+/// iPad (QA 2026-11-18): the simulator opens the app in a small floating window, which draws the phone layout.
+/// Zoom it to full screen so the iPad layout is what gets tested. No-op on iPhone or when already full width.
+func maximizeOnIPad(_ app: XCUIApplication) {
+    guard UIDevice.current.userInterfaceIdiom == .pad else { return }
+    let screenW = UIScreen.main.bounds.width
+    _ = app.wait(for: .runningForeground, timeout: 20)
+    if app.windows.firstMatch.frame.width >= screenW - 20 { return }
+    let sb = XCUIApplication(bundleIdentifier: "com.apple.springboard")
+    let wc = sb.otherElements.matching(NSPredicate(format: "identifier BEGINSWITH 'window-controls:'")).firstMatch
+    let wcb = sb.buttons.matching(NSPredicate(format: "identifier BEGINSWITH 'window-controls:'")).firstMatch
+    if wcb.waitForExistence(timeout: 5) { wcb.tap() } else if wc.exists { wc.tap() }
+    let zoom = sb.buttons["Zoom-button"]
+    if zoom.waitForExistence(timeout: 5) { zoom.tap(); sleep(3) }
+}
+
 final class LaunchAndSignInUITests: XCTestCase {
     var app: XCUIApplication!
 
@@ -14,6 +29,7 @@ final class LaunchAndSignInUITests: XCTestCase {
         continueAfterFailure = false
         app = XCUIApplication()
         app.launch()
+        maximizeOnIPad(app)
         signOutIfSignedIn()
     }
 
@@ -238,6 +254,7 @@ final class SignedInUITests: XCTestCase {
         continueAfterFailure = false
         app = XCUIApplication()
         app.launch()
+        maximizeOnIPad(app)
     }
 
     /// Leave the simulator signed out so the pre-login tests (and the next role) start clean.
@@ -355,6 +372,7 @@ final class SignedInUITests: XCTestCase {
         try freshSignIn("CLIENT")
         app.terminate()
         app.launch()
+        maximizeOnIPad(app)
         XCTAssertTrue(web.waitForExistence(timeout: 30))
         XCTAssertFalse(web.textFields.firstMatch.waitForExistence(timeout: 12), "Session was lost after relaunch")
         attach("client-after-relaunch")
@@ -362,6 +380,7 @@ final class SignedInUITests: XCTestCase {
         attach("after-sign-out")
         app.terminate()
         app.launch()
+        maximizeOnIPad(app)
         XCTAssertTrue(web.textFields.firstMatch.waitForExistence(timeout: 30), "Still signed in after sign-out + relaunch")
     }
 
