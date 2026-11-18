@@ -39,7 +39,7 @@ const rows = [
   },
   {
     head: "Total Out-of-Pocket (typical)",
-    range: "₹4,643 – ₹17,143",
+    range: "₹5,841 – ₹18,141",
     note: "Lower than PLC; varies by state and capital",
     isTotal: true,
   },
