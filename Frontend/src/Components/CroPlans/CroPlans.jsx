@@ -1,25 +1,30 @@
 import { useState } from "react";
-import "../PubpvtPlans/PubpvtPlans.css";
+import "../PvtltdPlanandPricing/PvtltdPlanandPricing.css";
 import CheckoutModal from "../ProCheckoutModal/ProCheckoutModal";
 import ConsultationModal from "../ConsultationModal/ConsultationModal";
+import CutPrice from "../CutPrice/CutPrice";
 import { usePlans, PAYMENTS_ENABLED } from "../../utils/pricing";
 
+// The Odisha company pages sell the same product as the Private Limited page,
+// so they show its four plans and take its prices (as the Odisha trademark page
+// does for trademark-application). Keep this list in step with
+// PvtltdPlanandPricing — the catalogue build refuses two differing lists.
 const DEFAULT_PLANS = [
   {
     id: "elemental",
     name: "Elemental",
-    badge: "BASIC",
-    oldPrice: 7999,
-    price: 4999,
+    price: 5999, oldPrice: 7999,
     services: [
-      "Company name search & availability report",
-      "1 RUN / SPICe+ name approval",
-      "DIN for 2 directors",
-      "Certificate of Incorporation (SPICe+)",
-      "E-PAN, E-TAN, E-MOA & E-AOA",
-      "Bank account opening documents",
-      "Auditor appointment paperwork",
-      "EPF & ESI registration",
+      "Name Search & Availability Report",
+      "RUN Name Approval (up to 4 name choices)",
+      "DIN for 2 Directors",
+      "DSC for 2 Directors",
+      "SPICe+ Part B + AGILE-PRO-S filing",
+      "PAN + TAN application coordination",
+      "Certificate of Incorporation (COI) delivery",
+      "e-MOA & e-AOA Drafting",
+      "EPF & ESI Registration",
+      "1st Auditor Appointment Documents",
     ],
   },
   {
@@ -27,39 +32,49 @@ const DEFAULT_PLANS = [
     name: "Enriched",
     badge: "★ MOST POPULAR",
     popular: true,
-    oldPrice: 13999,
-    price: 7999,
+    price: 8999, oldPrice: 13999,
     services: [
       "Everything in Elemental",
-      "Share certificates for shareholders",
-      "Commencement of Business (INC-20A) documentation",
-      "MSME / Udyam registration",
-      "Statutory register set-up guidance",
+      "Bank Account Opening Documents",
+      "Share Certificate",
+      "Commencement of Business (INC-20A)",
+      "Udyam / MSME Registration",
+      "GST Registration Assistance",
     ],
   },
   {
     id: "supreme",
     name: "Supreme",
-    badge: "✦ FULL FIRST-YEAR COMPLIANCE",
-    oldPrice: 29999,
-    price: 24999,
+    price: 13999, oldPrice: 20999,
     services: [
       "Everything in Enriched",
-      "Income tax filing for the company (1st FY)",
-      "Directors' report & annual return preparation",
-      "AGM / Board Meeting notice & extract preparation",
-      "AOC-4, MGT-7 & ADT-1 filings",
-      "DPT-3 & MSME-1 filings (if applicable)",
-      "DIR-3 KYC for 2 directors",
-      "Income tax filing for 2 directors",
-      "Statutory e-register maintenance + 1st-year minutes",
+      "The 1st Board Resolution documentation",
+      "Annual ITR Filing — Company",
+      "Financial Statements Filing — AOC-4",
+      "Annual Return Filing — MGT-7",
+      "Auditor Appointment Filing — ADT-1",
+    ],
+  },
+  {
+    id: "supreme-plus",
+    name: "Supreme Plus",
+    badge: "✦ FULL-SERVICE",
+    fullService: true,
+    price: 24999, oldPrice: 37499,
+    services: [
+      "Everything in Supreme",
+      "Directors' Report Preparation",
+      "Minutes of Board & General Meetings (1st FY)",
+      "Statutory E-Register Maintenance",
+      "DPT-3 & MSME-1 Filing (if applicable)",
+      "ITR Filing for 2 Directors",
     ],
   },
 ];
 
 const CroPlans = () => {
   // E24-S01: prices come from the server catalogue; DEFAULT_* is the fallback.
-  const PLANS = usePlans("company-registration-odisha", DEFAULT_PLANS);
+  const PLANS = usePlans("private-limited", DEFAULT_PLANS);
   const [activePlan, setActivePlan] = useState(null);
   // #133: payment (Buy Now → CheckoutModal) is paused; the shared "Book Free
   // Consultation" button below opens the consultation popup instead.
@@ -67,39 +82,36 @@ const CroPlans = () => {
 
   return (
     <>
-      <section className="opc-pricing-section">
-        <div className="opcpricing-container">
+      <section className="pvtltd-pricing-section">
+        <div className="pricing-container">
 
-          <header className="opcpricing-header">
-            <h2 className="opcpricing-title">CHOOSE YOUR PLAN</h2>
-            <p className="opcpricing-subtitle">
+          <header className="pricing-header">
+            <h2 className="PvtLtd-pricing-title">CHOOSE YOUR PLAN</h2>
+            <p className="pricing-subtitle">
               Register your company in Odisha at pocket-friendly prices — pick the plan that fits your stage
             </p>
           </header>
 
-          <div className="opcpricing-cards pubpvt-cards-center">
+          <div className="pricing-cards">
             {PLANS.map((plan) => (
               <article
                 key={plan.id}
-                className={`opcplan-card${plan.popular ? " opcplan-card--popular" : ""}`}
+                className={`plan-card${plan.popular ? " plan-card--popular" : ""}${plan.fullService ? " plan-card--fullservice" : ""}`}
               >
+                {plan.popular && <div className="plan-popular-badge">{plan.badge}</div>}
+                {plan.fullService && <div className="plan-fullservice-badge">{plan.badge}</div>}
                 <div>
-                  <div className="opcplan-header">
-                    {plan.badge && (
-                      <div className={`opcplan-badge${plan.popular ? " opcplan-badge--popular" : ""}`}>
-                        {plan.badge}
-                      </div>
-                    )}
-                    <div className="opcplan-name">{plan.name}</div>
-                    {plan.oldPrice ? <div className="opcplan-old-price">₹{plan.oldPrice.toLocaleString("en-IN")}</div> : null}
-                    <div className="opcplan-price">₹{plan.price.toLocaleString("en-IN")}</div>
-                    <div className="opcplan-meta">+ Govt. fees &amp; GST extra</div>
+                  <div className="plan-header">
+                    <div className="plan-name">{plan.name}</div>
+                    <CutPrice plan={plan} className="plan-old-price" />
+                    <div className="plan-price">₹{plan.price.toLocaleString("en-IN")}</div>
+                    <div className="plan-meta">+ Govt. fees &amp; GST extra</div>
                   </div>
 
-                  <div className="opcplan-body">
-                    <ul className="opcplan-list">
+                  <div className="plan-body">
+                    <ul className="plan-list">
                       {plan.services.map((s, i) => (
-                        <li key={i} className="opcplan-list-item">{s}</li>
+                        <li key={i} className="plan-list-item">{s}</li>
                       ))}
                     </ul>
                   </div>
@@ -108,13 +120,8 @@ const CroPlans = () => {
                 {/* #133: per-card "Buy Now" hidden while payment is paused. Kept in
                     place (not deleted) so it can be re-enabled later. */}
                 {PAYMENTS_ENABLED && (
-                <div className="opcplan-footer">
-                  <button
-                    className={`opcplan-button${plan.popular ? " opcplan-button--popular" : ""}`}
-                    onClick={() => setActivePlan(plan)}
-                  >
-                    Buy Now
-                  </button>
+                <div className="plan-footer">
+                  <button className="plan-button" onClick={() => setActivePlan(plan)}>Buy Now</button>
                 </div>
                 )}
               </article>
@@ -136,7 +143,7 @@ const CroPlans = () => {
       </section>
 
       {activePlan && (
-        <CheckoutModal plan={activePlan} onClose={() => setActivePlan(null)} source="company-registration-odisha" />
+        <CheckoutModal plan={activePlan} onClose={() => setActivePlan(null)} source="private-limited" />
       )}
 
       <ConsultationModal

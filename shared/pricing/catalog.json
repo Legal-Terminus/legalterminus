@@ -430,44 +430,6 @@
         "Frontend/src/Components/CompanyRegPlans/CompanyRegPlans.jsx"
       ]
     },
-    "company-registration-odisha": {
-      "code": "SVC-013",
-      "label": "Company Registration in Odisha",
-      "serviceKey": null,
-      "plans": [
-        {
-          "id": "elemental",
-          "name": "Elemental",
-          "price": 4999,
-          "oldPrice": 7999
-        },
-        {
-          "id": "enriched",
-          "name": "Enriched",
-          "price": 7999,
-          "oldPrice": 13999
-        },
-        {
-          "id": "supreme",
-          "name": "Supreme",
-          "price": 24999,
-          "oldPrice": 29999
-        }
-      ],
-      "pages": [
-        {
-          "path": "/company-registration-odisha",
-          "title": "Company Registration in Odisha"
-        },
-        {
-          "path": "/company-registration-consultancy-in-odisha",
-          "title": "Company Registration in Odisha"
-        }
-      ],
-      "components": [
-        "Frontend/src/Components/CroPlans/CroPlans.jsx"
-      ]
-    },
     "dissolve-llp": {
       "code": "SVC-015",
       "label": "Winding Up an LLP",
@@ -1670,11 +1632,20 @@
       ],
       "pages": [
         {
+          "path": "/company-registration-odisha",
+          "title": "Company Registration in Odisha"
+        },
+        {
+          "path": "/company-registration-consultancy-in-odisha",
+          "title": "Company Registration in Odisha"
+        },
+        {
           "path": "/setting-up-a-business/profit-making-structures/private-limited-company-registration-in-india",
           "title": "Private Limited Company Registration in India"
         }
       ],
       "components": [
+        "Frontend/src/Components/CroPlans/CroPlans.jsx",
         "Frontend/src/Components/PvtltdPlanandPricing/PvtltdPlanandPricing.jsx"
       ]
     },
