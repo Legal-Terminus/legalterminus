@@ -1,7 +1,7 @@
 import { test, expect } from './fixtures';
 import type { Page } from '@playwright/test';
 import {
-  apiAs, createMatter, deleteDefinition, deleteMatter, deleteWorksheetRecordsMatching, getWorksheetSheet, listWorksheet,
+  apiAs, createMatter, deleteDefinition, deleteMatter, deleteWorksheetRecordsMatching, getMatter, getWorksheetSheet, listWorksheet,
   restoreWorksheetColumns, restoreWorksheetOptions, transition, type WsSheetLite,
 } from './api';
 import { env } from './helpers';
@@ -313,6 +313,60 @@ test('#294 a matter writes only to its own row: the Matter cell cannot tie it to
   expect(rows.find((x) => x.values.client_name === `${RUN} Other Client`)?.values.matter ?? null).toBeNull();
 });
 
+test('#219 a matter created with "Repeats: Quarterly" is quarterly everywhere: tag, sheet row, email subject — and so is its copy', async ({ adminPage }) => {
+  const QORG = `${RUN} Quarterly Pvt Ltd`;
+  const quarter = expectedPeriod('quarterly');
+  const admin = await apiAs('admin');
+  let qId = '';
+  let copyId = '';
+  try {
+    // What Create Matter sends when "Repeats" is set to Quarterly.
+    const res = await admin.post('/api/tasks', { data: {
+      clientUid: env('E2E_CLIENT_UID'), serviceKey: SERVICE, organisation: QORG, recurrence: 'quarterly',
+      paymentStatus: 'fully_paid', totalCost: 1000, amountReceived: 1000, paymentMode: 'E2E',
+    } });
+    expect(res.ok(), await res.text()).toBeTruthy();
+    qId = (await res.json()).id as string;
+
+    // The matter: quarterly, the quarter as its period, and the subject every email of it carries.
+    const body = await (await admin.get(`/api/tasks/${qId}`)).json();
+    expect(body.gstFrequency).toBe('quarterly');
+    expect(body.gstFilingPeriodLabel).toBe(quarter);
+    expect(body.gstEmailSubject).toBe(`${QORG} - GST Return - ${quarter}`);
+
+    // (a) The tag on the matter page (it renders once per screen-size layout).
+    await adminPage.goto(`tasks/${qId}`);
+    const tag = adminPage.getByTestId('gst-filing-period').filter({ visible: true });
+    await expect(tag).toContainText(quarter, { timeout: 20_000 });
+    await expect(tag).toHaveAttribute('title', 'Filing quarter');
+
+    // (c) The sheet: a row in Quarterly with the quarter, never in Monthly.
+    await openView(adminPage, 'Quarterly');
+    await expect(row(adminPage, QORG)).toContainText(quarter, { timeout: 30_000 });
+    await openView(adminPage, 'Monthly');
+    await expect(row(adminPage, QORG)).toHaveCount(0);
+
+    // A copy is not recurring, yet it stays quarterly.
+    const dup = await admin.post(`/api/tasks/${qId}/duplicate`);
+    expect(dup.status(), await dup.text()).toBe(201);
+    copyId = (await dup.json()).id as string;
+    const copy = await (await admin.get(`/api/tasks/${copyId}`)).json();
+    expect(copy.recurrence ?? null).toBeNull();
+    expect(copy.gstFrequency).toBe('quarterly');
+    expect(copy.gstEmailSubject).toBe(`${QORG} - GST Return - ${quarter}`);
+  } finally {
+    await admin.dispose();
+    if (copyId) await deleteMatter(copyId);
+    if (qId) await deleteMatter(qId);
+  }
+});
+
+test('#219 the run\'s matter (no "Repeats"): its email subject names its own period', async () => {
+  const period = expectedPeriod(matterSheet === 'gst_return_quarterly' ? 'quarterly' : 'monthly');
+  const body = await getMatter(matterId);
+  expect(body.gstEmailSubject).toBe(`${ORG} - GST Return - ${period}`);
+});
+
 test('#292 a matter of any other service has no Filing Month', async ({ adminPage }) => {
   // Any workflow-backed service the GST sheet is NOT linked to (workflows are editable — discover one).
   const admin0 = await apiAs('admin');
@@ -330,6 +384,7 @@ test('#292 a matter of any other service has no Filing Month', async ({ adminPag
     const body = await (await admin.get(`/api/tasks/${other}`)).json();
     await admin.dispose();
     expect(body.gstFilingPeriodLabel).toBeUndefined();
+    expect(body.gstEmailSubject).toBeUndefined(); // #219: its emails keep the standard subject
   } finally {
     await deleteMatter(other);
   }

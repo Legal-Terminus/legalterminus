@@ -28,10 +28,12 @@ function longFilingDate(iso: string): string {
 /** #292: "September 2026" (or "Q2 2026-27") on a GST return matter. */
 export function FilingPeriodTag({ label }: { label?: string | null }) {
   if (!label) return null;
+  // #219 (16 Nov): a quarterly matter's tag is a quarter ("Q2 2026-27"), and says so.
+  const what = /^Q[1-4] /.test(label) ? 'Filing quarter' : 'Filing month';
   return (
-    <span className="badge-gray shrink-0" title="Filing month" data-testid="gst-filing-period">
+    <span className="badge-gray shrink-0" title={what} data-testid="gst-filing-period">
       <CalendarDays className="w-3 h-3" aria-hidden="true" />
-      <span className="sr-only">Filing month: </span>{label}
+      <span className="sr-only">{what}: </span>{label}
     </span>
   );
 }

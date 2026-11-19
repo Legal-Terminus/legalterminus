@@ -44,7 +44,9 @@ const LOCK_MS = 2 * 60 * 1000;
 const RECENCY_MS = 15 * 1000;
 const ACTOR = 'system:gst-return-sheet';
 // 3 (#294, 2026-11-19): filing dates are the saved ones, and wrong matter links are released.
-const RULES_VERSION = 3;
+// 4 (#219, 2026-11-19): a matter created with "Repeats: Quarterly" is quarterly — its
+// row moves from Monthly to Quarterly and its Return Period becomes the quarter.
+const RULES_VERSION = 4;
 
 const chunks = (list, n) => {
   const out = [];

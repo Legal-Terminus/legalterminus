@@ -2429,6 +2429,35 @@ modifiers: one consumer, and a second question would need its own UI anyway.
   `matter_created` email goes as before. The sweep still sets
   `suppressCreatedEmail` and sends its own, so its matters get exactly one.
   Covers duplicates and recurring copies, which go through `createTask`.
+- **Monthly or quarterly — one rule (2026-11-19, firm's comment of 16 Nov):**
+  `frequencyOf(task, client)` in `gstReturnSheet.service.js` decides it for the
+  tag, the first email's template and period, every email subject, the filing-date
+  bounds and the sheet: `filingPeriod.frequency` (sweep) → `task.gstFrequency`
+  (frozen at creation) → `task.recurrence` (Create Matter's **Repeats**) → a
+  quarterly service (`gst-returns-quarterly`, or a key/name containing "quarter")
+  → the client's `gstReturnFrequency` → monthly. `frequencyOfMatter` is the first
+  four steps; the client is read only when they decide nothing. Root cause of
+  "quarterly shows as monthly": Repeats was never read. `createTask` stamps
+  `gstFrequency` on every GST return matter (never from the body; a copy gets its
+  source's via `req.gstFrequency` from `duplicateMatterCore`, because copies are
+  not recurring), so a later Repeats edit, a series ending, or a client-setting
+  change cannot flip a matter's period. Older matters compute it on read; the
+  optional `scripts/backfill-gst-frequency.js` freezes theirs.
+- **The period in EVERY email subject (2026-11-19):** one place, in
+  `emailService.js`: `sendTemplatedEmail` (unless `keepSubject`) and
+  `sendNotificationEmail`, when given a `taskId`, first ask
+  `gstEmailSubjectForMatter(taskId)` (`gstMatterTags.service.js`, lazily imported
+  — it reads Firestore and the GST services import the email service). For a GST
+  return matter it returns the first email's subject: `gstFirstEmail` → the GST
+  template for the frequency, rendered with `emailVars` (built-in
+  "<Company> - GST Return - <period>" if rendering fails); null otherwise, and the
+  standard `[Legal Terminus] Org | Service (#id)` is used. Cached per matter for a
+  minute; a failed lookup is not cached and falls back to the standard subject.
+  So client follow-ups and reminders, assignment notices, chat notices, internal
+  reminders and every `createNotification` email carry the same subject for client
+  and staff, and still thread on `<matter-{id}@legalterminus>`. The matter detail
+  response carries it as `gstEmailSubject` (and `gstFrequency`) — E2E checks the
+  subject there, since email is off in E2E.
 - **Uploads:** the document allow-list adds `text/csv`, `application/json`,
   `text/plain`, `application/zip` (.csv .json .txt .zip). The Portal types these
   four by extension, because Windows reports a .csv as Excel and a .zip as
@@ -2675,8 +2704,10 @@ and **Matter**.
   changes them under Edit columns) are turned into rows by
   `services/gstReturnSheetSync.service.js` with the pure rules in
   `services/gstReturnSheet.service.js`:
-  - *Monthly or quarterly*: `filingPeriod.frequency` (#219 sweep) → service key →
-    the client's `gstReturnFrequency` → monthly.
+  - *Monthly or quarterly*: `frequencyOf` — `filingPeriod.frequency` (#219 sweep) →
+    `gstFrequency` (frozen at creation) → `recurrence` (Repeats) → quarterly service →
+    the client's `gstReturnFrequency` → monthly (2026-11-19; see "GST return reminders").
+    `RULES_VERSION` 4 re-derived every row once, moving quarterly matters' rows to Quarterly.
   - *Period*: `filingPeriod.title`; a matter opened by hand is for the period that
     had ended when it was opened (`duePeriod` on its India creation date).
   - *Client columns* from the matter and `users/{clientUid}` (organisation →

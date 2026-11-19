@@ -309,6 +309,28 @@ function normaliseCc(cc, to) {
   return out;
 }
 
+/**
+ * #219 (firm, 16 Nov) — THE one place a GST return matter's period reaches every
+ * email subject. Every matter email (client follow-ups and reminders, step
+ * assignment notices, chat notices, internal notifications, …) is sent through
+ * `sendTemplatedEmail` or `sendNotificationEmail` with its `taskId`, and both
+ * ask here first: for a GST return matter the subject is the one its first
+ * email carried — "<Company> - GST Return - <Month Year | Qn YYYY-YY>" — for
+ * client and staff alike (and so they all thread together). Any other matter,
+ * or a failed lookup, keeps the standard `[Legal Terminus] Org | Service (#id)`.
+ * Imported lazily: the GST services read Firestore and import this module.
+ */
+async function gstSubjectOf(taskId) {
+  if (!taskId) return null;
+  try {
+    const { gstEmailSubjectForMatter } = await import('./gstMatterTags.service.js');
+    return await gstEmailSubjectForMatter(taskId);
+  } catch (err) {
+    logger.warn({ err: err?.message, taskId }, '[email] GST subject lookup failed; standard subject used');
+    return null;
+  }
+}
+
 function matterSubject({ serviceName, taskId, title, organisation }) {
   const org = organisation && organisation.trim() ? `${organisation.trim()} | ` : '';
   if (serviceName && taskId) return `[Legal Terminus] ${org}${serviceName} (#${shortMatterId(taskId)})`;
@@ -351,7 +373,7 @@ export async function sendTemplatedEmail({ to, cc, subject, body, taskId, servic
     const finalSubject = keepSubject
       ? subject
       : taskId
-        ? matterSubject({ serviceName, taskId, title: subject, organisation })
+        ? (await gstSubjectOf(taskId)) || matterSubject({ serviceName, taskId, title: subject, organisation })
         : `[Legal Terminus] ${subject}`;
     const threadRef = taskId ? `<matter-${taskId}@legalterminus>` : undefined;
     const info = await transporter.sendMail({
@@ -382,7 +404,7 @@ export async function sendNotificationEmail({ to, cc, title, message, taskId, se
     }
     const { html, text } = renderEmail({ title, message, taskId, action, appendix });
     const from = process.env.EMAIL_FROM || process.env.GMAIL_USER;
-    const subject = matterSubject({ serviceName, taskId, title, organisation });
+    const subject = (await gstSubjectOf(taskId)) || matterSubject({ serviceName, taskId, title, organisation });
     // Threading headers (#98): a stable Message-ID root per matter. Setting the
     // SAME references value on every email of a matter makes Gmail group them.
     const threadRef = taskId ? `<matter-${taskId}@legalterminus>` : undefined;

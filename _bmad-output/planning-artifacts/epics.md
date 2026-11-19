@@ -8062,3 +8062,45 @@ Admin and Manager in Settings.
   notice); `email-templates.spec.ts` (+4: admin/manager allowed, team/client 403;
   manager round-trip, tags stripped, 400s; manager UI edit + switch save; admin sees it).
 
+
+### Quarterly GST matters are quarterly everywhere; the period is in every email subject (2026-11-19, #219 follow-up of 16 Nov) — E-07 🔄 In review
+
+The firm marked it "High – Critical": a GST Return Filing matter created as **Quarterly** still
+showed the monthly format in its Filing Month tag, in its email subject and content, and in the
+GST Return Filing sheet (row in Monthly, a month as Return Period). And only the first email to
+the client carried "<Company> - GST Return - <Month Year | Qn YYYY-YY>"; they asked for it on
+every email about the matter, client and staff alike. Design in architecture.md, "GST return
+reminders (#219)".
+- **Root cause:** the only Monthly / Quarterly a person picks when creating a matter is
+  **Repeats** (#167). The rule that decides a GST matter's frequency (`frequencyOf`) read the
+  sweep's period, the quarterly service key and the client's GST setting — never `recurrence`.
+  A matter on the GST Return Filing service for a client without the Quarterly setting fell
+  through to monthly, and the tag, the first email (template and period) and the sheet row all
+  come from that one rule. A copy of such a matter (one click from the recurring reminder) is
+  not itself recurring, so it would have been monthly even after reading `recurrence`.
+- **Fix:** `frequencyOf` reads, in order, the sweep's period, a frequency frozen on the matter at
+  creation (`gstFrequency`, new), `recurrence`, a quarterly service (key, or key/name saying
+  "quarter"), the client's setting. `createTask` stamps `gstFrequency` on every GST return matter
+  (server-side only; a copy inherits its source's through `duplicateMatterCore`), so changing
+  Repeats or the client's setting later, or the series ending, never turns a quarter back into a
+  month. The tag reads "Filing quarter" for a quarter.
+- **Every subject (decision: one place):** `sendTemplatedEmail` and `sendNotificationEmail` (the
+  two paths every matter email takes, with its matter id) ask `gstEmailSubjectForMatter` first:
+  for a GST return matter the subject is its first email's — the firm's GST template subject,
+  filled for the matter's frequency and period — for client and staff, replacing the usual
+  "[Legal Terminus] Org | Service (#id)". No template was edited, so no doubled period. The first
+  email (and the sweep's) keep their own subject as before.
+- **Existing matters (decision): no migration needed to show correctly.** The frequency is
+  computed on read, and their Repeats still says Quarterly, so tag and emails are right at once;
+  the sheet's rules version moved to 4, so the next opening of the sheet re-derives every GST
+  row — a quarterly matter's row moves to Quarterly with the quarter as Return Period (a value a
+  person typed over yields, last change wins). Optional `backend/scripts/backfill-gst-frequency.js`
+  (report by default, `--write` to apply, refuses the default database unless told) freezes
+  `gstFrequency` on older matters; NOT run on live. A matter whose series has already ended no
+  longer says it was quarterly and is not recovered by anything.
+- Tests: `backend/src/__tests__/gstQuarterlyEverywhere.test.js` (10); `gst-return-filing.spec.ts`
+  (+2: a "Repeats: Quarterly" matter — API frequency, period and subject, the tag on the page, its
+  row in Quarterly and not Monthly, its copy stays quarterly; the run's matter's subject; a
+  non-GST matter has no GST subject). Email delivery is off in E2E, so the subject is checked
+  through the matter's `gstEmailSubject`, the same function the email service calls.
+  User-visible: yes.
