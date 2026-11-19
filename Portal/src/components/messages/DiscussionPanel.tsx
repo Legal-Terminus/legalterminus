@@ -9,6 +9,8 @@ import { useConfirm } from '../common/confirmContext';
 import RichTextEditor from '../common/RichTextEditor';
 import RichText from '../common/RichText';
 import { MESSAGE_WORD_LIMIT } from '@shared/richText/limits.js';
+import { useCommentDraft } from '../../hooks/useCommentDraft';
+import { useAuthStore } from '../../store/authStore';
 
 // #295: the composer's text area grows to this and then scrolls inside itself,
 // so the Send button below it never leaves a phone screen however long the
@@ -23,12 +25,26 @@ const COMPOSER_MAX_HEIGHT = 'min(35dvh, 18rem)';
  *
  * Delivery is polling (10s) — the app's existing live-data pattern; no realtime
  * listener layer, so the browser never talks to Firestore directly.
+ *
+ * #297 follow-up — DRAFTS. The tab unmounts whenever someone opens another tab
+ * of the matter, which used to throw away an unsent message. The new-message
+ * box and an edit in progress are now kept in localStorage — the same store and
+ * key scheme as step-comment drafts (#83, useCommentDraft): per matter, per
+ * message, per signed-in user, so a draft never shows on another matter or to
+ * another person on a shared computer. A draft lasts until it is sent/saved,
+ * cancelled, or emptied by the person — across tab switches and page reloads.
+ * The "Visible to client" tick is deliberately NOT kept: a restored draft is
+ * internal until someone ticks it again (#115's default-off rule).
  */
 export default function DiscussionPanel({ taskId, isStaff }: { taskId: string; isStaff: boolean }) {
   const toast = useToast();
   const confirm = useConfirm();
   const queryClient = useQueryClient();
-  const [body, setBody] = useState('');
+  const uid = useAuthStore((s) => s.user?.uid ?? null);
+  const draft = useCommentDraft(taskId, 'chat', uid);
+  // Restored on the first render (the hook reads storage synchronously), so the
+  // editor opens with the draft rather than filling in a moment later.
+  const [body, setBody] = useState(draft.initial);
   const [visible, setVisible] = useState(false); // staff: share with client? default OFF
   const endRef = useRef<HTMLDivElement>(null);
   // #295: the Send row. While someone types, it is kept on screen (the phone's
@@ -62,6 +78,7 @@ export default function DiscussionPanel({ taskId, isStaff }: { taskId: string; i
     mutationFn: () => postMessage(taskId, body.trim(), isStaff ? visible : true),
     onSuccess: () => {
       setBody('');
+      draft.clear(); // #297: sent — the draft has done its job
       queryClient.invalidateQueries({ queryKey: ['messages', taskId] });
     },
     onError: (e: Error) => toast.error(e.message || 'Could not send the message.'),
@@ -98,7 +115,9 @@ export default function DiscussionPanel({ taskId, isStaff }: { taskId: string; i
     // #295: the THREAD has the height cap, not the card. With the cap on the card,
     // a long message made the composer taller than the card and the Send button
     // spilled out underneath — on a phone, under the bottom navigation.
-    <div className="card flex flex-col">
+    // lt-chat-images (#319): every image in the thread and composer is shown in
+    // the same fixed box — see index.css.
+    <div className="card flex flex-col lt-chat-images">
       <div className="px-5 py-3 border-b border-hairline flex items-center gap-2">
         <MessageSquare className="w-4 h-4 text-ink-muted" />
         <p className="text-sm font-semibold text-ink">Chat</p>
@@ -136,7 +155,7 @@ export default function DiscussionPanel({ taskId, isStaff }: { taskId: string; i
             and (follow-up) paste or upload images. */}
         <RichTextEditor
           value={body}
-          onChange={(v) => { setBody(v); keepSendInView(); }}
+          onChange={(v) => { setBody(v); draft.save(v); keepSendInView(); }}
           placeholder="Write a message…"
           ariaLabel="Message"
           rows={2}
@@ -184,13 +203,17 @@ function MessageBubble({ m, isStaff, taskId }: { m: MatterMessage; isStaff: bool
   const toast = useToast();
   const confirm = useConfirm();
   const queryClient = useQueryClient();
-  const [editing, setEditing] = useState(false);
-  const [draft, setDraft] = useState(m.body);
+  const uid = useAuthStore((s) => s.user?.uid ?? null);
+  // #297: an edit in progress survives a tab switch too. Only for a message this
+  // person may edit (a null uid turns the store off for every other bubble).
+  const editDraft = useCommentDraft(taskId, `chat-edit-${m.id}`, m.canEdit && !m.deleted ? uid : null);
+  const [editing, setEditing] = useState(() => !!editDraft.initial);
+  const [draft, setDraft] = useState(() => editDraft.initial || m.body);
   const refresh = () => queryClient.invalidateQueries({ queryKey: ['messages', taskId] });
 
   const save = useMutation({
     mutationFn: () => editMessage(taskId, m.id, draft.trim()),
-    onSuccess: () => { setEditing(false); refresh(); toast.success('Message updated.'); },
+    onSuccess: () => { setEditing(false); editDraft.clear(); refresh(); toast.success('Message updated.'); },
     onError: (e: Error) => toast.error(e.message || 'Could not edit the message.'),
   });
   const remove = useMutation({
@@ -212,6 +235,12 @@ function MessageBubble({ m, isStaff, taskId }: { m: MatterMessage; isStaff: bool
   };
 
   const startEdit = () => { setDraft(m.body); setEditing(true); };
+  const cancelEdit = () => { setEditing(false); editDraft.clear(); };
+  const changeDraft = (v: string) => {
+    setDraft(v);
+    // An unchanged message is not a draft worth restoring.
+    if (v === m.body) editDraft.clear(); else editDraft.save(v);
+  };
   // #297: who an edit reaches, said before Save — the same people a new message does.
   const editNotice = !isStaff
     ? 'Our team will be emailed that you edited this message, with the new text.'
@@ -227,19 +256,24 @@ function MessageBubble({ m, isStaff, taskId }: { m: MatterMessage; isStaff: bool
   // #297: one step darker (emerald-100, a visible emerald-300 edge) — emerald-50
   // was barely distinguishable from the white chat background. Text stays dark
   // ink; the author line, hint and time move to darker greens to keep contrast.
+  // #297 follow-up: the firm meant the RECEIVED bubble — near-white surface-soft
+  // (#f8f9fa) all but vanished on the white thread. It is now surface-strong
+  // (#e5e7eb) with a visible edge. On that grey, ink-muted/ink-faint fall below
+  // WCAG AA (3.9:1 and less), so the author line, hint and time use ink-soft
+  // (8.3:1); the text itself is ink (15:1).
   return (
     <div className={`flex ${mine ? 'justify-end' : 'justify-start'}`}>
       <div className={`max-w-[80%] rounded-2xl px-3.5 py-2.5 ${
-        mine ? 'bg-emerald-100 text-ink border border-emerald-300' : 'bg-surface-soft text-ink'
+        mine ? 'bg-emerald-100 text-ink border border-emerald-300' : 'bg-surface-strong text-ink border border-ink-faint/50'
       }`} data-testid={mine ? 'chat-bubble-mine' : 'chat-bubble'}>
         <div className="flex items-center gap-2 mb-0.5">
-          <span className={`text-[11px] font-semibold ${mine ? 'text-emerald-900' : 'text-ink-muted'}`}>
+          <span className={`text-[11px] font-semibold ${mine ? 'text-emerald-900' : 'text-ink-soft'}`}>
             {m.authorName}
           </span>
           {/* Staff can see at a glance whether the client can read this. */}
           {isStaff && (
             <span className={`text-[10px] inline-flex items-center gap-0.5 ${
-              mine ? 'text-emerald-800' : 'text-ink-faint'
+              mine ? 'text-emerald-800' : 'text-ink-soft'
             }`}>
               {m.clientVisible
                 ? <><Eye className="w-3 h-3" /> shared</>
@@ -248,15 +282,15 @@ function MessageBubble({ m, isStaff, taskId }: { m: MatterMessage; isStaff: bool
           )}
         </div>
         {m.deleted ? (
-          <p className="text-sm italic text-ink-faint">This message was deleted</p>
+          <p className="text-sm italic text-ink-soft">This message was deleted</p>
         ) : editing ? (
           <div className="space-y-2 min-w-[min(28rem,70vw)]">
-            <RichTextEditor value={draft} onChange={setDraft} ariaLabel="Edit message" rows={2} imageTaskId={taskId}
+            <RichTextEditor value={draft} onChange={changeDraft} ariaLabel="Edit message" rows={2} imageTaskId={taskId}
               wordLimit={MESSAGE_WORD_LIMIT} maxHeight={COMPOSER_MAX_HEIGHT} />
             {/* #297: an edit is announced like a new message. */}
             {editNotice && <p className="text-[11px] text-ink-muted">{editNotice}</p>}
             <div className="flex justify-end gap-2">
-              <button type="button" className="btn-ghost" onClick={() => setEditing(false)} disabled={save.isPending}>Cancel</button>
+              <button type="button" className="btn-ghost" onClick={cancelEdit} disabled={save.isPending}>Cancel</button>
               <button type="button" className="btn-primary inline-flex items-center gap-1.5 disabled:opacity-50"
                 onClick={() => save.mutate()} disabled={!draft.trim() || save.isPending}>
                 {save.isPending && <Loader2 className="w-4 h-4 animate-spin" />} Save
@@ -267,7 +301,7 @@ function MessageBubble({ m, isStaff, taskId }: { m: MatterMessage; isStaff: bool
           <RichText html={m.body} className="text-sm" taskId={taskId} />
         )}
         {m.createdAt && !editing && (
-          <div className={`flex items-center gap-1 mt-1 text-[10px] ${mine ? 'text-emerald-800' : 'text-ink-faint'}`}>
+          <div className={`flex items-center gap-1 mt-1 text-[10px] ${mine ? 'text-emerald-800' : 'text-ink-soft'}`}>
             <span>
               {new Date(m.createdAt).toLocaleString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
               {m.editedAt && ' · edited'}

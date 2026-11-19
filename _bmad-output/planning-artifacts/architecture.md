@@ -1850,6 +1850,33 @@ and notifications never carry an image or a link to one.
   the session token into an object URL (revoked on unmount). The matter page
   provides its id through `CommentImageTaskContext`; outside a matter, images show
   as "Image unavailable" and the editor offers no upload.
+- **Pixel dimensions (#319, 2026-11-19).** 20–8,000 px on each side, one rule in
+  `shared/richText/limits.js` (`commentImageDimensionProblem`). The editor reads
+  the size in the browser before uploading (`checkCommentImage`) and refuses with
+  a readable reason; the upload endpoint re-reads it from the bytes (sharp
+  `metadata()`, header only) and answers 422 `IMAGE_DIMENSIONS`. `width` and
+  `height` are stored on the metadata doc.
+- **`RichText` must keep one tree shape (#319).** Its content node holds images
+  whose `src` exists only in the DOM (set after the authenticated fetch). If the
+  node is ever remounted, React re-inserts the stored HTML — images with no src —
+  and the hydrate effect does not re-run for the same html. The "Read more"
+  wrapper is therefore always rendered; only the button is conditional. A tall
+  image flipping the fold after load used to remount it (broken images in Chat).
+- **Chat shows every image at one size (#319).** Inside `.lt-chat-images` (the
+  Chat card) images are a 15rem × 11.25rem box with `object-fit: contain`; step
+  comments keep the natural size up to `max-h-80`.
+
+## Chat drafts (#297 follow-up, 2026-11-19)
+
+The Chat tab unmounts on every tab switch, so its state cannot hold a draft. The
+new-message box and an edit in progress use `useCommentDraft` (the #83 step-comment
+store): localStorage, key `commentDraft:{taskId}:chat:{uid}` and
+`commentDraft:{taskId}:chat-edit-{messageId}:{uid}`, debounced 800 ms and flushed on
+unmount (it used to be dropped). localStorage rather than sessionStorage for one
+store and one behaviour with step comments, and because the firm asked that a draft
+stay until it is sent or deleted. The uid in the key keeps it from another person on
+a shared computer. Cleared on send/save, Cancel, or an empty box. The "Visible to
+client" tick is not stored.
 
 ## The QA environment (E24-S00)
 

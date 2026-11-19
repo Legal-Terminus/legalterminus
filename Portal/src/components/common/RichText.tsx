@@ -108,19 +108,27 @@ export default function RichText({ html, className = '', collapsible = true, tas
     />
   );
 
-  if (!collapsible || !overflows) return content;
-
+  // #319 ROOT CAUSE of "images in Chat do not display": this used to return
+  // `content` bare while it fitted and `<div>{content}<button/></div>` once it
+  // overflowed. A tall image overflows only AFTER it has loaded, so its `load`
+  // event flipped `overflows`, the tree changed shape, and React REMOUNTED the
+  // content node — a fresh copy of the stored HTML whose <img data-lt-image> has
+  // no src (it never does; the bytes are fetched). The hydrate effect above does
+  // not re-run for the same html, so the new image stayed empty: a broken-image
+  // box with "Read more" under it. The wrapper is now always there, so the node
+  // holding the images is never replaced.
   return (
     <div>
       {content}
-      <button
+      {collapsible && overflows && <button
         type="button"
         onClick={() => setExpanded((v) => !v)}
         aria-expanded={expanded}
-        className="mt-1 min-h-11 sm:min-h-0 text-sm font-medium text-brand-600 hover:underline"
+        // brand-700: keeps AA contrast on the darker received Chat bubble (#297).
+        className="mt-1 min-h-11 sm:min-h-0 text-sm font-medium text-brand-700 hover:underline"
       >
         {expanded ? 'Show less' : 'Read more'}
-      </button>
+      </button>}
     </div>
   );
 }
