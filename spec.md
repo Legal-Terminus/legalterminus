@@ -55,6 +55,7 @@ Workflows are modelled as **XState state machines**. Each workflow service (Comp
 | Mark step urgent | ✅ | ✅ | ❌ | ❌ |
 | Reassign task steps | ✅ Any | ✅ Any | ✅ To other members | ❌ |
 | Configure email templates | ✅ | ❌ | ❌ | ❌ |
+| Edit the "Explore more services" block on the completion email (#310) | ✅ | ✅ | ❌ | ❌ |
 | Send broadcast notifications | ✅ | ❌ | ❌ | ❌ |
 | Create, edit, switch on/off coupon codes; read the Coupon & Discount report (#256) | ✅ | ✅ | ❌ | ❌ (applies a code at checkout) |
 
@@ -268,6 +269,7 @@ Every meaningful workflow event triggers an in-app notification and an email to 
 9. **Given** a user opens a matter from a report, the dashboard, a client's page or search and presses Back (#208), **Then** they return to that page; a report's filters are part of its address and are still applied.
 10. **Given** an admin or manager creates a matter from the Matters page or a client's page (#211), **Then** the new matter opens, and Back returns them to the page they created it from.
 11. **Given** a step becomes someone's to work — when a matter is created already paid, when an admin approves a matter created with no payment (every automatic GST return matter), or when the matter moves on to that step (#293), **Then** every team member assigned to the step receives one notification and one email; if nobody is assigned, the matter's owner does.
+12. **Given** a matter's workflow is completed (#310), **Then** the client's "Your service is complete" email (CC the matter's additional addresses) ends with the firm's "Explore more services" block — one common heading and text for every service, edited by Admin or Manager in Settings → Email Templates, with an on/off switch; **Given** the block is switched off or empty, **Then** the email is sent exactly as before. Stored in `settings/completionMarketing` `{ enabled, heading, body }`; the firm's seed text applies until someone edits it.
 
 ---
 

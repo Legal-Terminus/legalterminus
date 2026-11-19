@@ -8,7 +8,7 @@ import { loadPhaseAssignments } from './workflowDefinitions.controller.js';
 import { createNotification, resolveNotificationsForTask } from './notifications.controller.js';
 import { finalizeMatterDocuments } from './documents.controller.js';
 import { publicSiteUrl, sendTemplatedEmail } from '../services/emailService.js';
-import { renderTemplate } from '../services/emailTemplates.service.js';
+import { renderTemplate, completionMarketingBlock } from '../services/emailTemplates.service.js';
 import { prepareRichText, richTextToPlain } from '../services/richText.service.js';
 import { resolveCommentImages, shareCommentImages } from '../services/commentImages.service.js';
 import { compileDefinition } from '../../../shared/workflows/compileDefinition.js';
@@ -178,13 +178,13 @@ async function attachClientContacts(rows) {
 // Fire-and-forget in-app notification. NEVER let a notification failure break the
 // workflow action that triggered it — we log and move on. Skips self-notification
 // (don't ping someone for their own action) and empty recipients.
-async function notify({ recipientUid, actorUid, type = 'info', title, message, taskId, stepNumber }) {
+async function notify({ recipientUid, actorUid, type = 'info', title, message, taskId, stepNumber, emailAppendix }) {
   try {
     if (!recipientUid || recipientUid === actorUid) return;
     // #293: a system actor (`system:gst-returns`) is recorded as a matter's
     // creator but is nobody's inbox — "Matter approved" to it was a dead write.
     if (String(recipientUid).startsWith('system:')) return;
-    await createNotification({ recipientUid, type, title, message, taskId, stepNumber });
+    await createNotification({ recipientUid, type, title, message, taskId, stepNumber, emailAppendix });
   } catch (err) {
     logger.warn({ err: err?.message }, 'notify: failed to create notification');
   }
@@ -3130,8 +3130,13 @@ export async function transitionTask(req, res) {
       const ctx = `${task.clientName ?? ''} · ${task.serviceName ?? task.workflowType ?? ''}`;
       if (isComplete) {
         // Matter finished — congratulate the client + tell the matter owner.
+        // #310: the CLIENT's completion email also carries the firm's editable
+        // "Explore more services" block (Settings → Email Templates). Null when
+        // it is switched off or empty, and the email is then exactly as before.
+        // The owner's internal notice never carries it.
+        const completionAppendix = await completionMarketingBlock();
         await notify({ recipientUid: task.clientUid, actorUid: uid, type: 'success',
-          title: 'Your service is complete', message: ctx, taskId });
+          title: 'Your service is complete', message: ctx, taskId, emailAppendix: completionAppendix });
         await notify({ recipientUid: task.assignedTo, actorUid: uid, type: 'success',
           title: 'Matter completed', message: ctx, taskId });
       } else if (newStep !== task.currentStepNumber) {

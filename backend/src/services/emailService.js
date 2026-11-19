@@ -135,10 +135,56 @@ export function publicSiteUrl() {
 }
 
 /**
+ * #310: the editable "Explore more services" text is plain text written by
+ * staff. Every piece of it is ESCAPED; the only markup added is a link around
+ * a bare http(s) URL (a leading "- " also becomes a bullet). Nothing the editor
+ * types can inject markup — the href is the escaped URL, and only http/https
+ * are recognised.
+ */
+const URL_RE = /\bhttps?:\/\/[^\s<>"']+/g;
+function linkifyEscaped(raw) {
+  let out = '';
+  let at = 0;
+  for (const m of String(raw).matchAll(URL_RE)) {
+    const url = m[0].replace(/[.,;:!?)]+$/, '');
+    out += escapeHtml(raw.slice(at, m.index));
+    const safe = escapeHtml(url);
+    out += `<a href="${safe}" style="color:${BRAND.primary};text-decoration:underline">${safe}</a>`;
+    at = m.index + url.length;
+  }
+  return out + escapeHtml(raw.slice(at));
+}
+const bulletise = (s) => String(s ?? '').replace(/^[ \t]*[-*][ \t]+/gm, '• ');
+
+function renderAppendix(appendix) {
+  if (!appendix || (!appendix.heading && !appendix.body)) return { html: '', text: '' };
+  const heading = appendix.heading
+    ? `<tr><td style="font-size:16px;font-weight:700;color:${BRAND.ink};line-height:1.35;padding-bottom:8px">${escapeHtml(appendix.heading)}</td></tr>`
+    : '';
+  const body = appendix.body
+    ? `<tr><td style="font-size:14px;color:${BRAND.inkSoft};line-height:1.6;white-space:pre-wrap">${linkifyEscaped(bulletise(appendix.body))}</td></tr>`
+    : '';
+  const html = `<tr><td style="padding:20px 28px 24px">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${BRAND.surfaceSoft};border:1px solid ${BRAND.hairline};border-radius:10px">
+            <tr><td style="padding:18px 20px">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0">${heading}${body}</table>
+            </td></tr>
+          </table>
+        </td></tr>`;
+  const text = [appendix.heading, bulletise(appendix.body)].filter(Boolean).join('\n\n');
+  return { html, text };
+}
+
+/**
  * `action` ({ label, url }) replaces the default "View in Portal" button — the
  * account emails (#203) need the button to BE the link, not a link beside it.
+ *
+ * `appendix` ({ heading, body }) — #310: an extra section below the message
+ * and its button, used for the "Explore more services" block on the completion
+ * email. Omitted, the email is byte-for-byte what it was before.
  */
-function renderEmail({ title, message, taskId, action }) {
+export function renderEmail({ title, message, taskId, action, appendix }) {
+  const extra = renderAppendix(appendix);
   const base = publicSiteUrl();
   const link = action?.url
     || (taskId && base ? `${base}/portal/tasks/${taskId}` : (base ? `${base}/portal/` : null));
@@ -167,14 +213,14 @@ function renderEmail({ title, message, taskId, action }) {
             <tr><td style="font-size:15px;color:${BRAND.inkSoft};line-height:1.6;white-space:pre-wrap">${escapeHtml(message)}</td></tr>
             ${cta}
           </table>
-        </td></tr>
+        </td></tr>${extra.html}
         <tr><td style="padding:20px 28px;border-top:1px solid ${BRAND.hairline}">
           <p style="margin:0;font-size:12px;color:${BRAND.inkFaint};line-height:1.5">You're receiving this because you have an account on the Legal Terminus portal.</p>
         </td></tr>
       </table>
     </td></tr>
   </table></body></html>`;
-  const text = `Legal Terminus\n\n${title}\n\n${message}${link ? `\n\n${action?.label || 'View in Portal'}: ${link}` : ''}\n\n— Legal Terminus`;
+  const text = `Legal Terminus\n\n${title}\n\n${message}${link ? `\n\n${action?.label || 'View in Portal'}: ${link}` : ''}${extra.text ? `\n\n${extra.text}` : ''}\n\n— Legal Terminus`;
   return { html, text };
 }
 
@@ -325,7 +371,7 @@ export async function sendTemplatedEmail({ to, cc, subject, body, taskId, servic
   }
 }
 
-export async function sendNotificationEmail({ to, cc, title, message, taskId, serviceName, organisation, action }) {
+export async function sendNotificationEmail({ to, cc, title, message, taskId, serviceName, organisation, action, appendix }) {
   try {
     if (!to || !title) return false;
     const ccList = normaliseCc(cc, to);
@@ -334,7 +380,7 @@ export async function sendNotificationEmail({ to, cc, title, message, taskId, se
       logger.info({ to, cc: ccList, title }, '[email] (no-op) would send notification email');
       return false;
     }
-    const { html, text } = renderEmail({ title, message, taskId, action });
+    const { html, text } = renderEmail({ title, message, taskId, action, appendix });
     const from = process.env.EMAIL_FROM || process.env.GMAIL_USER;
     const subject = matterSubject({ serviceName, taskId, title, organisation });
     // Threading headers (#98): a stable Message-ID root per matter. Setting the

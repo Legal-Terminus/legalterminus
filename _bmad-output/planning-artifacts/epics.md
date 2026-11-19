@@ -8033,3 +8033,32 @@ affected step comments with tall images.
   out-of-range sizes; a tall image in a step comment still decodes; fixtures are now real
   64×48 PNGs from `e2e/png.ts`, since a 1×1 pixel is refused). Playwright not run by the
   author (QA after merge). User-visible: yes.
+
+### Completion email: "Explore more services" block (2026-11-19, #310) — E-07 🔄 In review
+
+The firm asked that the thank-you email a client gets when a service is completed also
+promote the firm's other services, with one common text for every service, editable by
+Admin and Manager in Settings.
+- **The existing email:** the one completion email is the client's "Your service is
+  complete" notification, mirrored to email by `createNotification` from `transitionTask`
+  when the matter reaches `completed` (CC the matter's `ccEmails`, threaded with the
+  matter). It goes to the client already; its wording is unchanged.
+- **What was built:** a block appended below the message and its "View in Portal" button —
+  a heading and a text, seeded with the firm's example (services list, tagline,
+  https://legalterminus.com/). Settings → Email Templates → "Client — Service completed:
+  Explore more services". An on/off switch; auto-saves like the templates; Reset restores
+  the seed text. Bare web addresses become links, "- " lines become bullets.
+- **Off or empty → the email is exactly as before** (asserted byte-for-byte in the unit test).
+- **Who:** admin and manager (`GET/PUT /api/settings/completion-marketing`). A manager now
+  reaches Settings → Email Templates but sees only this block; the other templates stay
+  admin-only (their API still refuses a manager).
+- **No database write needed:** the seed text is a code default merged on read; nothing
+  was written to QA or live. Only the client's completion email carries it — not the
+  matter owner's "Matter completed" notice, not the in-app notification.
+- **Unchanged edge:** if the CLIENT performs the final step themselves, no completion
+  notice is sent at all (existing "don't notify the actor" rule), so no block either.
+- Tests: `backend/src/__tests__/completionMarketing.test.js` (6: default in the email,
+  off/empty unchanged, empty stays empty, no markup injection, schema, only the client's
+  notice); `email-templates.spec.ts` (+4: admin/manager allowed, team/client 403;
+  manager round-trip, tags stripped, 400s; manager UI edit + switch save; admin sees it).
+
