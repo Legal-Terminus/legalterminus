@@ -715,10 +715,21 @@ uploadedBy, uploadedByName, createdAt, uploadedAt?
 
 ### `taskSteps/{taskId}/steps/{stepId}`
 ```
-stepNumber, title, assignedTo, status (pending|active|completed|blocked|skipped),
+stepNumber, title, assignedTo, assignedToUids[], status (pending|active|completed|blocked|skipped),
 paymentGated, paymentOverride, isUrgent, startedAt?, completedAt?,
 deadline, delayReason?, completedBy?, auditLog[{action, by, at, note}]
 ```
+
+**Several assignees on one step (#192, reopened and fixed 2026-11-19).** `assignedToUids`
+lists everyone who owns the step; `assignedTo` is its first entry (the primary). Any one of
+them may complete the step, and whoever finishes first moves the matter on. They are set:
+- for new matters, per step of the Service — on the Service page (**Step Settings →
+  Assignee**, tick several people) or in the workflow editor (**Who does this? → Specific
+  people**). Stored on the definition step as `defaultAssigneeUids` + `defaultAssigneeUid`
+  (= first). The list counts only while its first entry equals `defaultAssigneeUid`; a screen
+  that changes only the single field replaces the list.
+- on an existing matter, by an admin or manager: **Step owner** on the current step (tick or
+  untick people; changes apply at once). Only staff (admin, manager, team member) can be owners.
 
 ### `documents/{taskId}/files/{docId}`
 ```

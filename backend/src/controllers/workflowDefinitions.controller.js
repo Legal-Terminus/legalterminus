@@ -2,6 +2,7 @@ import { getDb } from '../config/firebase.js';
 import { logger } from '../config/logger.js';
 import { validateDefinition, CLIENT_ASSIGNEE, materialisableSteps } from '../../../shared/workflows/definitionSchema.js';
 import { invalidateWorkflowCache } from '../services/workflowDefinitions.service.js';
+import { reconcileStepAssignees, stepAssigneeList, assertNoClientAssignees } from '../services/stepAssignees.service.js';
 
 const COLLECTION = 'workflowDefinitions';
 // Per-phase default assignees (E11-S02), kept SEPARATE from the versioned
@@ -112,6 +113,10 @@ async function serviceKeyConflict(serviceKeys, selfId) {
 export async function createDefinition(req, res) {
   try {
     const body = req.body; // shape validated by createDefinitionSchema
+    // #192: keep each step's assignee list consistent with its primary, and
+    // never let a client be a step's default assignee.
+    body.steps = (body.steps ?? []).map(reconcileStepAssignees);
+    await assertNoClientAssignees(getDb(), body.steps);
     const ref = getDb().collection(COLLECTION).doc(body.id);
     const existing = await ref.get();
     if (existing.exists) {
@@ -133,6 +138,7 @@ export async function createDefinition(req, res) {
     invalidateWorkflowCache();
     res.status(201).json({ ...def, createdAt: now, updatedAt: now });
   } catch (err) {
+    if (err && err.status) return res.status(err.status).json({ message: err.message });
     logger.error({ err }, 'createDefinition error:');
     res.status(500).json({ message: 'Failed to create workflow definition' });
   }
@@ -149,7 +155,15 @@ export async function updateDefinition(req, res) {
 
     const prev = snap.data();
     // Compose the full definition: route id + client body, server-owned version bump.
-    const def = { ...req.body, id, version: (prev.version ?? 1) + 1 };
+    // #192 (reopened): the editor sends each step's `defaultAssigneeUids` back; it
+    // is kept (the schema used to strip it) and reconciled with the primary.
+    const def = {
+      ...req.body,
+      steps: (req.body.steps ?? []).map(reconcileStepAssignees),
+      id,
+      version: (prev.version ?? 1) + 1,
+    };
+    await assertNoClientAssignees(getDb(), def.steps);
     const errors = validateDefinition(def);
     if (errors.length) {
       return res.status(422).json({ message: 'Workflow definition is invalid', errors });
@@ -171,6 +185,7 @@ export async function updateDefinition(req, res) {
     invalidateWorkflowCache();
     res.json({ ...def, updatedAt: now });
   } catch (err) {
+    if (err && err.status) return res.status(err.status).json({ message: err.message });
     logger.error({ err }, 'updateDefinition error:');
     res.status(500).json({ message: 'Failed to update workflow definition' });
   }
@@ -483,7 +498,8 @@ export async function putStepAssignees(req, res) {
       const copy = { ...s };
       if (v == null) delete copy.defaultAssigneeUid;
       else copy.defaultAssigneeUid = v;
-      return copy;
+      // #192: this endpoint sets ONE assignee; a stale list must not outvote it.
+      return reconcileStepAssignees(copy);
     });
 
     const version = (def.version ?? 1) + 1;
@@ -533,9 +549,7 @@ export async function getStepSettings(req, res) {
         // primary (first) one so existing queries/filters/indexes keep working;
         // `assigneeUids` is the full list. Older steps have only the single field,
         // so the list falls back to it.
-        assigneeUids: Array.isArray(s.defaultAssigneeUids) && s.defaultAssigneeUids.length
-          ? s.defaultAssigneeUids
-          : (s.defaultAssigneeUid ? [s.defaultAssigneeUid] : []),
+        assigneeUids: stepAssigneeList(s),
         etaDays: typeof s.typicalDurationDays === 'number' ? s.typicalDurationDays : null,
         clientVisible: s.clientVisible !== false, // default-visible
       }));
@@ -606,7 +620,8 @@ export async function putStepSettings(req, res) {
         else copy.typicalDurationDays = v.etaDays;
       }
       if ('clientVisible' in v) copy.clientVisible = v.clientVisible;
-      return copy;
+      // #192: an `assigneeUid` sent without a list replaces the list too.
+      return reconcileStepAssignees(copy);
     });
 
     const version = (def.version ?? 1) + 1;
@@ -627,6 +642,11 @@ export async function putStepSettings(req, res) {
         type: s.type,
         phaseId: s.phaseId ?? null,
         assigneeUid: s.defaultAssigneeUid ?? null,
+        // #192 (reopened 2026-11-18): the save response omitted the list. The
+        // Service page puts this response straight into its cache, so right after
+        // "Save step settings" the picker fell back to the single field and showed
+        // ONE assignee — and the next toggle built on that one, losing the rest.
+        assigneeUids: stepAssigneeList(s),
         etaDays: typeof s.typicalDurationDays === 'number' ? s.typicalDurationDays : null,
         clientVisible: s.clientVisible !== false,
       })),

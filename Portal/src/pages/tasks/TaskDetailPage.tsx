@@ -16,6 +16,7 @@ import DocumentsPanel from '../../components/documents/DocumentsPanel';
 import DiscussionPanel from '../../components/messages/DiscussionPanel';
 import SendReminderButton from '../../components/tasks/SendReminderButton';
 import SendInternalReminderButton from '../../components/tasks/SendInternalReminderButton';
+import PeoplePicker from '../../components/common/PeoplePicker';
 import RichTextEditor from '../../components/common/RichTextEditor';
 import RichText from '../../components/common/RichText';
 import { CommentImageTaskContext } from '../../components/common/commentImageContext';
@@ -25,7 +26,7 @@ import PayNowCard from '../../components/tasks/PayNowCard';
 import RefundHistory from '../../components/payments/RefundHistory';
 import InvoicesCard from '../../components/payments/InvoicesCard';
 import PaymentRequestsCard from '../../components/tasks/PaymentRequestsCard';
-import { getTask, advanceTask, assignStep, assignMatter, getTaskEvents, approveTask, rejectTask, stopTask, restartTask, archiveTask, updatePayment, setMatterProfessional, setMatterOrganisation, setMatterCcEmails, setTaskUrgent, setStepUrgent, reopenStep, updateTask, type WorkflowEventInput, type TaskEvent } from '../../api/tasks';
+import { getTask, advanceTask, setStepAssignees, assignMatter, getTaskEvents, approveTask, rejectTask, stopTask, restartTask, archiveTask, updatePayment, setMatterProfessional, setMatterOrganisation, setMatterCcEmails, setTaskUrgent, setStepUrgent, reopenStep, updateTask, type WorkflowEventInput, type TaskEvent } from '../../api/tasks';
 import { useConfirm } from '../../components/common/confirmContext';
 import { useCommentDraft, draftSavedLabel } from '../../hooks/useCommentDraft';
 import { useRail, type RailState } from '../../hooks/useResizablePanels';
@@ -133,13 +134,33 @@ export default function TaskDetailPage() {
   const professionals = assignableUsers;
 
   const assign = useMutation({
-    mutationFn: ({ stepNumber, assignedTo }: { stepNumber: number; assignedTo: string | null }) =>
-      assignStep(taskId!, stepNumber, assignedTo),
+    // #192: the whole owner list — a step may be shared by several people.
+    mutationFn: ({ stepNumber, assignedToUids }: { stepNumber: number; assignedToUids: string[] }) =>
+      setStepAssignees(taskId!, stepNumber, assignedToUids),
+    // Tick the box at once (the picker reads the step from the cache); the
+    // refetch on settle replaces this with the server's version, and a refusal
+    // rolls it back.
+    onMutate: async ({ stepNumber, assignedToUids }) => {
+      await queryClient.cancelQueries({ queryKey: ['task', taskId] });
+      const previous = queryClient.getQueryData<Task>(['task', taskId]);
+      if (previous?.steps) {
+        queryClient.setQueryData<Task>(['task', taskId], {
+          ...previous,
+          steps: previous.steps.map((s) => (s.stepNumber === stepNumber
+            ? { ...s, assignedToUids, assignedTo: assignedToUids[0] ?? null }
+            : s)),
+        });
+      }
+      return { previous };
+    },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['task', taskId] });
       queryClient.invalidateQueries({ queryKey: ['my-steps'] });
     },
-    onError: (err: Error) => toast.error(err.message || 'Could not assign this step.'),
+    onError: (err: Error, _vars, ctx) => {
+      if (ctx?.previous) queryClient.setQueryData(['task', taskId], ctx.previous);
+      toast.error(err.message || 'Could not assign this step.');
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ['task', taskId] }),
   });
 
   const assignOwner = useMutation({
@@ -641,7 +662,7 @@ export default function TaskDetailPage() {
           assignment={canAssign ? {
             staff,
             assigning: assign.isPending,
-            onAssign: (stepNumber, assignedTo) => assign.mutate({ stepNumber, assignedTo }),
+            onAssign: (stepNumber, assignedToUids) => assign.mutate({ stepNumber, assignedToUids }),
             onToggleUrgent: (stepNumber, next) => toggleStepUrgent.mutate({ stepNumber, next }),
             urgentPending: toggleStepUrgent.isPending,
           } : undefined}
@@ -1027,7 +1048,8 @@ function StopMatterBanner({
 interface StepAssignment {
   staff: PortalUser[];
   assigning: boolean;
-  onAssign: (stepNumber: number, assignedTo: string | null) => void;
+  /** #192: the step's full owner list (empty = unassigned); first = primary. */
+  onAssign: (stepNumber: number, assignedToUids: string[]) => void;
   // Urgent toggle for the current step (Issue 3).
   onToggleUrgent: (stepNumber: number, next: boolean) => void;
   urgentPending: boolean;
@@ -1873,7 +1895,10 @@ function StepHeroPanel({
   const ownerName = assignment?.staff.find((u) => u.uid === currentAssignee);
   // Prefer the staff-list object's name (admins/managers), else the server-resolved
   // name (#48) so team members also see the real assignee. Empty when truly unassigned.
-  const assigneeLabel = ownerName ? displayName(ownerName) : (currentAssignee ? (currentAssigneeName ?? '') : '');
+  // #192: a shared step names everyone on it, not just the primary.
+  const assigneeLabel = currentAssigneeNames.length > 1
+    ? currentAssigneeNames.join(', ')
+    : ownerName ? displayName(ownerName) : (currentAssignee ? (currentAssigneeName ?? '') : '');
 
   // #49: completion is restricted to the step's assignee. A non-assignee staff
   // member can only reassign (admins/managers via the owner dropdown). ADMIN keeps
@@ -2151,15 +2176,17 @@ function StepHeroPanel({
               <span className="text-[10px] font-bold text-ink-muted">{initialsOf(assigneeLabel)}</span>
             </div>
             <div className="min-w-0">
-              <select
-                className="bg-transparent text-sm font-medium text-ink focus:outline-hidden cursor-pointer max-w-[150px]"
-                value={currentAssignee ?? ''}
+              {/* #192 (reopened): this was a single <select>, so a manager could
+                  give a step to only ONE person, and touching it on a shared
+                  step dropped everyone else — who then could not complete it. */}
+              <PeoplePicker
+                label="Step owners"
+                className="w-[170px] max-w-full"
+                selected={currentAssignees.length ? currentAssignees : (currentAssignee ? [currentAssignee] : [])}
+                people={assignment.staff.map((u) => ({ uid: u.uid, name: displayName(u) }))}
                 disabled={assignment.assigning}
-                onChange={(e) => assignment.onAssign(step.stepNumber, e.target.value || null)}
-              >
-                <option value="">Unassigned</option>
-                {assignment.staff.map((u) => <option key={u.uid} value={u.uid}>{displayName(u)}</option>)}
-              </select>
+                onChange={(next) => assignment.onAssign(step.stepNumber, next)}
+              />
               {step.assignedRole && <p className="text-[11px] text-ink-faint flex items-center gap-1"><Briefcase className="w-3 h-3" /> {step.assignedRole.replace(/_/g, ' ')}</p>}
             </div>
           </div>
