@@ -27,7 +27,8 @@ import { isPaymentLedgerEvent } from '../../../shared/payments/ledgerEvents.js';
 
 // #148: the roles that may see a matter's payment figures.
 const PAYMENT_VIEW_ROLES = ['admin', 'manager'];
-import { annotateGstMatter, attachGstFilingPeriods, gstFirstEmailFor } from '../services/gstMatterTags.service.js';
+import { annotateGstMatter, attachGstFilingPeriods, gstFirstEmailFor, gstFrequencyOf, gstReturnServiceKeys } from '../services/gstMatterTags.service.js';
+import { isGstReturnMatter, frequencyOf } from '../services/gstReturnSheet.service.js';
 import { emailVars as gstEmailVars } from '../services/gstReturns.service.js';
 
 // ─── ETA / due-date helpers (E13-S02) ──────────────────────────────────────
@@ -810,6 +811,15 @@ export async function createTask(req, res) {
       updatedAt: now,
       createdBy: req.user.uid ?? null,
     };
+    // #219 (firm, 16 Nov): a GST return matter keeps the frequency it was created
+    // with — "Repeats: Quarterly" (or a quarterly service, or the client's setting),
+    // or for a copy the frequency of the matter it copies (`req.gstFrequency`, set
+    // only by duplicateMatterCore, never from the body). Frozen here so the tag,
+    // every email subject and the sheet row keep saying the same period even after
+    // the client's setting or the matter's "Repeats" changes, or its series ends.
+    if (!filingPeriod && isGstReturnMatter(task, await gstReturnServiceKeys())) {
+      task.gstFrequency = frequencyOf({ ...task, gstFrequency: req.gstFrequency ?? null }, c);
+    }
 
     // Atomically create the task doc + its step subcollection.
     const ref = db.collection('tasks').doc();
@@ -3453,6 +3463,11 @@ async function duplicateMatterCore(taskId, actorUser) {
       // duplicate never spawns a second competing series.
       paymentStatus: 'not_paid',
     },
+    // #219 (16 Nov): the copy is not recurring, so it cannot say "Quarterly" through
+    // `recurrence` — it inherits the source's GST frequency instead (read only for a
+    // GST return matter, in createTask). Without this the next quarter's copy
+    // showed as a month.
+    gstFrequency: await gstFrequencyOf(src).catch(() => null),
   };
 
   let created = null;

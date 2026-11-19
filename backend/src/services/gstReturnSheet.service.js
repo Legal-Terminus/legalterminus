@@ -124,12 +124,39 @@ export function withAuthoredOrder(steps, definitionSteps) {
   return (steps ?? []).map((s) => (pos.has(s.stepNumber) ? { ...s, position: pos.get(s.stepNumber) } : s));
 }
 
-/** Monthly or quarterly: the GST period the sweep stamped, else the service, else the client's setting. */
+const isFrequency = (f) => f === 'monthly' || f === 'quarterly';
+
+/**
+ * Monthly or quarterly, for one GST return matter. In order:
+ *   1. the period the GST sweep stamped (`filingPeriod.frequency`);
+ *   2. the frequency frozen on the matter when it was created (`gstFrequency`,
+ *      #219 follow-up of 16 Nov): what the person chose, so changing the
+ *      client's setting or the matter's "Repeats" later never turns a quarter
+ *      into a month (a copy carries its source's);
+ *   3. the matter's "Repeats" (`recurrence`), the Monthly / Quarterly a person
+ *      picks in Create Matter: read for matters opened before (2) existed;
+ *   4. a quarterly service (its key, or its key or name says "quarter");
+ *   5. the client's own GST setting.
+ *
+ * ROOT CAUSE of "a quarterly matter shows as monthly" (firm, 16 Nov): the only
+ * Monthly / Quarterly a person picks when creating a matter is "Repeats", and
+ * this rule never read it. A matter on the GST Return Filing service for a
+ * client without the Quarterly setting fell through to 'monthly', so its tag,
+ * its emails and its sheet row all named a month.
+ */
 export function frequencyOf(task, client) {
+  return frequencyOfMatter(task) ?? (client?.gstReturnFrequency === 'quarterly' ? 'quarterly' : 'monthly');
+}
+
+/** Steps 1–4 of `frequencyOf`: the frequency the matter itself says, or null (then the client's setting decides). */
+export function frequencyOfMatter(task) {
   const f = task?.filingPeriod?.frequency;
-  if (f === 'monthly' || f === 'quarterly') return f;
-  if (task?.serviceKey === GST_SERVICE_KEYS.quarterly) return 'quarterly';
-  return client?.gstReturnFrequency === 'quarterly' ? 'quarterly' : 'monthly';
+  if (isFrequency(f)) return f;
+  if (isFrequency(task?.gstFrequency)) return task.gstFrequency;
+  if (isFrequency(task?.recurrence)) return task.recurrence;
+  if (task?.serviceKey === GST_SERVICE_KEYS.quarterly
+    || /quarter/i.test(`${task?.serviceKey ?? ''} ${task?.serviceName ?? ''}`)) return 'quarterly';
+  return null;
 }
 
 /**
@@ -171,6 +198,19 @@ export function gstFirstEmail({ task, client, linkedServices = [] }) {
   const forName = { ...(client ?? {}), organisation: task.organisation || client?.organisation || '' };
   if (!companyNameOf(forName)) return null;
   return { templateKey: GST_TEMPLATE_KEYS[period.frequency] ?? GST_TEMPLATE_KEYS[frequency], period, client: forName };
+}
+
+/**
+ * #219 (firm, 16 Nov) — the subject of EVERY email about a GST return matter,
+ * to the client and to staff alike: the subject its first email carries,
+ * "<Company Name> - GST Return - <Month Year | Qn YYYY-YY>" — the firm's own
+ * GST template subject (Settings → Email templates), filled for this matter
+ * exactly as for the first email (gstMatterTags.service.js, `gstEmailSubjectFor`).
+ * This is the built-in format, used when that template cannot be rendered.
+ * `first` is `gstFirstEmail`'s result.
+ */
+export function gstSubjectFallback(first) {
+  return first ? `${companyNameOf(first.client)} - GST Return - ${first.period.title}` : null;
 }
 
 const STATUS_TEXT = {

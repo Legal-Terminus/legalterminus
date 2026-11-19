@@ -22,8 +22,12 @@ import { getDb } from '../config/firebase.js';
 import { logger } from '../config/logger.js';
 import { SHEETS } from '../config/worksheetDefinitions.js';
 import { resolveSheet } from './worksheetEngine.service.js';
-import { gstMatterTags, isGstReturnMatter, frequencyOf, filedOnBounds, withAuthoredOrder, gstFirstEmail } from './gstReturnSheet.service.js';
-import { GST_SERVICE_KEYS } from '../../../shared/workflows/gstReturns.js';
+import {
+  gstMatterTags, isGstReturnMatter, frequencyOf, frequencyOfMatter, filedOnBounds, withAuthoredOrder, gstFirstEmail,
+  gstSubjectFallback,
+} from './gstReturnSheet.service.js';
+import { renderTemplate } from './emailTemplates.service.js';
+import { emailVars } from './gstReturns.service.js';
 
 const BOOK = 'gst_return';
 const TTL_MS = 60 * 1000;
@@ -82,8 +86,8 @@ export function invalidateGstReturnServiceKeys() {
   cached = null;
 }
 
-/** Only a hand-opened matter on the monthly service needs the client's own setting to tell monthly from quarterly. */
-const needsClient = (t) => !t?.filingPeriod?.frequency && t?.serviceKey !== GST_SERVICE_KEYS.quarterly;
+/** Only a matter that does not say its own frequency (`frequencyOfMatter`) needs the client's setting to tell monthly from quarterly. */
+const needsClient = (t) => !frequencyOfMatter(t);
 
 async function readClients(uids) {
   const out = new Map();
@@ -130,7 +134,8 @@ export async function annotateGstMatter(full, { definitionSteps = null } = {}) {
   try {
     const linked = await gstReturnServiceKeys();
     if (!isGstReturnMatter(full, linked)) return full;
-    const clients = needsClient(full) ? await readClients([full.clientUid]) : new Map();
+    // The client is read when it decides the frequency, or names the company (no organisation on the matter).
+    const clients = needsClient(full) || !full.organisation ? await readClients([full.clientUid]) : new Map();
     const tags = gstMatterTags({
       task: full, steps: withAuthoredOrder(full.steps ?? [], definitionSteps), client: clients.get(full.clientUid) ?? null,
       linkedServices: linked,
@@ -142,6 +147,9 @@ export async function annotateGstMatter(full, { definitionSteps = null } = {}) {
     });
     if (!tags) return full;
     full.gstFilingPeriodLabel = tags.period;
+    // #219 (16 Nov): monthly or quarterly, and the subject every email of the matter carries.
+    full.gstFrequency = tags.frequency;
+    full.gstEmailSubject = await gstEmailSubjectFor(full, clients.get(full.clientUid) ?? null);
     // The filings, for the matter's header (the step list hides completed tasks
     // until "Show completed" is pressed): dated ones, and reached ones staff
     // still have to add a date to.
@@ -171,4 +179,56 @@ export async function gstFrequencyOf(task) {
 /** #219: the GST first email for a newly created matter, or null (see `gstFirstEmail`). */
 export async function gstFirstEmailFor(task, client) {
   return gstFirstEmail({ task, client, linkedServices: await gstReturnServiceKeys() });
+}
+
+/**
+ * #219 (firm, 16 Nov) — the subject every email about this GST return matter
+ * carries, to the client and to staff: its first email's subject, rendered from
+ * the firm's GST template for the matter's own frequency and period
+ * ("ABC PRIVATE LIMITED - GST Return - Q1 2026-27"). Null for any other matter.
+ * `client` is the client's user document (or null).
+ */
+export async function gstEmailSubjectFor(task, client) {
+  const first = gstFirstEmail({ task, client, linkedServices: await gstReturnServiceKeys() });
+  if (!first) return null;
+  try {
+    const rendered = await renderTemplate(first.templateKey, await emailVars(first.client, first.period));
+    const subject = rendered?.subject?.trim();
+    if (subject) return subject;
+  } catch (err) {
+    logger.warn({ err, taskId: task?.id }, '#219 could not render the GST subject — using the built-in format');
+  }
+  return gstSubjectFallback(first);
+}
+
+const SUBJECT_TTL_MS = 60 * 1000;
+const subjects = new Map(); // taskId → { at, subject }
+
+/**
+ * The same, by matter id — for the email service, which knows only the matter's
+ * id. Cached per matter for a minute (a matter's period never changes, and its
+ * organisation rarely), so a burst of emails reads the matter once. Never throws:
+ * an email without the GST subject is better than no email.
+ */
+export async function gstEmailSubjectForMatter(taskId, now = Date.now()) {
+  if (!taskId) return null;
+  const hit = subjects.get(taskId);
+  if (hit && now - hit.at < SUBJECT_TTL_MS) return hit.subject;
+  let subject = null;
+  try {
+    const snap = await getDb().collection('tasks').doc(taskId).get();
+    if (snap.exists) {
+      const task = { id: snap.id, ...snap.data() };
+      if (isGstReturnMatter(task, await gstReturnServiceKeys())) {
+        const clients = task.clientUid ? await readClients([task.clientUid]) : new Map();
+        subject = await gstEmailSubjectFor(task, clients.get(task.clientUid) ?? null);
+      }
+    }
+  } catch (err) {
+    logger.warn({ err, taskId }, '#219 could not work out the GST subject of a matter email');
+    return null; // not cached: the next email tries again
+  }
+  if (subjects.size > 500) subjects.clear();
+  subjects.set(taskId, { at: now, subject });
+  return subject;
 }

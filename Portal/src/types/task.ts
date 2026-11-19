@@ -105,6 +105,10 @@ export interface Task {
   /** #292: a GST return matter's filing period ("September 2026", "Q2 2026-27"),
    *  server-derived by the GST Return Filing sheet's rules; absent on other matters. */
   gstFilingPeriodLabel?: string | null;
+  /** #219: matter detail only — monthly or quarterly, as the matter was created. */
+  gstFrequency?: 'monthly' | 'quarterly';
+  /** #219: matter detail only — the subject every email about this GST return matter carries. */
+  gstEmailSubject?: string | null;
   /** #294: matter detail only — the GSTR-1 / GSTR-3B filing tasks reached so far,
    *  each with its saved filing date or null. */
   gstFilings?: GstFiling[];
