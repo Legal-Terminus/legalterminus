@@ -17,7 +17,13 @@
  *   - MODULE: the page a set of sheets lives on (Trademark Reports, Worksheets,
  *     GST Return Filing — #279).
  *
- * Field types: text | longtext | date | number | select | computed | image | matter.
+ * Field types: text | longtext | date | number | select | staff | computed | image | matter.
+ *   - `staff` (#280, firm 11 Nov) is a choice list filled from the portal's own
+ *     staff (admin, manager, team member — never clients or professionals). It
+ *     stores the person's uid and shows their name; it has no typed options, so
+ *     Edit dropdowns does not apply to it. A value that is not a uid (a name
+ *     typed before the column listed staff, or unmatched in an upload) is kept
+ *     and shown as written until someone picks a person.
  *   - `computed` fields are derived (renewal milestones, next KYC due) and are
  *     never typed or imported. `compute.from` lists source fields in priority
  *     order — the first one that holds a date is used.
@@ -38,6 +44,7 @@
 
 const f = (key, label, type = 'text', extra = {}) => ({ key, label, type, ...extra });
 const select = (key, label, options, extra = {}) => f(key, label, 'select', { options, ...extra });
+const staff = (key, label, extra = {}) => f(key, label, 'staff', extra);
 const computed = (key, label, from, add, extra = {}) => f(key, label, 'computed', { compute: { from, add }, ...extra });
 
 const YES_NO = ['Yes', 'No'];
@@ -344,13 +351,14 @@ const COMPANY_SHEETS = [
   // #280 — the firm's own TDS register, column for column from the Excel file
   // attached to the issue (names, order and spelling are the firm's — "Form 138"
   // and "form 140" included). Its yellow columns are the choice lists, whose
-  // options staff edit (Edit dropdowns). "Sl. No." is the row number, not data.
+  // options staff edit (Edit dropdowns) — except Assigned to and Checker, which
+  // list the portal's staff (firm, 11 Nov). "Sl. No." is the row number, not data.
   {
     key: 'tds', label: 'TDS Sheet', recordKey: ['tan'], serial: true,
     fields: [
       f('company_name', 'Company Name', 'text', { aliases: ['COMPANY', 'NAME OF COMPANY', 'DEDUCTOR', 'DEDUCTOR NAME'] }),
-      select('assigned_to', 'Assigned to', [], { aliases: ['ASSIGNED', 'ASSIGN TO', 'ASSIGNED PERSON'] }),
-      select('checker', 'Checker', [], { aliases: ['CHECKED BY'] }),
+      staff('assigned_to', 'Assigned to', { aliases: ['ASSIGNED', 'ASSIGN TO', 'ASSIGNED PERSON'] }),
+      staff('checker', 'Checker', { aliases: ['CHECKED BY'] }),
       select('client', 'Client', [], { aliases: ['CLIENT NAME'] }),
       f('tan', 'TAN NO', 'text', { aliases: ['TAN', 'TAN NUMBER', 'TAN NO.'] }),
       f('user_id', 'USER ID', 'text', { aliases: ['USERID', 'LOGIN ID'] }),
@@ -520,6 +528,6 @@ export const MODULES = {
   gst_return: { key: 'gst_return', label: 'GST Return Filing', sheets: GST_RETURN_SHEETS.map((s) => s.key) },
 };
 
-export const FIELD_TYPES = ['text', 'longtext', 'date', 'number', 'select', 'computed', 'image', 'matter'];
+export const FIELD_TYPES = ['text', 'longtext', 'date', 'number', 'select', 'staff', 'computed', 'image', 'matter'];
 /** Types an admin may give a column they add. Computed columns are built in only. */
 export const ADDABLE_TYPES = ['text', 'longtext', 'date', 'number', 'select', 'image'];

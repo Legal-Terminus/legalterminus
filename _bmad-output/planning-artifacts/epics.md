@@ -2859,6 +2859,8 @@ layout, with the yellow columns as dropdowns whose choices staff manage.
   order and spelling (see the 2026-11-10 change-log entry); "Sl. No." is the row number.
 - Add record, Upload Excel (matched by TAN NO), Edit columns (admin), Search, Download Excel — as every sheet.
 - **Edit dropdowns** (admin, manager, team member) for every dropdown column of every worksheet and report.
+- **Assigned to** and **Checker** list the portal's staff (admin, manager, team member) by name, not a
+  typed list (firm, 11 Nov — see the 2026-11-19 change-log entry).
 
 **e2e**: `Portal/e2e/worksheets.spec.ts` (#280 tests).
 
@@ -7529,6 +7531,39 @@ choices", "Row numbers", "TDS Sheet".
 - Tests: `backend/src/__tests__/worksheetEngine.test.js` (5 new); `Portal/e2e/worksheets.spec.ts`
   (columns and buttons; a team member adds a choice and uses it in a new record; upload in the firm's
   layout; clients refused, non-dropdown column refused). Run locally against QA on 2026-11-10: worksheets.spec 13/13 passed.
+
+### TDS Sheet: Assigned to and Checker list the portal's staff (2026-11-19, #280) — E18-S10 🔄 In review
+
+The firm answered the four questions on 11 Nov: (1) "Form 138" / "form 140" are correct — no change;
+(2) one row per TAN — already how the upload works (key `tan`), no change; (3) the Traces / IT
+password columns stay visible to Admin, Manager and Team — no change; (4) **Assigned to** and
+**Checker** should list the portal's staff automatically. Only (4) is code. Design in
+architecture.md, "Worksheets" → "Staff columns".
+- New field type **`staff`**. Assigned to and Checker are `staff` columns: the picker lists the
+  active admins, managers and team members by name (never clients or professionals; seeded e2e
+  accounts are hidden outside test runs). The row stores the person's **uid**; the grid, search,
+  filters, sort and Download Excel show the **name**. A deactivated colleague still shows by name on
+  the rows that hold them, but is not offered for new picks.
+- **Edit dropdowns** no longer lists these two columns (`PUT …/options/assigned_to` → 400 "not a
+  dropdown column"). The firm's typed list for them (`optionOverrides.assigned_to/checker` on live)
+  is left in the config and ignored.
+- **Existing rows on live keep what they hold.** A name typed before this change is not a uid; it
+  shows as written (and filters together with the same person's picked rows, since both read as the
+  same name). Picking the person on the row, or uploading the sheet again, turns it into the person.
+  No data migration.
+- **Upload:** a cell is matched to a person by display name (case and spacing ignored) or email;
+  active staff first, then former staff. A cell that matches nobody — or two people of the same
+  name — is **kept as written** and listed in the preview's "cells were kept as written" warnings,
+  the same way untidy dates are. Download → upload round-trips (the download writes names).
+- **Manual edits** must pick an active staff member (`400 Pick a person from the "Assigned to"
+  list.`); clearing is allowed.
+- The GST Return Filing sheet's **Assign Person** is unchanged: the matter sync writes the matter's
+  assignee there as a name, so making it a staff column is a separate change, not the same mechanism.
+- Tests: `backend/src/__tests__/worksheetEngine.test.js` (6 new, 3 adjusted to use Client as the
+  editable list); `Portal/e2e/worksheets.spec.ts` (the Edit dropdowns list omits Assigned to /
+  Checker; a team member picks a staff member, the row shows the name and stores the uid; upload
+  matches a name in capitals, keeps an unknown name with a warning; typed name refused by the API;
+  options on Checker refused).
 
 ### GST Return Filing sheet under Reports, kept up to date from the GST matters (2026-11-10, #279) — E18-S11 🔄 In review
 

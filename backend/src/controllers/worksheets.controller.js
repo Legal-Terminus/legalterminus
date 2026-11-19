@@ -5,8 +5,9 @@ import { logger } from '../config/logger.js';
 import { BOOKS, SHEETS, MODULES } from '../config/worksheetDefinitions.js';
 import {
   resolveSheet, bookFields, computeValues, cleanRecordValues, sheetRecordKey, applyColumnEdit, applyOptionsEdit,
-  planImport, encodeCursor, decodeCursor,
+  planImport, encodeCursor, decodeCursor, withStaffChoices,
 } from '../services/worksheetEngine.service.js';
+import { loadWorksheetStaff } from '../services/worksheetStaff.service.js';
 import { runWorksheetReminderSweep } from '../services/worksheetReminders.service.js';
 import { syncSheetFromMatters } from '../services/gstReturnSheetSync.service.js';
 import { invalidateGstReturnServiceKeys } from '../services/gstMatterTags.service.js';
@@ -51,6 +52,13 @@ async function loadConfig(db, book) {
   const snap = await db.collection(CONFIG).doc(book).get();
   return snap.exists ? snap.data() : {};
 }
+
+/**
+ * #280: the staff list, read only when the book has a staff column (TDS:
+ * Assigned to, Checker) — every other sheet never queries users.
+ */
+const hasStaffField = (fields) => fields.some((fd) => fd.type === 'staff');
+const staffFor = (db, fields) => (hasStaffField(fields) ? loadWorksheetStaff(db) : Promise.resolve([]));
 
 /** The sheet named in the URL, resolved against the firm's edits, or a 404. */
 async function sheetContext(req, res) {
@@ -155,9 +163,12 @@ export async function getModule(req, res) {
     const snaps = await db.getAll(...books.map((b) => db.collection(CONFIG).doc(b)));
     const configs = Object.fromEntries(snaps.map((s) => [s.id, s.exists ? s.data() : {}]));
     const isAdmin = req.user.role === 'admin';
+    const sheets = mod.sheets.map((s) => resolveSheet(s, configs[SHEETS[s].book]));
+    // #280: staff columns carry their choices (uid + name) with the sheet.
+    const staff = sheets.some((sh) => sh.columns.some((c) => c.type === 'staff')) ? await loadWorksheetStaff(db) : [];
     res.json({
       module: { key: mod.key, label: mod.label },
-      sheets: mod.sheets.map((s) => resolveSheet(s, configs[SHEETS[s].book])),
+      sheets: sheets.map((sh) => withStaffChoices(sh, staff)),
       // Everyone on the staff views and edits (firm, 29 Oct); columns and
       // deleting a record are the admin's.
       canEdit: true,
@@ -206,7 +217,7 @@ export async function createRecord(req, res) {
     const { db, sheet, fields } = ctx;
     // #279: secret cells are taken out first and kept, as typed, under `secrets`.
     const split = splitSecretValues(sheet.book, req.body.values);
-    const values = dropNulls(cleanRecordValues(fields, split.values));
+    const values = dropNulls(cleanRecordValues(fields, split.values, { staff: await staffFor(db, fields) }));
     if (Object.keys(values).length === 0 && Object.keys(split.secrets).length === 0) return res.status(400).json({ message: 'Fill in at least one column.' });
     await checkMatters(db, sheet, fields, values);
     const sealed = secretWrites(sheet.book, { values, incoming: split.secrets });
@@ -248,7 +259,7 @@ export async function updateRecord(req, res) {
     const { db, sheet, fields } = ctx;
     // #279: secret cells are taken out first (an empty password box means "no change").
     const split = splitSecretValues(sheet.book, req.body.values ?? {});
-    const patch = req.body.values ? cleanRecordValues(fields, split.values) : {};
+    const patch = req.body.values ? cleanRecordValues(fields, split.values, { staff: await staffFor(db, fields) }) : {};
     await checkMatters(db, sheet, fields, patch);
     const sheets = req.body.sheets ? cleanMemberships(sheet, req.body.sheets) : null;
     const now = new Date().toISOString();
@@ -320,7 +331,7 @@ export async function putColumns(req, res) {
     // #292: the GST sheet's linked services decide which matters show a Filing Month.
     if (ctx.sheet.book === 'gst_return') invalidateGstReturnServiceKeys();
     logger.info({ sheet: ctx.sheet.key, actorUid: req.user.uid }, 'Worksheet columns updated');
-    res.json(resolveSheet(ctx.sheet.key, { ...ctx.config, ...next }));
+    res.json(withStaffChoices(resolveSheet(ctx.sheet.key, { ...ctx.config, ...next }), await staffFor(ctx.db, ctx.fields)));
   } catch (err) { sendKnown(res, err, 'putColumns failed'); }
 }
 
@@ -338,7 +349,7 @@ export async function putOptions(req, res) {
     await ctx.db.collection(CONFIG).doc(ctx.sheet.book).set({ optionOverrides, updatedAt: now, updatedBy: req.user.uid }, { merge: true });
     const config = { ...ctx.config, optionOverrides: { ...(ctx.config.optionOverrides ?? {}), ...optionOverrides } };
     logger.info({ sheet: ctx.sheet.key, field: req.params.field, count: optionOverrides[req.params.field].length, actorUid: req.user.uid }, 'Worksheet dropdown options updated');
-    res.json(resolveSheet(ctx.sheet.key, config));
+    res.json(withStaffChoices(resolveSheet(ctx.sheet.key, config), await staffFor(ctx.db, ctx.fields)));
   } catch (err) { sendKnown(res, err, 'putOptions failed'); }
 }
 
@@ -364,7 +375,9 @@ export async function importRows(req, res) {
         });
       }
     }
-    const plan = planImport({ sheet, fields, headers, rows, existingByKey, startRow });
+    // #280: Assigned to / Checker cells are matched to staff by name or email.
+    const staff = await staffFor(db, fields);
+    const plan = planImport({ sheet, fields, headers, rows, existingByKey, startRow, staff });
     // #294: an upload never overwrites a filing date that comes from a matter (see updateRecord).
     for (const up of plan.updates) {
       const ex = existingByKey.get(up.key);
