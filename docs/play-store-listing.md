@@ -132,8 +132,9 @@ Questions: sales21@legalterminus.com
 ## What this draft does not fix
 
 - A **production reviewer account** and the **deletion answer (D2)** are decisions and production changes for the firm.
-- The server side the app needs on production (API CORS for `https://localhost`, bucket CORS) is **not done**
-  and is not part of this file; see `docs/android-release-plan.md`. A build published to the Production track
-  before that is live would show real users errors on every screen that loads data.
+- **Version code 3 must not be published** (2026-11-19). It bundles the Portal and runs at `https://localhost`,
+  which production no longer allows (no localhost anywhere), so every screen that loads data would fail. The app
+  now opens the hosted Portal (`docs/mobile-release.md`); replace version code 3 in the Production release with the
+  first production-pointed build before anyone presses Publish.
 - The team-member Home screen shows a blank gap where other roles have a heading (seen on the emulator,
   2026-11-03); it may be intended. Look at it before screenshots are chosen.

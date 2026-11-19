@@ -21,6 +21,8 @@ import { getOverrides, makeStatutoryResolver } from '../services/statutoryCalend
 import { clientDisplayName } from '../services/clientName.service.js';
 import { logValue } from '../utils/sanitize.js';
 import { announceStepAssignment } from '../services/stepAssignmentNotice.service.js';
+import { stepAssigneeList, requestedStepOwners, assertStaffOwners } from '../services/stepAssignees.service.js';
+import { STAFF_ROLES } from '../config/roles.js';
 import { isPaymentLedgerEvent } from '../../../shared/payments/ledgerEvents.js';
 
 // #148: the roles that may see a matter's payment figures.
@@ -675,9 +677,11 @@ export async function createTask(req, res) {
     // collection-group index are untouched) and `assignedToUids` carries everyone.
     // The sentinel resolves per-entry, so a mixed client+staff list still works.
     const assigneesForStep = (s) => {
-      const list = Array.isArray(s.defaultAssigneeUids) ? s.defaultAssigneeUids.filter(Boolean) : [];
+      // stepAssigneeList ignores a list that disagrees with the primary (written
+      // by a screen that only knew the single field), so that edit wins.
+      const list = stepAssigneeList(s);
       const resolved = [...new Set(list.map((u) => (u === CLIENT_ASSIGNEE ? clientUid : u)))];
-      if (resolved.length) return resolved;
+      if (resolved.length > 1) return resolved;
       const single = assigneeForStep(s);
       return single ? [single] : [];
     };
@@ -2538,7 +2542,8 @@ export async function patchStep(req, res) {
     }
 
     const { taskId, stepId } = req.params;
-    const { isUrgent, assignedTo } = req.body;
+    const { isUrgent } = req.body; // shape validated by stepPatchSchema
+    const owners = requestedStepOwners(req.body);
 
     // Try sub-collection approach first
     const stepRef = db.collection('tasks').doc(taskId).collection('steps').doc(stepId);
@@ -2546,20 +2551,29 @@ export async function patchStep(req, res) {
 
     if (stepDoc.exists) {
       const prev = stepDoc.data();
+      const prevOwners = Array.isArray(prev.assignedToUids) && prev.assignedToUids.length
+        ? prev.assignedToUids
+        : (prev.assignedTo ? [prev.assignedTo] : []);
       const now = new Date().toISOString();
       const update = { updatedAt: now };
       if (isUrgent !== undefined) update.isUrgent = isUrgent;
-      // Assign/unassign this step to a specific staff user. `null`/'' clears it
-      // (back to the shared/unassigned pool). Surfaced in the My Tasks worklist.
-      const reassigning = assignedTo !== undefined && (assignedTo || null) !== (prev.assignedTo ?? null);
-      if (assignedTo !== undefined) {
-        update.assignedTo = assignedTo || null;
-        // #192: keep the multi-assignee list in step with a reassignment. Without
-        // this, reassigning a step would leave the PREVIOUS assignees in
-        // `assignedToUids` — they would keep seeing it in My Tasks and could still
-        // complete it. A per-step reassignment is a deliberate "this is now
-        // theirs", so the list collapses to exactly that person (or empties).
-        update.assignedToUids = assignedTo ? [assignedTo] : [];
+      // Assign/unassign this step. An empty list clears it (back to the shared/
+      // unassigned pool). Surfaced in the My Tasks worklist.
+      // #192 (reopened 2026-11-18): the matter screen could only pick ONE owner -
+      // a single dropdown whose every change collapsed the list to that person -
+      // so a step shared by two people lost one of them the moment anyone touched
+      // it, and that person could no longer complete it. `assignedToUids` now
+      // sets the whole list; `assignedTo` stays the first entry so My Tasks
+      // routing, the matters filter and the steps/assignedTo index keep working.
+      // The list is always rewritten, never merged, so a removed person loses
+      // access instead of keeping it through a stale entry.
+      const added = owners ? owners.filter((u) => !prevOwners.includes(u)) : [];
+      const reassigning = owners !== undefined
+        && (owners.length !== prevOwners.length || added.length > 0 || owners[0] !== prevOwners[0]);
+      if (owners !== undefined) {
+        await assertStaffOwners(db, added, { staffRoles: STAFF_ROLES });
+        update.assignedTo = owners[0] ?? null;
+        update.assignedToUids = owners;
       }
 
       const batch = db.batch();
@@ -2569,16 +2583,11 @@ export async function patchStep(req, res) {
       // change takes effect immediately — no acceptance needed — but is audited so
       // everyone can see who routed the step to whom.
       if (reassigning) {
-        const nameFor = async (u) => {
-          if (!u) return null;
-          const s = await db.collection('users').doc(u).get();
-          const d = s.exists ? s.data() : null;
-          return d ? (d.name || d.fullName || d.email || 'User') : 'User';
-        };
-        const [fromName, toName] = await Promise.all([nameFor(prev.assignedTo), nameFor(update.assignedTo)]);
-        const comment = update.assignedTo
-          ? `Reassigned to ${toName}${prev.assignedTo ? ` (from ${fromName})` : ''}`
-          : `Unassigned${prev.assignedTo ? ` (was ${fromName})` : ''}`;
+        const names = await resolveUserNames([...prevOwners, ...owners]);
+        const list = (uids) => uids.map((u) => names[u] ?? 'User').join(', ');
+        const comment = owners.length
+          ? `Reassigned to ${list(owners)}${prevOwners.length ? ` (from ${list(prevOwners)})` : ''}`
+          : `Unassigned${prevOwners.length ? ` (was ${list(prevOwners)})` : ''}`;
         batch.set(db.collection('tasks').doc(taskId).collection('events').doc(), {
           type: 'STEP_REASSIGNED',
           fromStep: prev.stepNumber ?? parseInt(stepId, 10),
@@ -2591,15 +2600,17 @@ export async function patchStep(req, res) {
       }
       await batch.commit();
 
-      // Notify the new step assignee that work was routed to them (E07-S01).
-      if (reassigning && update.assignedTo) {
+      // Notify each person newly given the step (E07-S01) — not the ones who
+      // already had it, and not the person making the change.
+      const toTell = added.filter((u) => u !== req.user.uid);
+      if (toTell.length) {
         const t = (await db.collection('tasks').doc(taskId).get()).data() ?? {};
-        await notify({
-          recipientUid: update.assignedTo, actorUid: req.user.uid, type: 'info',
+        await Promise.all(toTell.map((recipientUid) => notify({
+          recipientUid, actorUid: req.user.uid, type: 'info',
           title: 'Step assigned to you',
           message: `${t.clientName ?? ''} · ${t.serviceName ?? t.workflowType ?? ''}: ${prev.title ?? `Step ${prev.stepNumber}`}`,
           taskId,
-        });
+        })));
       }
 
       return res.json({ success: true });
@@ -2622,6 +2633,7 @@ export async function patchStep(req, res) {
     await taskRef.update({ steps, updatedAt: new Date().toISOString() });
     res.json({ success: true });
   } catch (err) {
+    if (err && err.status) return res.status(err.status).json({ message: err.message });
     logger.error({ err: err }, 'patchStep error:');
     res.status(500).json({ message: 'Failed to update step' });
   }

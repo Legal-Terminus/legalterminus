@@ -59,15 +59,15 @@ yarn.lock
 backend/public/
 __pycache__/
 
-# Capacitor app bundle
-Portal/dist-mobile/
+# Capacitor copies MobileApp/web (the error page) here on every sync
 MobileApp/android/app/src/main/assets/public/
 
-# Firebase config for the Android app: downloaded per environment, never committed
+# Firebase config for the Android app (one app, com.legalterminus.app): downloaded, never committed
 MobileApp/android/app/google-services.json
 
 # E29: the environment switch's outputs (MobileApp/scripts/app-env.mjs) — per build, never committed
 MobileApp/.app-env.json
+MobileApp/web/app-env.js
 MobileApp/ios/App/Config/Environment.xcconfig
 
 # E29-S02: the iOS app. Generated or secret; everything else under MobileApp/ios is committed.

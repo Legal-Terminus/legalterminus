@@ -1,9 +1,8 @@
-// The mobile apps' environment switch (E29, owner decision 2026-11-11: QA first).
+// The mobile apps' environment switch (owner decisions 2026-11-11 and 2026-11-19).
 //
-// ONE value picks the environment a build targets: LT_APP_ENV = qa | production,
-// default qa. Everything origin-dependent is derived from MobileApp/environments.json
-// for that value — the app id and name, the API/site host, the Universal Link and
-// App Link host, the Firebase values baked into the Portal bundle, the bundle guard.
+// ONE app, the hosted Portal. ONE value picks which hosted Portal a build opens:
+// LT_APP_ENV = qa | production, default qa. The app id and name never change; the
+// environment gives only the Portal URL and the host used for emailed links.
 //
 // `npm run sync:*` records the choice in MobileApp/.app-env.json (ignored by git), so
 // a later Gradle or Xcode build follows what was synced instead of guessing.
@@ -43,16 +42,13 @@ export function describe(name, config = loadEnvironments()) {
   if (!e) throw new Error(`Unknown app environment "${name}"`);
   return {
     env: name,
-    appId: `${config.baseAppId}${e.appIdSuffix}`,
-    appName: e.appName,
+    appId: config.appId,
+    appName: config.appName,
     host: e.host,
-    web: { ...e.web },
-    forbidInBundle: [...e.forbidInBundle],
-    // The bundle must positively point at this environment's API.
-    requireInBundle: [e.web.VITE_API_BASE_URL],
+    portalUrl: e.portalUrl,
     linkPath: config.appLinks.path,
     appleTeamId: config.appLinks.appleTeamId,
-    androidSha256: [...(config.appLinks.androidSha256[name] ?? [])],
+    androidSha256: [...(config.appLinks.androidSha256 ?? [])],
   };
 }
 

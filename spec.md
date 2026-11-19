@@ -717,10 +717,21 @@ uploadedBy, uploadedByName, createdAt, uploadedAt?
 
 ### `taskSteps/{taskId}/steps/{stepId}`
 ```
-stepNumber, title, assignedTo, status (pending|active|completed|blocked|skipped),
+stepNumber, title, assignedTo, assignedToUids[], status (pending|active|completed|blocked|skipped),
 paymentGated, paymentOverride, isUrgent, startedAt?, completedAt?,
 deadline, delayReason?, completedBy?, auditLog[{action, by, at, note}]
 ```
+
+**Several assignees on one step (#192, reopened and fixed 2026-11-19).** `assignedToUids`
+lists everyone who owns the step; `assignedTo` is its first entry (the primary). Any one of
+them may complete the step, and whoever finishes first moves the matter on. They are set:
+- for new matters, per step of the Service — on the Service page (**Step Settings →
+  Assignee**, tick several people) or in the workflow editor (**Who does this? → Specific
+  people**). Stored on the definition step as `defaultAssigneeUids` + `defaultAssigneeUid`
+  (= first). The list counts only while its first entry equals `defaultAssigneeUid`; a screen
+  that changes only the single field replaces the list.
+- on an existing matter, by an admin or manager: **Step owner** on the current step (tick or
+  untick people; changes apply at once). Only staff (admin, manager, team member) can be owners.
 
 ### `documents/{taskId}/files/{docId}`
 ```
@@ -860,10 +871,10 @@ updatedAt, updatedBy
     the admins are emailed, the Users page marks the person "Deletion requested", and an Admin
     completes it with the normal delete within 30 days. Records the firm must keep (matters,
     invoices, payments, filed documents) are kept.
-  - **Environments** (D7, 2026-11-11): both apps are built for **QA by default**; a production build is
-    chosen explicitly at build time. A QA build is a separate app named "Legal Terminus QA"
-    (`com.legalterminus.app.qa`) that installs next to the production app and accepts only the QA
-    test accounts.
+  - **Environments** (D7, 2026-11-11, revised 2026-11-19): there is **one app**, "Legal Terminus"
+    (`com.legalterminus.app`), which opens the hosted Portal. It is pointed at QA
+    (`legal-terminus-qa.web.app/portal/`, QA test accounts only) until the owner switches it to
+    production (`legalterminus.com/portal/`) with a new store build.
 - **Phase 1 workflow scope**: Company Incorporation only. All other services (Trademark, GST, UDYAM) follow in Phase 2 as XState config files.
 
 ### Workflow Engine (XState v5)
@@ -896,7 +907,7 @@ updatedAt, updatedBy
 - `Portal/` web build → Firebase Hosting (same project as public website)
 - `backend/` → Cloud Run (`asia-south2`, service `legal-terminus-qa`, 0–5 instances, 512Mi)
 - CI/CD via `.github/workflows/firebase-preview-qa.yml`
-- **CORS** (Phase 2): the allowlist is exact, in `backend/src/config/corsOrigins.js`. A native app's origin is added per deployment through `CORS_ORIGINS`: QA has `https://localhost` (Capacitor on Android), `capacitor://localhost` (Capacitor on iOS — accepted as that one exact string, E29-S03) and `http://localhost:5173`; production gets the apps' origins when a release build is ready.
+- **CORS** (Phase 2): the allowlist is exact, in `backend/src/config/corsOrigins.js`: the firm's own sites only. **No `localhost` origin in any environment** (2026-11-19), and `CORS_ORIGINS` cannot add one. The mobile apps open the hosted Portal, so their origin is the site; local development uses the Vite `/api` proxy.
 
 ## Website redesign in Theme C (#209, E-25)
 

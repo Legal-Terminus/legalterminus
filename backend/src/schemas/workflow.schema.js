@@ -189,6 +189,13 @@ const stepSchema = z.object({
   type: z.enum(['step', 'payment_gate', 'branch', 'final']),
   assignedRole: z.string().trim().max(60).optional(),
   defaultAssigneeUid: z.string().trim().max(200).optional(),
+  // #192 (reopened 2026-11-18): the step's FULL default-assignee list. Step
+  // objects are not strict, so leaving this out meant every Service save from the
+  // workflow editor silently stripped it — the step fell back to one assignee
+  // (`defaultAssigneeUid`) and new matters gave the others no access at all. Same
+  // bug class as condition/form/actions (2026-11-05). The controller normalises
+  // it: deduped, and `defaultAssigneeUid` = its first entry.
+  defaultAssigneeUids: z.array(z.string().trim().min(1).max(200)).max(20).optional(),
   effects: z.array(z.string().trim().min(1).max(60)).max(20).optional(),
   dueRule: stepDueRuleSchema.optional(),
   actions: z.array(stepActionSchema).max(20).optional(),

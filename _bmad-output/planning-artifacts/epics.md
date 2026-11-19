@@ -4148,14 +4148,20 @@ Firebase's sign-up call is answered by the specs, so no account is created.
 (E-26), for the same roles, installable from the App Store in India. The website must not change
 in any way, and nothing on the live site may point at the app until its launch is approved.
 
-**Status (2026-11-11)**: 🔄 In progress on branch `feat/ios-app` (not yet merged). The code-side of
-S02–S09 and S11 is built; the iOS app builds for the simulator and opens on the sign-in page; the Android QA app builds (debug and minified release). Everything that needs the firm's
-Apple Developer account, Firebase registrations or a real iPhone is open — the owner checklist is
-in `docs/mobile-release.md`. Both apps point at **QA** by default (D7).
+**Status (2026-11-19)**: 🔄 In progress. **Redesigned to one app on the hosted Portal (D7, owner
+2026-11-19, story E29-S13).** Both apps are `com.legalterminus.app`, "Legal Terminus", and open
+`https://legal-terminus-qa.web.app/portal/` until they are switched to
+`https://legalterminus.com/portal/`. Nothing of the Portal is bundled; no localhost or
+`capacitor://` origin is allowed anywhere. The QA app `com.legalterminus.app.qa` (TestFlight builds
+5–7) and the split into `iOSApp/` / `iOSAppProd/` (branch `feat/ios-android-app-split`, not merged)
+are retired. Everything that needs the firm's Apple Developer account, Firebase registrations or a
+real iPhone is open — the owner checklist is in `docs/mobile-release.md`. **Next steps for Akash:
+E29-S13 below.**
 
 **Why this is an epic.** It is the Android epic again on a second platform, but four things are
-different enough to be their own stories: the iOS WebView serves the app from
-`capacitor://localhost`, which the API's allowlist refuses by name today; App Store rules force a
+different enough to be their own stories: the iOS WebView served a bundled app from
+`capacitor://localhost`, which the API's allowlist refused by name (resolved 2026-11-19 by not
+bundling at all: the app opens the hosted Portal, D7); App Store rules force a
 decision on sign-in (guideline 4.8) and require that account deletion can be *started inside the
 app* (5.1.1(v)) — which Android's open point D2 also needs, so it is built once here; emailed links
 need Apple's Universal Links instead of Android's App Links; and the build is made on a Mac in
@@ -4185,30 +4191,103 @@ Xcode 16, a real iPhone, and the decisions below.
 | D4 | **First release scope.** | **Decided 2026-11-10:** same as Android: no push notifications (E29-S12 = E26-S06), iPhone only (no iPad layout work; `preferredContentMode: 'mobile'`). |
 | D5 | **Bundle id.** | **Decided 2026-11-10: `com.legalterminus.app`**, the same as Android, if it is free in the Apple portal. If not, `com.legalterminus.ios` — record it here; it cannot change after the first upload. |
 | D6 | **Apple sign-in on the website and Android.** Only the iOS app is required to offer it. | **Decided 2026-11-10: on the website, yes** — someone who signed up with Apple on an iPhone (possibly with "Hide my email", so no password and an address they never see) must be able to sign in on legalterminus.com too. **On Android, hidden** for the first release. |
-| D7 | **Which environment the apps talk to.** | **Decided by the owner 2026-11-11: QA first, for both apps.** One build-time switch, `LT_APP_ENV` (`qa` default, `production` for a release), drives everything environment-specific from `MobileApp/environments.json`. A QA build is a separate app — **"Legal Terminus QA", `com.legalterminus.app.qa`** — so it installs next to the production app and is never mistaken for it. This supersedes D5's "same bundle id for every build": the production id stays `com.legalterminus.app`; QA gets the `.qa` suffix on both platforms. |
+| D7 | **Which environment the apps talk to, and how.** | **Owner, 2026-11-11 and 2026-11-19: ONE app, pointed at QA first, then switched to production; it opens the hosted Portal.** The app (`com.legalterminus.app`, "Legal Terminus", D5) loads `https://legal-terminus-qa.web.app/portal/` or `https://legalterminus.com/portal/` (`server.url`); one build-time switch, `LT_APP_ENV`, picks which, from `MobileApp/environments.json`. No Portal bundle, no bundle guard, no app origin: the page is the site, so CORS is not involved, and `localhost` is removed from every allowlist (API and both buckets). **Reverted 2026-11-19:** the separate QA app `com.legalterminus.app.qa` "Legal Terminus QA" (built 2026-11-11), the bundled Portal (`vite build --mode mobile`, `check-bundle.mjs`), the `capacitor://localhost` / `https://localhost` origins, and the `iOSApp/` + `iOSAppProd/` + iPad work on `feat/ios-android-app-split` — each went against the instruction of one app that is switched. BeatMyEMI's app (`server.url = https://app.beatmyemi.com`) passed App Store review with this design. |
 
 | Story | What | Status |
 |---|---|---|
 | E29-S01 | Accounts and decisions: Apple Developer org account, App Store Connect access, D1–D5 recorded, GitHub issue numbers | ⏳ Not started (👤) — D7 recorded 2026-11-11 |
 | E29-S02 | iOS platform in `MobileApp/`: `cap add ios`, bundle id, signing, `GoogleService-Info.plist` ignored, usage strings, scripts, QA build runs on the simulator | 🔄 Code done (simulator build); signing waits on S01 |
-| E29-S03 | The app's origin on the API and the buckets: `capacitor://localhost` allowed exactly, QA first, production with the release (security change) | 🔄 Code + QA workflow done; QA bucket CORS and production wait for the owner |
+| E29-S03 | ~~The app's origin on the API and the buckets~~ — **superseded by D7 (2026-11-19)**: the app opens the hosted Portal, so it has no origin of its own. Replaced by "no localhost anywhere" in E29-S13 | ✅ Superseded |
 | E29-S04 | Sign-in on iOS: native Google (same flow as Android, iOS plugin set-up), email, sign-in link; session survives restart; offline "try again"; refused-account message | 🔄 Project set-up done; needs the plist (S01) and the device checklist |
 | E29-S05 | Files on iOS: View and share, uploads from Files / Photos / Camera, exports, image zoom | 🔄 Audit done, no code needed; device checklist open |
 | E29-S06 | Shell behaviour: safe areas, keyboard, status bar, overscroll, swipe back, external links in Safari, Razorpay inside WKWebView, icon and splash | 🔄 Code done; device checklist open |
 | E29-S07 | Emailed links open the app: `apple-app-site-association`, Associated Domains; QA host only until launch | 🔄 Code done (per-environment host); needs Team ID + fingerprints |
 | E29-S08 | Account deletion started in the app (closes Android D2 too) | 🔄 Code + tests done; Playwright spec written, not yet run |
-| E29-S09 | `docs/mobile-release.md` + the Android build job in GitHub Actions + the production build guard | 🔄 Guard, switch and job done; secrets and the dry run are the owner's |
+| E29-S09 | `docs/mobile-release.md` + the Android build job in GitHub Actions (the bundle guard is gone with the bundle, D7; the job now checks the synced app opens the production Portal) | 🔄 Switch and job done; secrets and the dry run are the owner's |
 | E29-S10 | App Store Connect: listing, privacy labels, age rating, reviewer account, screenshots, review notes; TestFlight on QA values; submission; phased release | ⏳ Not started (👤 for the console) |
 | E29-S11 | Sign in with Apple: required by guideline 4.8 because Google is offered; Firebase provider, Apple key, name-on-first-sign-in and "Hide my email" handling; the website offers it too (parity) | 🔄 Code done (web switched off until the provider exists); Apple portal + Firebase are the owner's |
 | E29-S12 | Push notifications (= E26-S06, both platforms) | ⏸ Deferred |
+| E29-S13 | **One app on the hosted Portal** (D7, 2026-11-19): `server.url`, one id, no bundle, no localhost in any allowlist; Akash's Portal fixes kept; QA-pointed build 8 on TestFlight and Internal testing | 🔄 Code done on `fix/mobile-hosted-portal`; Akash's steps below |
 
-**Order.** S01 → S02 → S03 (QA part) → S04 + S11 together, S05, S06 in any order → S07 → S08 → S09 → S10.
+**Order.** S13 first (it changes what every other story runs on). Then S01 → S04 + S11 together, S05, S06 in any order → S07 → S08 → S09 → S10.
 S08 and S09 touch Android too and can be done by someone else in parallel from S03 on.
+
+### E29-S13 — One app on the hosted Portal (owner decision 2026-11-19)
+
+**Why.** The owner asked for one app that is pointed at QA first and then switched to production.
+What was built instead was a separate QA app (`com.legalterminus.app.qa`), a Portal bundled into the
+app (which needed `capacitor://localhost` and `https://localhost` on the API and the buckets, and a
+bundle guard), and — on Akash's branch — two app folders (`iOSApp/` QA, `iOSAppProd/` production)
+plus an iPad layout (against D4). Uploads in the iPhone app failed (Akash's D-5) because the QA
+bucket had no `capacitor://localhost` entry: a symptom of the bundled design, not of the bucket.
+
+**What changed (branch `fix/mobile-hosted-portal`)**
+- `MobileApp/capacitor.config.ts`: `server.url` = the environment's Portal, `allowNavigation` = its
+  host only, `webDir: 'web'` (just `error.html` and a placeholder `index.html`), `errorPath:
+  'error.html'` (no connection; Android WebView < 111). One `appId` / `appName` for both environments.
+- `MobileApp/environments.json`: `appId`, `appName`, and per environment only `host` + `portalUrl`.
+- `scripts/app-env.mjs`: no Portal values any more; writes `web/app-env.js` for "Try again".
+  `scripts/check-bundle.mjs` and its fixtures deleted. Gradle: no `applicationIdSuffix`.
+- Portal: `vite build --mode mobile` and `build:mobile` removed (the app opens the normal build);
+  `viewport-fit=cover` is set at runtime inside the app only (`initNative`); policy links are plain
+  relative links. Kept from Akash's branch: 16px fields on iOS (no focus-zoom), the account
+  button's accessible name, Chat Send above the keyboard, the friendly upload error, the phone-width
+  Playwright adjustments, `contentInset: 'never'` and `Keyboard.resize: 'native'`.
+- **No localhost in any allowlist.** `corsOrigins.js` allows no `localhost` / loopback origin in
+  any environment and refuses one in `CORS_ORIGINS`; the `capacitor://` exception is gone; both
+  deploy workflows stop setting `CORS_ORIGINS`. Local development calls the API same-origin through
+  the Vite `/api` proxy (`VITE_API_BASE_URL` empty). `storage-cors.json` (production bucket) and
+  the new `storage-cors.qa.json` (QA bucket) list only the sites' own origins.
+
+**Akash — what to do next, in order**
+1. **Stop using `feat/ios-android-app-split` and the "Legal Terminus QA" app.** Do not merge the
+   branch; its Portal fixes are already on `main` with this story. Keep your QA reports there for
+   reference; the defects they list (D-1 to D-6) are re-checked under the new design in step 5.
+2. Pull `main`, then `cd MobileApp && npm ci && npm run sync` (QA is the default). Open the iOS
+   project (`npm run open:ios`); Bundle Identifier must read `com.legalterminus.app`, Display Name
+   "Legal Terminus". The app must open `https://legal-terminus-qa.web.app/portal/login`.
+3. **Port your XCUITests** (`iOSApp/ios/App/AppUITests/LaunchAndSignInUITests.swift`) into
+   `MobileApp/ios/App` as a UI-test target, without the iPad window code. They now drive the hosted
+   QA Portal; the QA accounts (`qa-*@legalterminus.test`) are unchanged.
+4. **Firebase:** the iOS app is `com.legalterminus.app` only. Put its `GoogleService-Info.plist` in
+   `~/lt-android-release/keys/qa/` (and `production/`, the same file). `app-env.mjs` refuses a
+   plist for any other bundle id, including the old `.qa` one.
+5. **Re-run your QA rounds on the simulator and a real iPhone, QA-pointed build:** sign-in for all
+   five roles, Google prompt, session after restart, offline start (the app must show
+   `error.html`, and "Try again" must reopen the Portal), Chat Send with the keyboard open, form
+   fields not zooming, header spacing (no doubled safe area), **upload from Photos and Files — D-5
+   must now pass with no bucket change**, View and share a document, the Razorpay checkout and a
+   UPI hand-off (they must open outside the app). Record results in this story.
+6. **Build 8** (the next number for both platforms): iOS → TestFlight of the app "Legal Terminus"
+   (`com.legalterminus.app`) once its App Store Connect record exists (owner checklist 4);
+   Android → `npm run sync:android`, `./gradlew bundleRelease`, upload to the **Internal testing**
+   track of the existing Play app. Neither is sent for review.
+7. **Never publish Android version code 3** (bundled, runs at `https://localhost`, now refused by
+   production). When the owner says to switch to production: `LT_APP_ENV=production npm run sync`,
+   the next build number, and that build replaces version code 3 in the Play Production release
+   and goes to App Store review.
+8. Any Portal change you need for the app: make it in the Portal, guarded by
+   `Capacitor.isNativePlatform()`; it reaches the QA app when it merges, without a new app build.
+   A new **native plugin** needs a new app build, and the Portal must check
+   `Capacitor.isPluginAvailable()` before using it.
+
+**Acceptance criteria**
+- One app id (`com.legalterminus.app`) and one name everywhere; no `.qa` id in code or config.
+- A QA-pointed build opens `https://legal-terminus-qa.web.app/portal/`; a production-pointed build
+  opens `https://legalterminus.com/portal/`; the switch is only `LT_APP_ENV`.
+- No `localhost`, `127.0.0.1` or `capacitor://` origin is allowed by the QA or production API, or by
+  either bucket (checked with preflights), and `corsOrigins.js` cannot be configured to allow one.
+- On a real iPhone, a QA-pointed build uploads a document from Photos (D-5 closed).
 
 **Implementation record (2026-11-11, branch `feat/ios-app`, #268 iOS / #267 Android).** Per story:
 what was built, what is verified, and what is still open. LT keeps story status here, not in
 separate story files. The owner checklist (every Apple / Firebase / Play / GitHub / Cloud step) is
 `docs/mobile-release.md` → "Owner checklist".
+
+> **Superseded 2026-11-19 (E29-S13):** the paragraphs below describe the bundled design (a `.qa`
+> app, `Portal/.env.mobile.local`, the bundle guard, `capacitor://localhost` on the API). They are
+> kept as the record of what was built on 2026-11-11; the current design is E29-S13 and
+> `docs/mobile-release.md`.
 
 *The environment switch (D7, all stories).* `MobileApp/environments.json` describes QA and
 production (app id suffix, name, host, the Portal values that define the environment, the guard's
@@ -8061,6 +8140,33 @@ Admin and Manager in Settings.
   off/empty unchanged, empty stays empty, no markup injection, schema, only the client's
   notice); `email-templates.spec.ts` (+4: admin/manager allowed, team/client 403;
   manager round-trip, tags stripped, 400s; manager UI edit + switch save; admin sees it).
+
+### Several assignees on one step — reopened again (2026-11-19, #192) — E10-S01 🔄 In review
+
+The firm wrote (18 Nov): Step settings do not let them add more than one assignee, and when a
+step has several assignees they cannot complete it. Both were real; the September fixes were
+right in the parts they touched but three other writers undid them.
+- **Cause 1 (both symptoms):** saving a Service from the workflow editor dropped every step's
+  assignee list — the save schema did not list `defaultAssigneeUids`. The step went back to one
+  person, so on new matters the others were not assignees and got no Complete button (and the
+  server refused them).
+- **Cause 2 (symptom 1):** after **Save step settings** on the Service page, the picker showed
+  only the first person (the save response left the list out), and the next change built on
+  that one.
+- **Cause 3 (both):** on a matter, **Step owner** was a single dropdown. It could hold one
+  person, and using it on a shared step removed everyone else — who then could not complete it.
+- **Fix:** the list is kept on save and returned after it; the workflow editor gains **Who does
+  this? → Specific people** (tick several); the matter's **Step owner** becomes a tick-list
+  (admin/manager; changes apply at once; each newly added person is notified). Any one owner
+  completes the step. One rule keeps the two stored fields consistent — see architecture.md.
+  The step-owner endpoint gains a role guard and a strict schema; owners must be staff.
+- **Existing data:** a Service saved in the editor since September has lost its lists — re-tick
+  the people (either screen) and save. Matters already open keep their steps as created; add
+  the missing person with **Step owner** on the matter.
+- Tests: `backend/src/__tests__/stepAssignees.test.js` (6); `step-multi-assignee.spec.ts` +6
+  (save response, editor save keeps the list, editor picker, Step Settings after save, step-owner
+  API incl. client 400 / team 403, add a second owner on the matter screen and that person
+  completes the step).
 
 
 ### Quarterly GST matters are quarterly everywhere; the period is in every email subject (2026-11-19, #219 follow-up of 16 Nov) — E-07 🔄 In review

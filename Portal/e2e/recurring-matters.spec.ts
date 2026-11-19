@@ -185,7 +185,7 @@ test('#167: the matter screen offers a Repeats control that persists', async ({ 
 
 test('#167: Create Matter offers the Repeats option', async ({ adminPage }) => {
   await adminPage.goto('tasks');
-  await adminPage.getByRole('button', { name: /create matter/i }).first().click();
+  await adminPage.getByRole('button', { name: /^create( matter)?$/i }).first().click(); // phones label it just "Create"
   const select = adminPage.getByLabel('Repeats', { exact: true });
   await expect(select).toBeVisible();
   await select.selectOption('monthly');

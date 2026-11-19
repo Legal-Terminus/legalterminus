@@ -412,6 +412,14 @@ layer(base);
    insets are the notch / Dynamic Island at the top and the home indicator at the bottom
    (zero on phones without them, and on Android). */
 html[data-native] { overscroll-behavior-y: none; }
+/* D-1 (iPhone QA, 2026-11-17) — iOS zooms into any field with a font under 16px when it is
+   focused, then scrolls the page to it: with the keyboard open the page was ~14% larger and
+   panned sideways (left margin gone, right edge cut off). 14px fields / 16px = 1.14. Fields in
+   the iPhone app are 16px, so there is no zoom. Android and the website are unchanged. */
+html[data-native="ios"] input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']),
+html[data-native="ios"] select,
+html[data-native="ios"] textarea,
+html[data-native="ios"] [contenteditable='true'] { font-size: 16px; }
 html[data-native] .app-topbar {
   padding-top: env(safe-area-inset-top);
   height: calc(3.5rem + env(safe-area-inset-top));

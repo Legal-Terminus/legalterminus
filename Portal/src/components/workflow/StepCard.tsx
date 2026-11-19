@@ -3,6 +3,7 @@ import StepConditionEditor from './StepConditionEditor';
 import StepDueRuleEditor from './StepDueRuleEditor';
 import { Plus, Trash2, ChevronUp, ChevronDown, ChevronRight, Crosshair, AlertTriangle } from 'lucide-react';
 import FieldLabel from '../common/FieldLabel';
+import PeoplePicker, { type PickablePerson } from '../common/PeoplePicker';
 import { useConfirm } from '../common/confirmContext';
 import { LabeledField, StepNumberSelect, WhatHappensNext } from './stepEditorShared';
 import {
@@ -27,7 +28,7 @@ const STAFF_ROLES = ROLES.filter((r) => r.staff);
  * step, rendered at the top of the card. The workspace editor passes none, so
  * its behaviour is unchanged.
  */
-export default function StepCard({ step, index, total, stages, allSteps, isActive, cardRef, errors, expanded = true, onToggleExpanded, onActivate, onLocate, onAddAfter, onPatch, onRemove, onMove }: {
+export default function StepCard({ step, index, total, stages, allSteps, isActive, cardRef, errors, expanded = true, onToggleExpanded, onActivate, onLocate, onAddAfter, onPatch, onRemove, onMove, people }: {
   step: WorkflowStepDef;
   index: number;
   total: number;
@@ -52,8 +53,12 @@ export default function StepCard({ step, index, total, stages, allSteps, isActiv
   onPatch: (next: Partial<WorkflowStepDef>) => void;
   onRemove: () => void;
   onMove: (dir: -1 | 1) => void;
+  /** #192: team members offered by "Who does this? → Specific people". Omitted → option hidden (existing picks are still shown and kept). */
+  people?: PickablePerson[];
 }) {
   const [showAdvanced, setShowAdvanced] = useState(false);
+  // #192: "Specific people" chosen but nobody ticked yet — keep the picker open.
+  const [pickingPeople, setPickingPeople] = useState(false);
   const confirm = useConfirm();
   const handleRemove = async () => {
     const ok = await confirm({
@@ -98,7 +103,22 @@ export default function StepCard({ step, index, total, stages, allSteps, isActiv
   };
 
   // Who-does-this select value.
-  const whoValue = step.defaultAssigneeUid === '__CLIENT__' ? 'client' : (step.assignedRole ? 'role' : 'team');
+  // #192 (reopened 2026-11-18): this editor had no way to name people at all —
+  // only "our team (anyone / a role)" or the client — and a step that DID name
+  // several people showed as "Our team (anyone)". Saving also dropped the list
+  // (the server schema did not know the field). Now: a fourth choice with a
+  // checkbox list, written as BOTH fields (list + its first entry as primary).
+  const namedPeople = step.defaultAssigneeUid === '__CLIENT__' ? []
+    : (step.defaultAssigneeUids?.length && step.defaultAssigneeUids[0] === step.defaultAssigneeUid
+      ? step.defaultAssigneeUids
+      : (step.defaultAssigneeUid ? [step.defaultAssigneeUid] : []));
+  const whoValue = step.defaultAssigneeUid === '__CLIENT__' ? 'client'
+    : (namedPeople.length || pickingPeople) ? 'people'
+      : (step.assignedRole ? 'role' : 'team');
+  const setPeople = (next: string[]) => { setPickingPeople(true); onPatch({
+    defaultAssigneeUids: next.length ? next : undefined,
+    defaultAssigneeUid: next[0] ?? undefined,
+  }); };
 
   return (
     <div
@@ -237,24 +257,43 @@ export default function StepCard({ step, index, total, stages, allSteps, isActiv
             waits for the client to pay — so asking "who does this?" invited a
             meaningless choice. Hidden for gates. */}
         {kind !== 'payment' && (
-          <LabeledField label="Who does this?" hint="Who owns the step: your team (by role), or the client.">
+          <LabeledField label="Who does this?" hint="Who owns the step: your team (anyone, a role, or specific people — any one of them can complete it), or the client.">
             <select className={inputCls} value={whoValue} onChange={(e) => {
               const v = e.target.value;
-              if (v === 'client') onPatch({ defaultAssigneeUid: '__CLIENT__', assignedRole: undefined });
-              else if (v === 'role') onPatch({ defaultAssigneeUid: undefined, assignedRole: step.assignedRole || 'team_member' });
-              else onPatch({ defaultAssigneeUid: undefined, assignedRole: undefined });
+              // Every choice rewrites BOTH assignee fields, so a stale list can
+              // never outlive the choice that replaced it.
+              setPickingPeople(v === 'people');
+              if (v === 'client') onPatch({ defaultAssigneeUid: '__CLIENT__', defaultAssigneeUids: undefined, assignedRole: undefined });
+              else if (v === 'role') onPatch({ defaultAssigneeUid: undefined, defaultAssigneeUids: undefined, assignedRole: step.assignedRole || 'team_member' });
+              else if (v === 'people') onPatch({ defaultAssigneeUid: undefined, defaultAssigneeUids: undefined, assignedRole: undefined });
+              else onPatch({ defaultAssigneeUid: undefined, defaultAssigneeUids: undefined, assignedRole: undefined });
             }}>
               <option value="team">Our team (anyone)</option>
               <option value="role">Our team (specific role)</option>
+              {(people || whoValue === 'people') && <option value="people">Specific people</option>}
               <option value="client">The client</option>
             </select>
+          </LabeledField>
+        )}
+
+        {kind !== 'payment' && whoValue === 'people' && (
+          <LabeledField label="Which people?" hint="Everyone ticked gets this step on new matters. Any one of them can complete it; the first ticked is the main owner.">
+            <PeoplePicker
+              label={`Step ${step.stepNumber} people`}
+              selected={namedPeople}
+              people={people ?? []}
+              emptyLabel="Nobody yet"
+              onChange={setPeople}
+            />
           </LabeledField>
         )}
 
         {/* Story 28.3 (S28c): this was a free-text box asking for a code slug.
             A typo ("team-member") produced a step no role matched, silently.
             Roles come from the role service — never hardcoded strings. */}
-        {whoValue === 'role' && (
+        {/* A legacy step may name people AND a role; show the role too rather
+            than hide a setting that still applies. */}
+        {(whoValue === 'role' || (whoValue === 'people' && !!step.assignedRole)) && (
           <LabeledField label="Which role?" hint="The team role that owns this step.">
             <select
               className={inputCls}

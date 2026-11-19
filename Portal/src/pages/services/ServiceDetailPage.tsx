@@ -234,7 +234,8 @@ function StepSettingsEditor({ definitionId }: { definitionId: string }) {
   const { data: staff = [] } = useQuery({
     queryKey: ['portalUsers', 'staff'],
     queryFn: getAllUsers,
-    select: (users: PortalUser[]) => users.filter((u) => u.role !== 'client'),
+    // #168/#192: staff only — a view-only professional cannot do a step's work.
+    select: (users: PortalUser[]) => users.filter((u) => u.role !== 'client' && u.role !== 'professional'),
     staleTime: 60_000,
   });
 
@@ -519,7 +520,8 @@ function AssignmentsEditor({
   const { data: staff = [] } = useQuery({
     queryKey: ['portalUsers', 'staff'],
     queryFn: getAllUsers,
-    select: (users: PortalUser[]) => users.filter((u) => u.role !== 'client'),
+    // #168/#192: staff only — a view-only professional cannot do a step's work.
+    select: (users: PortalUser[]) => users.filter((u) => u.role !== 'client' && u.role !== 'professional'),
     staleTime: 60_000,
   });
 

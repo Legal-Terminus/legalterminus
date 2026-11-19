@@ -59,6 +59,22 @@ export default function DiscussionPanel({ taskId, isStaff }: { taskId: string; i
     }, delay);
   };
 
+  // iOS opens the keyboard AFTER the 300ms nudge above, so the page was resized too late and Send
+  // stayed behind the keyboard. Nudge again whenever the keyboard or visual viewport really changes.
+  useEffect(() => {
+    const nudge = () => keepSendInView(50);
+    const vv = window.visualViewport;
+    vv?.addEventListener('resize', nudge);
+    window.addEventListener('keyboardDidShow', nudge);
+    window.addEventListener('resize', nudge);
+    return () => {
+      vv?.removeEventListener('resize', nudge);
+      window.removeEventListener('keyboardDidShow', nudge);
+      window.removeEventListener('resize', nudge);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // #200: staff get suggestions when they type "@". Never fetched for a client.
   const { data: mentionable = [] } = useQuery({
     queryKey: ['mentionable', taskId],
@@ -170,7 +186,7 @@ export default function DiscussionPanel({ taskId, isStaff }: { taskId: string; i
             Type @ and pick a colleague to notify them by email.
           </p>
         )}
-        <div ref={sendRowRef} className="flex items-center justify-between gap-3">
+        <div ref={sendRowRef} className="flex items-center justify-between gap-3 scroll-mb-[calc(4.5rem+env(safe-area-inset-bottom,0px))] md:scroll-mb-0">
           {isStaff ? (
             <label className="inline-flex items-center gap-2 text-xs text-ink-muted cursor-pointer">
               <input
@@ -208,12 +224,16 @@ function MessageBubble({ m, isStaff, taskId }: { m: MatterMessage; isStaff: bool
   // person may edit (a null uid turns the store off for every other bubble).
   const editDraft = useCommentDraft(taskId, `chat-edit-${m.id}`, m.canEdit && !m.deleted ? uid : null);
   const [editing, setEditing] = useState(() => !!editDraft.initial);
+  // The editor can report one last change while it closes (Cancel / Save). That
+  // must not write the draft back after it was cleared, or the edit reopens on
+  // the next visit to Chat. Changes count only while editing.
+  const editingRef = useRef(editing);
   const [draft, setDraft] = useState(() => editDraft.initial || m.body);
   const refresh = () => queryClient.invalidateQueries({ queryKey: ['messages', taskId] });
 
   const save = useMutation({
     mutationFn: () => editMessage(taskId, m.id, draft.trim()),
-    onSuccess: () => { setEditing(false); editDraft.clear(); refresh(); toast.success('Message updated.'); },
+    onSuccess: () => { editingRef.current = false; setEditing(false); editDraft.clear(); refresh(); toast.success('Message updated.'); },
     onError: (e: Error) => toast.error(e.message || 'Could not edit the message.'),
   });
   const remove = useMutation({
@@ -234,9 +254,10 @@ function MessageBubble({ m, isStaff, taskId }: { m: MatterMessage; isStaff: bool
     if (ok) remove.mutate();
   };
 
-  const startEdit = () => { setDraft(m.body); setEditing(true); };
-  const cancelEdit = () => { setEditing(false); editDraft.clear(); };
+  const startEdit = () => { editingRef.current = true; setDraft(m.body); setEditing(true); };
+  const cancelEdit = () => { editingRef.current = false; setEditing(false); editDraft.clear(); };
   const changeDraft = (v: string) => {
+    if (!editingRef.current) return;
     setDraft(v);
     // An unchanged message is not a draft worth restoring.
     if (v === m.body) editDraft.clear(); else editDraft.save(v);
