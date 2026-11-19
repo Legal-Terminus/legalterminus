@@ -10,7 +10,7 @@ import {
 import { runWorksheetReminderSweep } from '../services/worksheetReminders.service.js';
 import { syncSheetFromMatters } from '../services/gstReturnSheetSync.service.js';
 import { invalidateGstReturnServiceKeys } from '../services/gstMatterTags.service.js';
-import { matterOwnedDateFields } from '../services/gstReturnSheet.service.js';
+import { matterOwnedDateFields, matterIdentityOf, checkMatterLink } from '../services/gstReturnSheet.service.js';
 import {
   secretFieldsOf, splitSecretValues, secretWrites, secretsSetOf, withoutSecrets, sealSecret, openSecret,
 } from '../services/worksheetSecrets.service.js';
@@ -81,6 +81,31 @@ async function loadRecord(db, sheet, id, tx) {
  */
 const matterLink = (sheet, values) => (BOOKS[sheet.book]?.sync && typeof values?.matter === 'string' && values.matter
   ? { sourceMatterId: values.matter } : {});
+
+/**
+ * #294 — the wrong-record fix, at the point of linking. Picking a matter in a
+ * row's Matter cell used to link ANY GST matter to ANY row, and the sync then
+ * wrote that matter's data over the row (see gstReturnSheet.service.js, "which
+ * row is a matter's"). Now the matter must be a return of this sheet's kind
+ * (Monthly / Quarterly), for this row's client and return period, and not
+ * already have its own row. `rowValues` are the row's values after the edit;
+ * `recordId` the row being edited (null when adding). Throws a 400 / 409.
+ */
+async function guardMatterLink(db, sheet, matterId, rowValues, recordId = null) {
+  if (!BOOKS[sheet.book]?.sync || typeof matterId !== 'string' || !matterId) return;
+  const t = await db.collection('tasks').doc(matterId).get();
+  if (!t.exists) throw httpError(400, 'That matter no longer exists.');
+  const task = { id: t.id, ...t.data() };
+  const client = task.clientUid ? ((await db.collection('users').doc(task.clientUid).get()).data() ?? null) : null;
+  const linked = await db.collection(RECORDS).where('book', '==', sheet.book).where('sourceMatterId', '==', matterId).limit(5).get();
+  const bad = checkMatterLink({
+    sheetFrequency: SHEETS[sheet.key]?.frequency ?? null,
+    row: { values: rowValues },
+    identity: matterIdentityOf({ task, client }),
+    otherRowIds: linked.docs.map((d) => d.id).filter((id) => id !== recordId),
+  });
+  if (bad) throw httpError(bad.status, bad.message, { code: 'MATTER_LINK' });
+}
 
 const reminderDueFor = (bookKey, fields, values) => {
   const r = BOOKS[bookKey]?.reminder;
@@ -209,6 +234,7 @@ export async function createRecord(req, res) {
     const values = dropNulls(cleanRecordValues(fields, split.values));
     if (Object.keys(values).length === 0 && Object.keys(split.secrets).length === 0) return res.status(400).json({ message: 'Fill in at least one column.' });
     await checkMatters(db, sheet, fields, values);
+    await guardMatterLink(db, sheet, values.matter, values);
     const sealed = secretWrites(sheet.book, { values, incoming: split.secrets });
     const sheets = cleanMemberships(sheet, [sheet.key, ...(req.body.sheets ?? [])]);
     const recordKey = sheetRecordKey(sheet, values);
@@ -250,6 +276,14 @@ export async function updateRecord(req, res) {
     const split = splitSecretValues(sheet.book, req.body.values ?? {});
     const patch = req.body.values ? cleanRecordValues(fields, split.values) : {};
     await checkMatters(db, sheet, fields, patch);
+    if (BOOKS[sheet.book]?.sync && typeof patch.matter === 'string' && patch.matter) {
+      // #294: only a NEW link is checked — re-saving a row with its own matter is not.
+      const current = await loadRecord(db, sheet, req.params.id);
+      if (!current) return res.status(404).json({ message: 'Record not found' });
+      if (patch.matter !== current.data.sourceMatterId) {
+        await guardMatterLink(db, sheet, patch.matter, { ...(current.data.values ?? {}), ...patch }, current.ref.id);
+      }
+    }
     const sheets = req.body.sheets ? cleanMemberships(sheet, req.body.sheets) : null;
     const now = new Date().toISOString();
 
@@ -262,7 +296,7 @@ export async function updateRecord(req, res) {
       const owned = matterOwnedDateFields(rec.data, patch);
       if (owned.length) {
         const label = fields.find((fd) => fd.key === owned[0])?.label ?? 'This date';
-        throw httpError(409, `${label} comes from the matter. Correct it on the matter's filing task ("Filed on").`, { code: 'MATTER_OWNED_DATE' });
+        throw httpError(409, `${label} comes from the matter. Change it on the matter's filing task ("Filed on").`, { code: 'MATTER_OWNED_DATE' });
       }
       // Merged inside the transaction so two people editing different cells
       // of the same row never overwrite each other.
@@ -374,7 +408,7 @@ export async function importRows(req, res) {
       up.changed = Object.entries(up.values).some(([k, v]) => ex.values?.[k] !== v);
       if (plan.warnings.length < 50) {
         plan.warnings.push({ row: null, column: owned.map((k) => fields.find((fd) => fd.key === k)?.label ?? k).join(', '),
-          message: `Kept the matter's date for ${up.key}: correct it on the matter's filing task.` });
+          message: `Kept the matter's date for ${up.key}: change it on the matter's filing task.` });
       }
     }
     plan.summary.updatedRows = plan.updates.filter((u) => u.changed || u.addsSheet).length;

@@ -14,7 +14,7 @@ import { refundCreateSchema, refundUpdateSchema } from '../schemas/refund.schema
 import { paymentRequestCreateSchema, paymentRequestCancelSchema, paymentRequestRecordSchema, paymentRequestPaySchema } from '../schemas/paymentRequest.schema.js';
 import { getPaymentRequests, postPaymentRequest, postCancelPaymentRequest, postRecordPaymentRequest, postPayPaymentRequest } from '../controllers/paymentRequests.controller.js';
 import { getFormStep, saveFormStep } from '../controllers/forms.controller.js';
-import { correctFiledOn } from '../controllers/gstFiling.controller.js';
+import { saveFilingDate } from '../controllers/gstFiling.controller.js';
 import { uploadCommentImage, getCommentImage } from '../controllers/commentImages.controller.js';
 import { commentImageUpload } from '../middleware/commentImageUpload.middleware.js';
 
@@ -114,8 +114,8 @@ router.post('/:taskId/restart',              requireRole('admin'), restartTask);
 router.post('/:taskId/steps/:stepNumber/reopen', requireRole('admin'), reopenStep);
 // #105: staff post a client-visible note onto a step without advancing it.
 router.post('/:taskId/steps/:stepNumber/note', requireRole('admin', 'manager', 'team_member'), validate(stepNoteSchema), postStepNote);
-// #294: staff correct a GSTR-1 / GSTR-3B filing date (never clients or professionals).
-router.put('/:taskId/steps/:stepNumber/filed-on', requireRole('admin', 'manager', 'team_member'), validate(filedOnCorrectionSchema), correctFiledOn);
+// #294: staff save (or change, or remove) a GSTR-1 / GSTR-3B filing date (never clients or professionals).
+router.put('/:taskId/steps/:stepNumber/filed-on', requireRole('admin', 'manager', 'team_member'), validate(filedOnCorrectionSchema), saveFilingDate);
 // Archive a matter (non-destructive) — admin-only (#70); the alternative to admin-only delete.
 router.post('/:taskId/archive',              requireRole('admin'), archiveTask);
 

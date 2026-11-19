@@ -2895,13 +2895,20 @@ actually filed, on the matter itself.
 - A GST return matter (sweep-opened, or of a service linked to the GST Return Filing sheet) shows
   its Filing Month ("September 2026" / "Q2 2026-27") as a tag in its header and in the matters
   list, for staff and the client; other matters do not.
-- The GSTR-1 and GSTR-3B filing tasks, once completed, show "Filed on: <date>" next to their
-  names, each with its own completion date (India); the header repeats them.
-- The period and the tasks are identified by the sheet's rules (no second rule).
-- Staff (admin, manager, a team member working the matter) correct a filing date when the task
-  was ticked late — a real date, not in the future, not before the period ended; recorded in the
-  matter's history; the sheet's date column shows the same date (one reader, `filedOnDateOf`);
-  clients and professionals cannot (owner's answer, 2026-11-14).
+- ~~The GSTR-1 and GSTR-3B filing tasks, once completed, show "Filed on: <date>" with their
+  completion date~~ — superseded 2026-11-19 (firm, 17 Nov): when the matter reaches the GSTR-1 or
+  GSTR-3B filing task, staff (admin, manager, a team member working the matter) press **Add
+  Filing Date** beside it, save the actual filing date, then complete the task. Completing never
+  sets a date; completing without one is allowed (no date shown, still addable from the header).
+  The saved date shows next to the task and in the header, for staff and the client; it can be
+  changed or removed — a real date, not in the future, not before the period ended — and every
+  save is in the matter's history; clients and professionals cannot.
+- Tasks completed before manual dates went live keep the date they showed.
+- The period and the tasks are identified by the sheet's rules (no second rule); the sheet's date
+  column shows the saved date (one reader, `filedOnDateOf`), matter → sheet only.
+- A matter updates only its own row (its client and return period, Monthly or Quarterly); the
+  Matter cell cannot tie a matter to another client's or period's row or to a second row, and the
+  sync releases such links instead of writing to them (#294 wrong-record fix).
 
 **e2e**: `Portal/e2e/gst-return-filing.spec.ts` (#292 / #294 tests).
 
@@ -7795,6 +7802,53 @@ filing task was ticked after the real filing. Design in architecture.md, "GST ta
   history entry; the sheet's matter-owned cell); `Portal/e2e/gst-return-filing.spec.ts` (+1:
   guards, header correction, step row, history, sheet follows and refuses a typed edit, client view).
   Playwright not yet run.
+
+### Filing dates entered on the task; a matter updates only its own sheet row (2026-11-19, #294) — E18-S12 🔄 In review
+
+The firm asked (17 Nov) for an **Add Filing Date** option beside the GSTR-1 filed task ("Step 6")
+and the GSTR-3B task ("Step 13"): staff pick and save the actual filing date, then complete the
+task — "do not automatically update the date"; the saved date and every edit to show in the GST
+Return Filing sheet's Date of GSTR-1 / GSTR-3B Filing column; and they reported that the sheet
+updates the wrong record for a matter. Design in architecture.md, "GST tags on the matter".
+- **Manual date (decision):** saved on the filing task once the matter has reached it (in
+  progress or completed), beside the current task and in the matter's header; changeable (pencil)
+  and removable; same range and same who-may as the 14 Nov correction; each save in the history
+  ("GSTR-1 filing date set to … / changed from … to … / removed"). Completing a filing task sets
+  no date.
+- **Completing without a date (decision): allowed.** Blocking the step would stop the workflow
+  for a missing date; instead the task shows no date and "Add Filing Date" stays in the header.
+  The sheet's cell stays blank (and typable) until a date is saved.
+- **Existing matters (decision): nothing visible disappears.** A filing task completed before the
+  release, with no saved date, keeps the date it showed (its completion day or its correction).
+  The cut-off is recorded automatically the first time the new code runs (`system/gstFilingDates`),
+  so no migration script is needed. Saving a date replaces it.
+- **Sync (owner: matter → report only):** the sheet shows the saved date and follows every edit on
+  its next opening; the sheet never writes to a matter, and a matter-fed date cell cannot be typed
+  over or uploaded over.
+- **Wrong record — root cause:** a row was tied to a matter not only by the sync but whenever a
+  person picked a matter in the row's Matter cell, with no check that the matter was for that
+  row's client and period, or that it did not already have a row. The sync then wrote to whichever
+  linked row it read first and, that row never having been synced, overwrote its client, GSTIN,
+  period, statuses and dates with the matter's. Adoption of a typed row (same GSTIN + period)
+  could also take another company's row, because the GSTIN comes from the client's one profile
+  while a client can hold matters for several organisations.
+- **Fix:** the Matter cell only accepts a matter of the row's client and period, of that sheet's
+  kind, with no row yet (otherwise refused, with the reason); every sync keeps only the matter's
+  own row and **releases** any other link (the released row keeps its cells, loses its link, and
+  is never written to again); adoption also checks the client name. Rows damaged before this fix
+  keep the values they were given — staff should check rows the sync released (logged) and delete
+  duplicates.
+- **Not changed (open):** a matter opened BY HAND takes the period that had just ended when it was
+  opened; a matter opened late for an older month still maps to the later month. A period picker
+  on hand-opened GST matters would close this.
+- Tests: `backend/src/__tests__/gstReturnSheet.test.js` — 28 (was 23): manual date shown before /
+  after completion, never from completion; legacy dates; validation incl. a reached-not-completed
+  task and removal; history lines; the sheet follows an edit; row fit; the bug case (another
+  client's row linked by the Matter cell is released, the matter's own row kept, order-independent);
+  link check; source checks of the sync and controller. `Portal/e2e/gst-return-filing.spec.ts`
+  updated: completion sets no date; Add Filing Date beside the current task; add and change from
+  the header; history; sheet follows and refuses a typed edit; the Matter cell refuses another
+  client's row and a second row. Playwright not yet run (to run on QA after merge).
 
 ### GST Return Filing sheet: GSTR-1 date shown under GSTR-3B (2026-11-14, #279) — E18-S11 🔄 In review
 

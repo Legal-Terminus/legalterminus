@@ -9,7 +9,7 @@ import {
   ChevronsLeft, ChevronsRight, MoreVertical, Users,
 } from 'lucide-react';
 import PageShell from '../../components/common/PageShell';
-import { GstMatterTags, FiledOnTag } from '../../components/tasks/GstFilingTags';
+import { GstMatterTags, FiledOnTag, FilingDateControl } from '../../components/tasks/GstFilingTags';
 import CollapsibleSection from '../../components/common/CollapsibleSection';
 import { useToast } from '../../components/common/toastContext';
 import DocumentsPanel from '../../components/documents/DocumentsPanel';
@@ -422,7 +422,7 @@ export default function TaskDetailPage() {
             period={task.gstFilingPeriodLabel}
             filings={task.gstFilings}
             bounds={task.gstFilingDateBounds}
-            // #294: internal staff correct a filing date; the server also checks
+            // #294: internal staff add or change a filing date; the server also checks
             // that a team member works this matter.
             canCorrect={role === 'admin' || role === 'manager' || role === 'team_member'}
           />
@@ -1249,6 +1249,7 @@ function StepsTab({
     />
   ) : null;
 
+  const currentFiling = task.gstFilings?.find((f) => f.stepNumber === task.currentStepNumber);
   const hero = !completed && isAdvanceable && currentDef ? (
     <StepHeroPanel
       taskId={task.id} step={currentDef} role={role} pending={pending} turn={currentTurn}
@@ -1262,6 +1263,11 @@ function StepsTab({
       description={descFor(task.currentStepNumber)}
       approvalNote={approvalNoteFor(task.currentStepNumber)}
       fallbackView={!!task.currentStepFallback}
+      // #294 (firm, 17 Nov): on the GSTR-1 / GSTR-3B filing task, staff save the
+      // actual filing date here ("Add Filing Date"), then complete the task.
+      filingSlot={currentFiling ? (
+        <FilingDateControl taskId={task.id} filing={currentFiling} bounds={task.gstFilingDateBounds} canEdit={role.isStaff} />
+      ) : undefined}
     />
   ) : completed ? (
     <div className="card p-5 flex items-center gap-2.5 bg-emerald-50 border-emerald-100">
@@ -1668,7 +1674,8 @@ const EVENT_VERB: Record<string, string> = {
   BRANCH_DECISION: 'made a decision',
   CLIENT_APPROVE: 'approved',
   STEP_NOTE: 'shared a note', // #105
-  FILED_ON_CORRECTED: 'corrected the filing date', // #294
+  FILED_ON_CORRECTED: 'corrected the filing date', // #294 (older history)
+  FILING_DATE_SET: 'saved the filing date', // #294
   CLIENT_REJECT: 'requested changes',
   GOVT_APPROVE: 'marked Govt approved',
   GOVT_REJECT: 'marked Govt rejected',
@@ -1818,8 +1825,10 @@ function initialsOf(name: string) {
 
 /** The HERO panel: action (left) + meta (right) merged into one elevated card. */
 function StepHeroPanel({
-  taskId, step, role, pending, onEvent, assignment, currentAssignee, currentAssigneeName, displayNumber, turn, stepUrgent, onAttach, statusLabel, description, approvalNote, fallbackView = false, clientOwned = false, currentAssignees = [], currentAssigneeNames = [],
+  taskId, step, role, pending, onEvent, assignment, currentAssignee, currentAssigneeName, displayNumber, turn, stepUrgent, onAttach, statusLabel, description, approvalNote, fallbackView = false, clientOwned = false, currentAssignees = [], currentAssigneeNames = [], filingSlot,
 }: {
+  /** #294: the GST filing date and its "Add Filing Date" control, on a filing task. */
+  filingSlot?: React.ReactNode;
   taskId: string;
   step: WorkflowStepDef;
   role: { isStaff: boolean; isClient: boolean; isExternalViewer?: boolean; canOverrideClient?: boolean; isAdmin?: boolean; uid?: string | null; isMatterOwner?: boolean };
@@ -2247,6 +2256,7 @@ function StepHeroPanel({
       <div className="grid grid-cols-1 md:grid-cols-[1fr_240px]">
         <div className="p-5">
           <p className="text-base font-semibold text-ink">{step.title}</p>
+          {filingSlot && <div className="mt-2 flex flex-wrap items-center gap-1.5" data-testid="gst-filing-slot">{filingSlot}</div>}
           {/* #81/#82: audience-tagged description (Step Settings' multiple
               descriptions + notes), falling back to the legacy single field. */}
           {(description ?? step.description) && (
@@ -2550,7 +2560,7 @@ function ExpandableStepRow({ step, displayNumber, stageName, description, status
               row layout, icon, or "Done" badge — the checklist cue the client asked
               for, applied lightly to preserve the design language. */}
           <p className={`text-sm ${isCurrent ? 'font-semibold text-ink' : 'text-ink-soft'} ${step.status === 'completed' ? 'line-through decoration-1 decoration-ink-faint/60' : ''}`}>{displayNumber}. {step.title}</p>
-          {/* #294: "Filed on" on a completed GSTR-1 / GSTR-3B filing task (server-derived). */}
+          {/* #294: "Filed on" on a GSTR-1 / GSTR-3B filing task — the date staff saved on it. */}
           {step.filedOn && <div className="mt-1"><FiledOnTag date={step.filedOn} /></div>}
           {statusLabel && <p className="text-[11px] text-ink-muted mt-0.5">{statusLabel}</p>}
           {description && !open && <p className="text-xs text-ink-muted mt-0.5 truncate">{description}</p>}

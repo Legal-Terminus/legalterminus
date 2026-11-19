@@ -30,19 +30,20 @@ export interface TaskStep {
   startedAt?: string;
   dueAt?: string | null;
   onTime?: boolean;
-  /** #294: on a GST return matter's GSTR-1 / GSTR-3B filing task, once completed —
-   *  the India date it was completed ('YYYY-MM-DD'), shown as "Filed on". Server-derived. */
+  /** #294: on a GST return matter's GSTR-1 / GSTR-3B filing task — the filing
+   *  date staff saved ('YYYY-MM-DD'), shown as "Filed on". Never the completion day. */
   filedOn?: string;
+  /** #294: set on the two filing tasks of a GST return matter. */
+  gstFilingForm?: 'GSTR-1' | 'GSTR-3B';
 }
 
-/** #294: one completed GST filing. `date` is the staff correction if any, else
- *  `completedOn` (the day its task was completed, India). */
+/** #294: a GST filing task the matter has reached (or that has a date). `date`
+ *  is the date staff saved on it, or null — staff are offered "Add Filing Date". */
 export interface GstFiling {
   stepNumber: number;
   form: 'GSTR-1' | 'GSTR-3B';
-  date: string;
-  completedOn?: string | null;
-  corrected?: boolean;
+  date: string | null;
+  status?: string | null;
 }
 
 export interface Task {
@@ -104,10 +105,10 @@ export interface Task {
   /** #292: a GST return matter's filing period ("September 2026", "Q2 2026-27"),
    *  server-derived by the GST Return Filing sheet's rules; absent on other matters. */
   gstFilingPeriodLabel?: string | null;
-  /** #294: matter detail only — the completed GSTR-1 / GSTR-3B filings, each with
-   *  the India date its task was completed ('YYYY-MM-DD'). */
+  /** #294: matter detail only — the GSTR-1 / GSTR-3B filing tasks reached so far,
+   *  each with its saved filing date or null. */
   gstFilings?: GstFiling[];
-  /** #294: the range a filing date may be corrected to (inclusive, 'YYYY-MM-DD'). */
+  /** #294: the range a filing date may be saved in (inclusive, 'YYYY-MM-DD'). */
   gstFilingDateBounds?: { min: string | null; max: string };
   isUrgent?: boolean;
   // Projected matter completion (E13-S02); null while pending approval/untracked.
