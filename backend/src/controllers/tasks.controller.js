@@ -216,8 +216,8 @@ async function adminUids() {
 // masks comments that aren't client-visible (fail closed), but the raw remark on
 // the step record bypassed that — so it must never reach the client either. The
 // client sees a comment only via the (filtered) event feed.
-// #294: filedOnCorrection carries who corrected a filing date — staff detail; the client sees the date (filedOn).
-const CLIENT_STEP_HIDDEN = ['assignedTo', 'assignedToUids', 'assignedRole', 'completedBy', 'isUrgent', 'remark', 'filedOnCorrection'];
+// #294: filingDate / filedOnCorrection carry who saved a filing date — staff detail; the client sees the date (filedOn).
+const CLIENT_STEP_HIDDEN = ['assignedTo', 'assignedToUids', 'assignedRole', 'completedBy', 'isUrgent', 'remark', 'filedOnCorrection', 'filingDate'];
 
 /**
  * #166 — the client identity a request acts as.
@@ -3267,7 +3267,8 @@ export async function deleteTask(req, res) {
     // NOTE: this list is explicit — a NEW subcollection must be added here too.
     const counts = {};
     // #122 follow-up: + commentImages (the bytes go with the Storage prefix below).
-    for (const sub of ['steps', 'events', 'documents', 'payments', 'commentImages']) {
+    // #313: + invoices (their bytes are under tasks/{taskId}/invoices/, swept below).
+    for (const sub of ['steps', 'events', 'documents', 'payments', 'commentImages', 'invoices']) {
       const subSnap = await taskRef.collection(sub).get();
       counts[sub] = subSnap.size;
       if (subSnap.empty) continue;

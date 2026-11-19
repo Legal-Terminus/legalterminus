@@ -16,7 +16,7 @@ import { useToast } from '../common/toastContext';
 
 const TYPE_LABEL: Record<FieldType, string> = {
   text: 'Text', longtext: 'Long text', date: 'Date', number: 'Number', select: 'Choice list',
-  computed: 'Calculated', image: 'Image + text', matter: 'Matter link',
+  staff: 'Staff member', computed: 'Calculated', image: 'Image + text', matter: 'Matter link',
 };
 const ADDABLE: FieldType[] = ['text', 'longtext', 'date', 'number', 'select', 'image'];
 

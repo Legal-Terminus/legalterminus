@@ -128,6 +128,15 @@ service cloud.firestore {
       match /paymentRequests/{requestId} {
         allow read, write: if false;
       }
+
+      // ── tasks/{taskId}/invoices/{invoiceId} ──────────────────────────────
+      // #313: invoices on the Payments tab. Backend-only: listing, upload,
+      // replace, delete and download all go through /api/tasks/:taskId/invoices,
+      // which allows admin/manager and the matter's own client, and refuses team
+      // members (#148). Nothing here is readable from the client SDK.
+      match /invoices/{invoiceId} {
+        allow read, write: if false;
+      }
     }
 
     // ── workflowTemplates/{workflowId} ─────────────────────────────────────
