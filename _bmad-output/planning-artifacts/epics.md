@@ -7883,3 +7883,30 @@ team.
   kept as typed, migration, lists never include it, guard, no caching or logging);
   `gst-return-filing.spec.ts` (masked; click copies it and opens the GST portal; client 403).
 
+### Several assignees on one step — reopened again (2026-11-19, #192) — E10-S01 🔄 In review
+
+The firm wrote (18 Nov): Step settings do not let them add more than one assignee, and when a
+step has several assignees they cannot complete it. Both were real; the September fixes were
+right in the parts they touched but three other writers undid them.
+- **Cause 1 (both symptoms):** saving a Service from the workflow editor dropped every step's
+  assignee list — the save schema did not list `defaultAssigneeUids`. The step went back to one
+  person, so on new matters the others were not assignees and got no Complete button (and the
+  server refused them).
+- **Cause 2 (symptom 1):** after **Save step settings** on the Service page, the picker showed
+  only the first person (the save response left the list out), and the next change built on
+  that one.
+- **Cause 3 (both):** on a matter, **Step owner** was a single dropdown. It could hold one
+  person, and using it on a shared step removed everyone else — who then could not complete it.
+- **Fix:** the list is kept on save and returned after it; the workflow editor gains **Who does
+  this? → Specific people** (tick several); the matter's **Step owner** becomes a tick-list
+  (admin/manager; changes apply at once; each newly added person is notified). Any one owner
+  completes the step. One rule keeps the two stored fields consistent — see architecture.md.
+  The step-owner endpoint gains a role guard and a strict schema; owners must be staff.
+- **Existing data:** a Service saved in the editor since September has lost its lists — re-tick
+  the people (either screen) and save. Matters already open keep their steps as created; add
+  the missing person with **Step owner** on the matter.
+- Tests: `backend/src/__tests__/stepAssignees.test.js` (6); `step-multi-assignee.spec.ts` +6
+  (save response, editor save keeps the list, editor picker, Step Settings after save, step-owner
+  API incl. client 400 / team 403, add a second owner on the matter screen and that person
+  completes the step).
+

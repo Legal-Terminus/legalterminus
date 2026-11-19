@@ -198,6 +198,17 @@ export const taskListQuerySchema = z.object({
   cursor: z.string().trim().min(1).max(1500).optional(),
 }).strip();
 
+// PATCH /api/tasks/:taskId/steps/:stepId — admin/manager. Urgency and who owns
+// the step. #192 (reopened 2026-11-18): `assignedToUids` sets SEVERAL owners at
+// once (the matter screen's step-owner picker); `assignedTo` alone still means
+// "exactly this one person". Each uid is checked against the user record in the
+// controller (staff only).
+export const stepPatchSchema = z.object({
+  isUrgent: z.boolean().optional(),
+  assignedTo: z.string().trim().max(200).nullable().optional(),
+  assignedToUids: z.array(z.string().trim().min(1).max(200)).max(20).optional(),
+}).strict();
+
 // #105: staff "Note to client" on a step — comment-only, no transition.
 export const stepNoteSchema = z.object({
   // #194: sized for the RAW rich text of a 1,000-word note. It was 8,000, which
