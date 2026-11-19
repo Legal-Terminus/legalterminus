@@ -208,12 +208,16 @@ function MessageBubble({ m, isStaff, taskId }: { m: MatterMessage; isStaff: bool
   // person may edit (a null uid turns the store off for every other bubble).
   const editDraft = useCommentDraft(taskId, `chat-edit-${m.id}`, m.canEdit && !m.deleted ? uid : null);
   const [editing, setEditing] = useState(() => !!editDraft.initial);
+  // The editor can report one last change while it closes (Cancel / Save). That
+  // must not write the draft back after it was cleared, or the edit reopens on
+  // the next visit to Chat. Changes count only while editing.
+  const editingRef = useRef(editing);
   const [draft, setDraft] = useState(() => editDraft.initial || m.body);
   const refresh = () => queryClient.invalidateQueries({ queryKey: ['messages', taskId] });
 
   const save = useMutation({
     mutationFn: () => editMessage(taskId, m.id, draft.trim()),
-    onSuccess: () => { setEditing(false); editDraft.clear(); refresh(); toast.success('Message updated.'); },
+    onSuccess: () => { editingRef.current = false; setEditing(false); editDraft.clear(); refresh(); toast.success('Message updated.'); },
     onError: (e: Error) => toast.error(e.message || 'Could not edit the message.'),
   });
   const remove = useMutation({
@@ -234,9 +238,10 @@ function MessageBubble({ m, isStaff, taskId }: { m: MatterMessage; isStaff: bool
     if (ok) remove.mutate();
   };
 
-  const startEdit = () => { setDraft(m.body); setEditing(true); };
-  const cancelEdit = () => { setEditing(false); editDraft.clear(); };
+  const startEdit = () => { editingRef.current = true; setDraft(m.body); setEditing(true); };
+  const cancelEdit = () => { editingRef.current = false; setEditing(false); editDraft.clear(); };
   const changeDraft = (v: string) => {
+    if (!editingRef.current) return;
     setDraft(v);
     // An unchanged message is not a draft worth restoring.
     if (v === m.body) editDraft.clear(); else editDraft.save(v);

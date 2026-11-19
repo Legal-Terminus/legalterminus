@@ -92,7 +92,10 @@ test('an image in an INTERNAL step comment is staff-only; sharing it in a client
     const staff = await fetchImageAs('admin', taskId, imageId);
     expect(staff.status).toBe(200);
     expect(staff.type).toContain('image/png');
-    expect(staff.cache).toContain('private');
+    // Never cached. The API sends `private, no-store`; on the deployed site
+    // Firebase Hosting's catch-all header replaces it with
+    // `no-cache, no-store, must-revalidate`. Either way: no-store.
+    expect(staff.cache).toContain('no-store');
 
     // The client may not — and is not told whether it exists.
     expect((await fetchImageAs('client', taskId, imageId)).status).toBe(404);
