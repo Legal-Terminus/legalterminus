@@ -34,7 +34,7 @@ test('the default block is the firm\'s text, switched on, and appears in the com
   // The original message is still there, above the block.
   assert.ok(html.indexOf('A Client · GST Registration') < html.indexOf('Explore More Services'));
   assert.match(text, /Explore More Services with Us\n\n• Business Registration/);
-  assert.ok(text.includes('https://legalterminus.com/'));
+  assert.ok(text.split(/\s+/).some((word) => word === 'https://legalterminus.com/'), 'the link is in the plain text');
 });
 
 test('off, or empty: the completion email is exactly as before', () => {
