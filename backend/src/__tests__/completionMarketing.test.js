@@ -29,12 +29,12 @@ test('the default block is the firm\'s text, switched on, and appears in the com
   const { html, text } = renderEmail({ ...completion, appendix: block });
   assert.match(html, /Explore More Services with Us/);
   assert.match(html, /Trademark Registration &amp; Renewal/);
-  assert.match(html, /<a href="https:\/\/legalterminus\.com\/"/, 'the bare URL becomes a link');
+  assert.ok(html.includes('<a href="https://legalterminus.com/"'), 'the bare URL becomes a link');
   assert.match(html, /• Business Registration/, 'a "- " line becomes a bullet');
   // The original message is still there, above the block.
   assert.ok(html.indexOf('A Client · GST Registration') < html.indexOf('Explore More Services'));
   assert.match(text, /Explore More Services with Us\n\n• Business Registration/);
-  assert.match(text, /https:\/\/legalterminus\.com\//);
+  assert.ok(text.includes('https://legalterminus.com/'));
 });
 
 test('off, or empty: the completion email is exactly as before', () => {
