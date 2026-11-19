@@ -117,11 +117,18 @@ export async function uploadDocument(
 
   // Step 2 — PUT the bytes straight to storage (no backend bandwidth). The
   // Content-Type must match what was signed, or the PUT is rejected.
-  const put = await fetch(signedUrl, {
-    method: 'PUT',
-    headers: { 'Content-Type': contentType },
-    body: file,
-  });
+  // A blocked or dropped connection makes fetch throw the browser's own text ("Load failed" on iPhone,
+  // "Failed to fetch" elsewhere). Show a plain sentence instead of that.
+  let put: Response;
+  try {
+    put = await fetch(signedUrl, {
+      method: 'PUT',
+      headers: { 'Content-Type': contentType },
+      body: file,
+    });
+  } catch {
+    throw new Error('The file could not be uploaded. Check your connection and try again.');
+  }
   if (!put.ok) throw new Error('Upload failed. Please try again.');
 
   // Step 3 — confirm; backend stores it as a DRAFT (#113). It becomes reviewable

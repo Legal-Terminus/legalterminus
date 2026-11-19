@@ -1,8 +1,10 @@
-> **History (2026-11-11).** This was the plan for the first Android release (builds 1–3). The
-> current procedure for both apps is `docs/mobile-release.md`: Android is built by the
-> `build-android` job in `deploy-production.yml`, iOS from Xcode, and every build is QA
-> (`com.legalterminus.app.qa`, "Legal Terminus QA") unless `LT_APP_ENV=production` is given. Step 16's
-> hand build in a clean checkout is replaced by the job; the rest is kept as the record.
+> **History.** This was the plan for the first Android release (builds 1–3, which bundled the
+> Portal and ran at `https://localhost`). The current design and procedure for both apps is
+> `docs/mobile-release.md`: ONE app, `com.legalterminus.app`, that opens the hosted Portal, pointed
+> at QA first (E-29 D7, 2026-11-19); Android is built by the `build-android` job, iOS from Xcode.
+> `localhost` is allowed nowhere since 2026-11-19, so **version code 3 must never be published**:
+> replace it in the Play Production release with the first production-pointed hosted build.
+> The rest of this file is kept as the record.
 
 # Android app: release plan (Google Play)
 

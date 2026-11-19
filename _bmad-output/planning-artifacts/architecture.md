@@ -2883,9 +2883,42 @@ Drop the override once a firebase release depends on a fixed grpc-js.
 `backend/src/config/corsOrigins.js` replaces patterns that matched every `*.web.app` and
 `*.firebaseapp.com` site and lookalike domains such as `evillegalterminus.com`. Allowed:
 the firm's domains, this project's and the QA site's Firebase hosts with preview channels,
-localhost outside production, and exact origins from `CORS_ORIGINS`. In production
-`http://localhost` and `capacitor://localhost` are no longer allowed; the mobile app's
-origin is added through `CORS_ORIGINS` for each environment.
+and exact origins from `CORS_ORIGINS`.
+
+**No localhost, anywhere (owner, 2026-11-19).** No `localhost`, loopback or `*.localhost` origin
+is allowed in any environment, and `CORS_ORIGINS` cannot add one (it is dropped). Neither
+deploy workflow sets `CORS_ORIGINS` any more. The two reasons localhost was there are gone:
+the mobile apps open the hosted Portal (see "Mobile apps: one app on the hosted Portal"), and
+local development reaches the API same-origin through the Vite dev server's `/api` proxy
+(`VITE_API_BASE_URL` empty). The buckets follow the same rule: `storage-cors.json`
+(production) and `storage-cors.qa.json` (QA) list only the sites' own origins.
+
+## Mobile apps: one app on the hosted Portal (E-29 D7, 2026-11-19)
+
+**This supersedes the bundled design described in the two sections below** (kept as the record
+of what was built 2026-11-02 to 2026-11-18).
+
+- **One app**, `com.legalterminus.app`, "Legal Terminus", on Android and iOS. It is a Capacitor 8
+  shell (`MobileApp/`) whose `server.url` is the **hosted Portal** of one environment:
+  `https://legal-terminus-qa.web.app/portal/` (QA, the default) or
+  `https://legalterminus.com/portal/`. `LT_APP_ENV` picks it at build time
+  (`MobileApp/environments.json`, `scripts/app-env.mjs`); the app id and name never change, so the
+  QA-pointed builds and the production build are the same app in both stores.
+- **Nothing of the Portal is bundled.** `webDir` holds only `error.html` (no connection; Android
+  WebView older than 111) and a placeholder `index.html`. A Portal deploy changes what the apps
+  show immediately; a store build is needed only for a native-shell change.
+- **Origin.** The page's origin is the site, so API calls are same-origin through the Hosting
+  rewrite and uploads use the site's bucket CORS entry. No app origin exists; none is allowed.
+- **Navigation.** `allowNavigation` is the environment's host only; every other host opens in
+  Safari / the browser. Native plugins are reachable only from that host.
+- **Native code in the Portal** stays in `Portal/src/lib/native.ts` (plus the sign-in branches and
+  persistence), behind `Capacitor.isNativePlatform()` with dynamic `import()`. Because installed
+  shells lag behind the hosted Portal, a Portal feature that needs a newly added plugin must check
+  `Capacitor.isPluginAvailable()` and degrade without it. Inside the app only, `initNative` adds
+  `viewport-fit=cover` to the page's viewport tag and sets `html[data-native]` for the safe-area CSS.
+- **Release.** Android signed by the pipeline from a tag, iOS from Xcode
+  (`docs/mobile-release.md`). Switching from QA to production is a new store build with
+  `LT_APP_ENV=production`.
 
 ## Android app: Capacitor wrapper (E-26, 2026-11-02)
 

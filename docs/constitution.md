@@ -81,7 +81,7 @@ Every state change to a workflow step, document status, payment record, or user 
 - **Runtime**: Node.js / Express (ES Modules)
 - **Database**: Firebase Admin SDK, Firestore
 - **Deployment**: Cloud Run
-- **CORS**: Covers `capacitor://localhost` and `http://localhost` for mobile
+- **CORS**: Exact allowlist of the firm's own sites; no `localhost` or app origin anywhere — the mobile apps open the hosted Portal (2026-11-19)
 
 ### Authentication & Authorization
 - **Provider**: Firebase Authentication (email/password + Google Sign-In)

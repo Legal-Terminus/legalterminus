@@ -9,15 +9,12 @@
  *   - every pattern is anchored and pins the scheme and full host;
  *   - Firebase hosts are limited to this project's own and the QA site's,
  *     including their preview channels;
- *   - localhost is allowed only outside production;
  *   - anything deployment-specific comes from CORS_ORIGINS (comma-separated,
- *     exact origins). The Android app's origin (`https://localhost`) and the iOS
- *     app's (`capacitor://localhost`) are added this way (deploy-qa.yml).
- *
- * E29-S03: WKWebView cannot serve the app over https, so Capacitor's iOS origin
- * is `capacitor://localhost`. The 2026-10 clean-up stopped accepting it (the old
- * entry was an unanchored regex); it is accepted again as ONE exact string when
- * listed — no port, no path, no other host, nothing else on that scheme.
+ *     exact https/http origins);
+ *   - localhost is never allowed, in any environment, and CORS_ORIGINS cannot
+ *     add it (owner decision 2026-11-19). The Android and iPhone apps open the
+ *     hosted Portal, so their origin IS the site; local development reaches the
+ *     API same-origin through the Vite dev server's /api proxy.
  *
  * Ported by content from Ambyflow's config/corsOrigins.js (SEC F-21).
  */
@@ -26,12 +23,14 @@ const QA_HOSTING_SITE = "legal-terminus-qa";
 
 const escapeRegExp = (s) => String(s).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
-/** The iOS app's origin: the one non-web form CORS_ORIGINS may carry. */
-export const IOS_APP_ORIGIN = "capacitor://localhost";
+/** Exact origins only: scheme + host (+ port). Anything else is dropped. */
+const isExactOrigin = (value) => /^https?:\/\/[a-z0-9.-]+(:\d+)?$/i.test(value);
 
-/** Exact origins only: scheme + host (+ port), or the iOS app's. Anything else is dropped. */
-const isExactOrigin = (value) =>
-  value === IOS_APP_ORIGIN || /^https?:\/\/[a-z0-9.-]+(:\d+)?$/i.test(value);
+/** localhost, a loopback address or a *.localhost name: never an allowed origin. */
+const isLocalOrigin = (value) => {
+  const host = value.replace(/^https?:\/\//i, "").replace(/:\d+$/, "").toLowerCase();
+  return host === "localhost" || host.endsWith(".localhost") || /^127\./.test(host) || host === "0.0.0.0";
+};
 
 const firebaseHosts = (site) => new RegExp(
   `^https:\\/\\/${escapeRegExp(site)}(--[a-z0-9-]+)?\\.(web\\.app|firebaseapp\\.com)$`,
@@ -47,15 +46,10 @@ export function buildAllowedOrigins(env = process.env) {
   const projectId = env.FIREBASE_PROJECT_ID || env.GCLOUD_PROJECT || env.GOOGLE_CLOUD_PROJECT;
   if (projectId && /^[a-z0-9-]+$/.test(projectId)) origins.push(firebaseHosts(projectId));
 
-  // Local development only.
-  if (env.NODE_ENV !== "production") {
-    origins.push(/^http:\/\/localhost(:\d+)?$/, /^http:\/\/127\.0\.0\.1(:\d+)?$/);
-  }
-
   for (const raw of String(env.CORS_ORIGINS ?? "").split(",")) {
     const origin = raw.trim().replace(/\/$/, "");
-    // A wildcard or a bare host here would silently widen the boundary.
-    if (origin && isExactOrigin(origin)) origins.push(origin);
+    // A wildcard or a bare host here would silently widen the boundary; localhost is refused outright.
+    if (origin && isExactOrigin(origin) && !isLocalOrigin(origin)) origins.push(origin);
   }
 
   return origins;

@@ -195,7 +195,6 @@ jobs:
             --set-env-vars="^||^FIREBASE_PRIVATE_KEY=${{ secrets.BACKEND_FIREBASE_PRIVATE_KEY }}" \
             --set-env-vars="FRONTEND_URL=${{ env.QA_SITE_URL }}" \
             --set-env-vars="BASE_URL=${{ env.QA_SITE_URL }}" \
-            --set-env-vars="^||^CORS_ORIGINS=https://localhost,capacitor://localhost,http://localhost:5173" \
             --project=${{ secrets.FIREBASE_QA_PROJECT_ID }}
 
           # Get Backend service URL for payment redirects
@@ -317,11 +316,12 @@ jobs:
           VITE_FIREBASE_MEASUREMENT_ID: ${{ secrets.FIREBASE_QA_MEASUREMENT_ID }}
           VITE_API_BASE_URL: ${{ env.QA_SITE_URL }}
 
-      # E29-S07: the QA site's /.well-known files name the QA apps (com.legalterminus.app.qa),
-      # from MobileApp/environments.json → appLinks. Writes nothing until the owner has filled
-      # in the Apple team id / signing fingerprints there. QA only: production's files wait
-      # for the app's launch approval (2026-11-03).
-      - name: App-link files for the QA apps
+      # E29-S07: the QA site's /.well-known files name the app (com.legalterminus.app, one app
+      # for both environments), from MobileApp/environments.json → appLinks. Only a build synced
+      # for QA claims this host, so QA links open only a QA-pointed build. Writes nothing until
+      # the owner has filled in the Apple team id / signing fingerprints there. QA only:
+      # production's files wait for the app's launch approval (2026-11-03).
+      - name: App-link files for the app (QA host)
         if: steps.changes.outputs.frontend == 'true'
         run: node MobileApp/scripts/app-links.mjs qa Frontend/dist
 

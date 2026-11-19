@@ -32,22 +32,29 @@ test('CORS: the firm\'s own sites are allowed', () => {
   ]) assert.equal(isAllowedOrigin(origin, allowed), true, `${origin} must be allowed`);
 });
 
-test('CORS: localhost only outside production', () => {
-  for (const origin of ['http://localhost', 'http://localhost:5173', 'capacitor://localhost']) {
-    assert.equal(isAllowedOrigin(origin, buildAllowedOrigins(PROD)), false);
+test('CORS: localhost is never allowed, in any environment', () => {
+  for (const env of [PROD, { NODE_ENV: 'development' }, {}]) {
+    const allowed = buildAllowedOrigins(env);
+    for (const origin of [
+      'http://localhost', 'http://localhost:5173', 'https://localhost', 'capacitor://localhost',
+      'http://127.0.0.1:5173', 'https://app.localhost',
+    ]) assert.equal(isAllowedOrigin(origin, allowed), false, `${origin} must be refused (${env.NODE_ENV ?? 'unset'})`);
   }
-  assert.equal(isAllowedOrigin('http://localhost:5173', buildAllowedOrigins({ NODE_ENV: 'development' })), true);
 });
 
-test('CORS: CORS_ORIGINS adds exact origins only', () => {
+test('CORS: CORS_ORIGINS adds exact origins only, and never localhost', () => {
   const allowed = buildAllowedOrigins({
-    ...PROD, CORS_ORIGINS: 'https://localhost, *, firm.example, https://*.firm.example, http://localhost:5173/',
+    ...PROD,
+    CORS_ORIGINS: 'https://firm.example, *, firm.example, https://*.firm.example, https://localhost, '
+      + 'http://localhost:5173/, capacitor://localhost, http://127.0.0.1:3000, https://x.localhost, http://0.0.0.0:80',
   });
-  assert.equal(isAllowedOrigin('https://localhost', allowed), true);
-  assert.equal(isAllowedOrigin('http://localhost:5173', allowed), true);
-  assert.equal(isAllowedOrigin('http://localhost:3000', allowed), false);
-  assert.equal(isAllowedOrigin('https://any.firm.example', allowed), false);
+  assert.equal(isAllowedOrigin('https://firm.example', allowed), true);
+  for (const origin of [
+    'https://localhost', 'http://localhost:5173', 'capacitor://localhost', 'http://127.0.0.1:3000',
+    'https://x.localhost', 'http://0.0.0.0:80', 'https://any.firm.example',
+  ]) assert.equal(isAllowedOrigin(origin, allowed), false, `${origin} must be refused`);
   assert.equal(allowed.includes('*'), false);
+  assert.equal(allowed.some((e) => typeof e === 'string' && !/^https?:/.test(e)), false);
 });
 
 test('CORS: every pattern is anchored at both ends', () => {
@@ -56,28 +63,4 @@ test('CORS: every pattern is anchored at both ends', () => {
       assert.ok(entry.source.startsWith('^') && entry.source.endsWith('$'), String(entry));
     }
   }
-});
-
-// E29-S03: the iOS app's origin, accepted as one exact string and nothing near it.
-test('CORS: capacitor://localhost is allowed exactly, and only when listed', () => {
-  const allowed = buildAllowedOrigins({ ...PROD, CORS_ORIGINS: 'https://localhost,capacitor://localhost' });
-  assert.equal(isAllowedOrigin('capacitor://localhost', allowed), true);
-  assert.equal(isAllowedOrigin('https://localhost', allowed), true);
-  for (const origin of [
-    'capacitor://localhost:8080',
-    'capacitor://localhost/',
-    'capacitor://evil',
-    'ionic://localhost',
-    'capacitor://localhost.evil.test',
-    'CAPACITOR://localhost',
-  ]) assert.equal(isAllowedOrigin(origin, allowed), false, `${origin} must be refused`);
-  assert.equal(isAllowedOrigin('capacitor://localhost', buildAllowedOrigins(PROD)), false);
-  assert.equal(isAllowedOrigin('capacitor://localhost', buildAllowedOrigins({ ...PROD, CORS_ORIGINS: '' })), false);
-});
-
-test('CORS: nothing else on the capacitor scheme survives CORS_ORIGINS', () => {
-  const allowed = buildAllowedOrigins({
-    ...PROD, CORS_ORIGINS: 'capacitor://evil,capacitor://localhost:1,capacitor://*,ionic://localhost',
-  });
-  assert.equal(allowed.some((e) => typeof e === 'string' && !/^https?:/.test(e)), false);
 });

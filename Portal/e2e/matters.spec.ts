@@ -7,14 +7,15 @@ import { env } from './helpers';
  * E13-S03 — the staff Matters grid shows a Due column (clients don't).
  */
 
-test('staff Matters grid renders; client grid is framed as My Services', async ({ adminPage, clientPage }) => {
+test('staff Matters grid renders; client grid is framed as My Services', async ({ adminPage, clientPage, isMobile }) => {
   // Create a fresh matter so the grid has a row — the Due column header only
   // renders when the grid is non-empty (an empty DB shows the empty state).
   const taskId = await createMatter();
   try {
     await adminPage.goto('tasks');
     await expect(adminPage.getByRole('heading', { name: 'All Matters' })).toBeVisible();
-    await expect(adminPage.getByText('Due', { exact: true }).first()).toBeVisible(); // E13-S03 staff-only column
+    // E13-S03 staff-only column. Phones show cards, not a table, so there is no column header there.
+    if (!isMobile) await expect(adminPage.getByText('Due', { exact: true }).first()).toBeVisible();
 
     await clientPage.goto('tasks');
     await expect(clientPage.getByRole('heading', { name: 'My Services' })).toBeVisible();
@@ -99,7 +100,8 @@ test('matter detail opens with Steps/Documents/Payments tabs', async ({ adminPag
   }
 });
 
-test('#91: Matters grid supports multi-criteria filtering (Status + Payment, AND)', async ({ adminPage }) => {
+test('#91: Matters grid supports multi-criteria filtering (Status + Payment, AND)', async ({ adminPage, isMobile }) => {
+  test.skip(isMobile, 'Desktop table rows (.cursor-pointer.border-b); phones render cards.');
   const taskId = await createMatter(); // active/pending, fully_paid
   try {
     await adminPage.goto('tasks');
@@ -146,7 +148,8 @@ test('#91: Matters grid supports multi-criteria filtering (Status + Payment, AND
   }
 });
 
-test('#91: Excel-style column filter — tick a status value to filter, clear to reset', async ({ adminPage }) => {
+test('#91: Excel-style column filter — tick a status value to filter, clear to reset', async ({ adminPage, isMobile }) => {
+  test.skip(isMobile, 'Column-header funnel menus exist only in the desktop table.');
   const taskId = await createMatter();
   try {
     await adminPage.goto('tasks');
