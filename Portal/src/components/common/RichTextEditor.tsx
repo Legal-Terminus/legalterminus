@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import { LtImage } from './ltImageExtension';
 import { useCommentImageTaskId } from './commentImageContext';
-import { uploadCommentImage, commentImageProblem, COMMENT_IMAGE_TYPES } from '../../api/commentImages';
+import { uploadCommentImage, checkCommentImage, COMMENT_IMAGE_TYPES } from '../../api/commentImages';
 // #194/#295: the word limits — one copy in shared/, read by the server too.
 import { COMMENT_WORD_LIMIT } from '@shared/richText/limits.js';
 
@@ -224,12 +224,14 @@ export default function RichTextEditor({ value, onChange, placeholder, disabled,
   // #122 follow-up: upload each image, then insert its reference at the caret.
   // Checked here first so a too-big or wrong-type file is refused instantly
   // with a reason; the server enforces the same rules regardless.
+  // #319: the check includes the image's pixel dimensions (shared limits), so an
+  // image the server would refuse is never uploaded or inserted.
   const addImages = async (files: File[]) => {
     const taskId = taskIdRef.current;
     if (!taskId || disabled) return;
     setImageError(null);
     for (const file of files) {
-      const problem = commentImageProblem(file);
+      const problem = await checkCommentImage(file);
       if (problem) { setImageError(problem); continue; }
       setUploading((n) => n + 1);
       try {

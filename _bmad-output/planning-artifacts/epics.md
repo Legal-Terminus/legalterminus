@@ -2859,6 +2859,8 @@ layout, with the yellow columns as dropdowns whose choices staff manage.
   order and spelling (see the 2026-11-10 change-log entry); "Sl. No." is the row number.
 - Add record, Upload Excel (matched by TAN NO), Edit columns (admin), Search, Download Excel — as every sheet.
 - **Edit dropdowns** (admin, manager, team member) for every dropdown column of every worksheet and report.
+- **Assigned to** and **Checker** list the portal's staff (admin, manager, team member) by name, not a
+  typed list (firm, 11 Nov — see the 2026-11-19 change-log entry).
 
 **e2e**: `Portal/e2e/worksheets.spec.ts` (#280 tests).
 
@@ -2895,13 +2897,20 @@ actually filed, on the matter itself.
 - A GST return matter (sweep-opened, or of a service linked to the GST Return Filing sheet) shows
   its Filing Month ("September 2026" / "Q2 2026-27") as a tag in its header and in the matters
   list, for staff and the client; other matters do not.
-- The GSTR-1 and GSTR-3B filing tasks, once completed, show "Filed on: <date>" next to their
-  names, each with its own completion date (India); the header repeats them.
-- The period and the tasks are identified by the sheet's rules (no second rule).
-- Staff (admin, manager, a team member working the matter) correct a filing date when the task
-  was ticked late — a real date, not in the future, not before the period ended; recorded in the
-  matter's history; the sheet's date column shows the same date (one reader, `filedOnDateOf`);
-  clients and professionals cannot (owner's answer, 2026-11-14).
+- ~~The GSTR-1 and GSTR-3B filing tasks, once completed, show "Filed on: <date>" with their
+  completion date~~ — superseded 2026-11-19 (firm, 17 Nov): when the matter reaches the GSTR-1 or
+  GSTR-3B filing task, staff (admin, manager, a team member working the matter) press **Add
+  Filing Date** beside it, save the actual filing date, then complete the task. Completing never
+  sets a date; completing without one is allowed (no date shown, still addable from the header).
+  The saved date shows next to the task and in the header, for staff and the client; it can be
+  changed or removed — a real date, not in the future, not before the period ended — and every
+  save is in the matter's history; clients and professionals cannot.
+- Tasks completed before manual dates went live keep the date they showed.
+- The period and the tasks are identified by the sheet's rules (no second rule); the sheet's date
+  column shows the saved date (one reader, `filedOnDateOf`), matter → sheet only.
+- A matter updates only its own row (its client and return period, Monthly or Quarterly); the
+  Matter cell cannot tie a matter to another client's or period's row or to a second row, and the
+  sync releases such links instead of writing to them (#294 wrong-record fix).
 
 **e2e**: `Portal/e2e/gst-return-filing.spec.ts` (#292 / #294 tests).
 
@@ -7530,6 +7539,39 @@ choices", "Row numbers", "TDS Sheet".
   (columns and buttons; a team member adds a choice and uses it in a new record; upload in the firm's
   layout; clients refused, non-dropdown column refused). Run locally against QA on 2026-11-10: worksheets.spec 13/13 passed.
 
+### TDS Sheet: Assigned to and Checker list the portal's staff (2026-11-19, #280) — E18-S10 🔄 In review
+
+The firm answered the four questions on 11 Nov: (1) "Form 138" / "form 140" are correct — no change;
+(2) one row per TAN — already how the upload works (key `tan`), no change; (3) the Traces / IT
+password columns stay visible to Admin, Manager and Team — no change; (4) **Assigned to** and
+**Checker** should list the portal's staff automatically. Only (4) is code. Design in
+architecture.md, "Worksheets" → "Staff columns".
+- New field type **`staff`**. Assigned to and Checker are `staff` columns: the picker lists the
+  active admins, managers and team members by name (never clients or professionals; seeded e2e
+  accounts are hidden outside test runs). The row stores the person's **uid**; the grid, search,
+  filters, sort and Download Excel show the **name**. A deactivated colleague still shows by name on
+  the rows that hold them, but is not offered for new picks.
+- **Edit dropdowns** no longer lists these two columns (`PUT …/options/assigned_to` → 400 "not a
+  dropdown column"). The firm's typed list for them (`optionOverrides.assigned_to/checker` on live)
+  is left in the config and ignored.
+- **Existing rows on live keep what they hold.** A name typed before this change is not a uid; it
+  shows as written (and filters together with the same person's picked rows, since both read as the
+  same name). Picking the person on the row, or uploading the sheet again, turns it into the person.
+  No data migration.
+- **Upload:** a cell is matched to a person by display name (case and spacing ignored) or email;
+  active staff first, then former staff. A cell that matches nobody — or two people of the same
+  name — is **kept as written** and listed in the preview's "cells were kept as written" warnings,
+  the same way untidy dates are. Download → upload round-trips (the download writes names).
+- **Manual edits** must pick an active staff member (`400 Pick a person from the "Assigned to"
+  list.`); clearing is allowed.
+- The GST Return Filing sheet's **Assign Person** is unchanged: the matter sync writes the matter's
+  assignee there as a name, so making it a staff column is a separate change, not the same mechanism.
+- Tests: `backend/src/__tests__/worksheetEngine.test.js` (6 new, 3 adjusted to use Client as the
+  editable list); `Portal/e2e/worksheets.spec.ts` (the Edit dropdowns list omits Assigned to /
+  Checker; a team member picks a staff member, the row shows the name and stores the uid; upload
+  matches a name in capitals, keeps an unknown name with a warning; typed name refused by the API;
+  options on Checker refused).
+
 ### GST Return Filing sheet under Reports, kept up to date from the GST matters (2026-11-10, #279) — E18-S11 🔄 In review
 
 The firm asked for a GST Return Filing sheet under Reports (not Worksheets), filled automatically
@@ -7796,6 +7838,53 @@ filing task was ticked after the real filing. Design in architecture.md, "GST ta
   guards, header correction, step row, history, sheet follows and refuses a typed edit, client view).
   Playwright not yet run.
 
+### Filing dates entered on the task; a matter updates only its own sheet row (2026-11-19, #294) — E18-S12 🔄 In review
+
+The firm asked (17 Nov) for an **Add Filing Date** option beside the GSTR-1 filed task ("Step 6")
+and the GSTR-3B task ("Step 13"): staff pick and save the actual filing date, then complete the
+task — "do not automatically update the date"; the saved date and every edit to show in the GST
+Return Filing sheet's Date of GSTR-1 / GSTR-3B Filing column; and they reported that the sheet
+updates the wrong record for a matter. Design in architecture.md, "GST tags on the matter".
+- **Manual date (decision):** saved on the filing task once the matter has reached it (in
+  progress or completed), beside the current task and in the matter's header; changeable (pencil)
+  and removable; same range and same who-may as the 14 Nov correction; each save in the history
+  ("GSTR-1 filing date set to … / changed from … to … / removed"). Completing a filing task sets
+  no date.
+- **Completing without a date (decision): allowed.** Blocking the step would stop the workflow
+  for a missing date; instead the task shows no date and "Add Filing Date" stays in the header.
+  The sheet's cell stays blank (and typable) until a date is saved.
+- **Existing matters (decision): nothing visible disappears.** A filing task completed before the
+  release, with no saved date, keeps the date it showed (its completion day or its correction).
+  The cut-off is recorded automatically the first time the new code runs (`system/gstFilingDates`),
+  so no migration script is needed. Saving a date replaces it.
+- **Sync (owner: matter → report only):** the sheet shows the saved date and follows every edit on
+  its next opening; the sheet never writes to a matter, and a matter-fed date cell cannot be typed
+  over or uploaded over.
+- **Wrong record — root cause:** a row was tied to a matter not only by the sync but whenever a
+  person picked a matter in the row's Matter cell, with no check that the matter was for that
+  row's client and period, or that it did not already have a row. The sync then wrote to whichever
+  linked row it read first and, that row never having been synced, overwrote its client, GSTIN,
+  period, statuses and dates with the matter's. Adoption of a typed row (same GSTIN + period)
+  could also take another company's row, because the GSTIN comes from the client's one profile
+  while a client can hold matters for several organisations.
+- **Fix:** the Matter cell only accepts a matter of the row's client and period, of that sheet's
+  kind, with no row yet (otherwise refused, with the reason); every sync keeps only the matter's
+  own row and **releases** any other link (the released row keeps its cells, loses its link, and
+  is never written to again); adoption also checks the client name. Rows damaged before this fix
+  keep the values they were given — staff should check rows the sync released (logged) and delete
+  duplicates.
+- **Not changed (open):** a matter opened BY HAND takes the period that had just ended when it was
+  opened; a matter opened late for an older month still maps to the later month. A period picker
+  on hand-opened GST matters would close this.
+- Tests: `backend/src/__tests__/gstReturnSheet.test.js` — 28 (was 23): manual date shown before /
+  after completion, never from completion; legacy dates; validation incl. a reached-not-completed
+  task and removal; history lines; the sheet follows an edit; row fit; the bug case (another
+  client's row linked by the Matter cell is released, the matter's own row kept, order-independent);
+  link check; source checks of the sync and controller. `Portal/e2e/gst-return-filing.spec.ts`
+  updated: completion sets no date; Add Filing Date beside the current task; add and change from
+  the header; history; sheet follows and refuses a typed edit; the Matter cell refuses another
+  client's row and a second row. Playwright not yet run (to run on QA after merge).
+
 ### GST Return Filing sheet: GSTR-1 date shown under GSTR-3B (2026-11-14, #279) — E18-S11 🔄 In review
 
 The firm reported (11 Nov) a GSTR-1 filing date (11 Nov 2026) under "Date of GSTR-3B Filing".
@@ -7882,6 +7971,96 @@ team.
 - Tests: `backend/src/__tests__/worksheetSecrets.test.js` (7: secret field, stored as typed,
   kept as typed, migration, lists never include it, guard, no caching or logging);
   `gst-return-filing.spec.ts` (masked; click copies it and opens the GST portal; client 403).
+
+### Invoices on a matter's Payments tab (2026-11-19, #313) 🔄 In review
+
+The firm asked for invoice upload and download in a matter's Payments section. Design in
+architecture.md, "Invoices on a matter's Payments tab".
+- Admins and managers press **Upload invoice** in the Payments tab and choose a PDF (up to
+  10 MB). A matter can hold several; each is listed with its file name and upload date, and
+  can be **Replaced** (the new file takes its place) or **Deleted** (after a confirmation).
+  Each change is on the matter's activity log.
+- The matter's client sees an **Invoices** card on their Payments tab once one is uploaded,
+  and downloads each invoice. A client asking for another client's matter gets 404.
+- **Decision — team members:** the issue does not mention them. They are refused (no
+  Payments tab, API 403), because a team member must not see payment information (#148).
+  Opening invoices to them read-only is one line on two routes if the firm wants it.
+- Only PDFs: the type is checked on the request, pinned into the upload link, and the
+  file's first bytes are checked before it is accepted.
+- Not built: notifying or emailing the client when an invoice is added (not asked).
+- Tests: `backend/src/__tests__/invoices.test.js` (14), `Portal/e2e/invoices.spec.ts` (8).
+
+
+### Chat: received bubble, drafts kept, images shown at one size (2026-11-19, #297 follow-up, #319) 🔄 In review
+
+**#297 follow-up (2026-11-16 comment) — the firm meant the RECEIVED bubble.** It was
+near-white (`surface-soft`, #f8f9fa — 1.05:1 against the white thread). It is now
+`surface-strong` (#e5e7eb) with a visible edge; the sent bubble is unchanged. On the darker
+grey the name, shared/internal hint and time move to `ink-soft` (8.3:1), and "Read more"
+moves to `brand-700` (5.4:1), so all text stays WCAG AA.
+
+**#297 follow-up — drafts.** The Chat tab unmounts when someone opens another tab of the
+matter, so an unsent message was lost. The new-message box and an edit in progress are now
+kept with the step-comment draft store (`hooks/useCommentDraft.ts`, #83): localStorage,
+keyed per matter (and per message for an edit) AND per signed-in user, so a draft never
+shows on another matter or to another person on a shared computer. It survives tab
+switches and reloads, and goes when it is sent/saved, cancelled, or emptied. The hook used
+to DROP the last keystrokes (still in the 800 ms autosave delay) on unmount; it now writes
+them — step comments benefit too. The "Visible to client" tick is not kept: a restored
+draft is internal until ticked again (#115).
+
+**#319 — images in Chat did not display.** Root cause: `RichText` returned its content bare
+while it fitted and wrapped it in a new `<div>` once it overflowed the "Read more" fold.
+A tall image overflows only after it loads, so its load event flipped the fold, React
+remounted the content node from the stored HTML — where an image never has a src (bytes
+are fetched with the viewer's credentials) — and the hydrate effect did not re-run: a
+broken-image box with "Read more" under it. The wrapper is now always rendered. This also
+affected step comments with tall images.
+- **One display size:** every image in Chat (thread and composer) is shown in a 15rem ×
+  11.25rem box (240 × 180 px; narrower on a small phone), the whole picture fitted inside
+  (`object-fit: contain`). Click still opens the original full size.
+- **Dimension check before sending:** at least **20 × 20 px** and at most **8,000 px** on
+  either side. One copy in `shared/richText/limits.js`; the editor reads the image's size
+  in the browser before uploading and shows a clear error (nothing is uploaded or
+  inserted), and the upload endpoint enforces the same rule from the real bytes (sharp
+  header read) with 422 `IMAGE_DIMENSIONS`. Type (JPEG/PNG/WebP) and 5 MB checks unchanged.
+  20 px (not 50) so a cropped screenshot of one line of text is still accepted; 8,000 px
+  because a 5 MB PNG can claim enormous dimensions that every viewer's browser must decode.
+- Tests: `backend/src/__tests__/commentImages.test.js` (+5: limits, edges, messages, reading
+  PNG/JPEG/WebP sizes, unreadable bytes). Playwright: `discussion.spec.ts` (+5: received
+  bubble colour, draft across tab switch/reload/send, edit draft, fixed image box with
+  decoded images, too-small/too-large refused); `comment-images.spec.ts` (API 422 for
+  out-of-range sizes; a tall image in a step comment still decodes; fixtures are now real
+  64×48 PNGs from `e2e/png.ts`, since a 1×1 pixel is refused). Playwright not run by the
+  author (QA after merge). User-visible: yes.
+
+### Completion email: "Explore more services" block (2026-11-19, #310) — E-07 🔄 In review
+
+The firm asked that the thank-you email a client gets when a service is completed also
+promote the firm's other services, with one common text for every service, editable by
+Admin and Manager in Settings.
+- **The existing email:** the one completion email is the client's "Your service is
+  complete" notification, mirrored to email by `createNotification` from `transitionTask`
+  when the matter reaches `completed` (CC the matter's `ccEmails`, threaded with the
+  matter). It goes to the client already; its wording is unchanged.
+- **What was built:** a block appended below the message and its "View in Portal" button —
+  a heading and a text, seeded with the firm's example (services list, tagline,
+  https://legalterminus.com/). Settings → Email Templates → "Client — Service completed:
+  Explore more services". An on/off switch; auto-saves like the templates; Reset restores
+  the seed text. Bare web addresses become links, "- " lines become bullets.
+- **Off or empty → the email is exactly as before** (asserted byte-for-byte in the unit test).
+- **Who:** admin and manager (`GET/PUT /api/settings/completion-marketing`). A manager now
+  reaches Settings → Email Templates but sees only this block; the other templates stay
+  admin-only (their API still refuses a manager).
+- **No database write needed:** the seed text is a code default merged on read; nothing
+  was written to QA or live. Only the client's completion email carries it — not the
+  matter owner's "Matter completed" notice, not the in-app notification.
+- **Unchanged edge:** if the CLIENT performs the final step themselves, no completion
+  notice is sent at all (existing "don't notify the actor" rule), so no block either.
+- Tests: `backend/src/__tests__/completionMarketing.test.js` (6: default in the email,
+  off/empty unchanged, empty stays empty, no markup injection, schema, only the client's
+  notice); `email-templates.spec.ts` (+4: admin/manager allowed, team/client 403;
+  manager round-trip, tags stripped, 400s; manager UI edit + switch save; admin sees it).
 
 ### Several assignees on one step — reopened again (2026-11-19, #192) — E10-S01 🔄 In review
 

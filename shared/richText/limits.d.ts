@@ -6,3 +6,6 @@ export declare const MESSAGE_MAX_CHARS: number;
 export declare function maxCharsFor(what: string): number;
 export declare const COMMENT_MAX_INPUT_CHARS: number;
 export declare const MESSAGE_MAX_INPUT_CHARS: number;
+export declare const COMMENT_IMAGE_MIN_SIDE_PX: number;
+export declare const COMMENT_IMAGE_MAX_SIDE_PX: number;
+export declare function commentImageDimensionProblem(width: number, height: number): string | null;

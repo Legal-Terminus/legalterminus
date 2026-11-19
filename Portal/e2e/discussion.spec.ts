@@ -1,6 +1,7 @@
 import { test, expect } from './fixtures';
 import { apiAs, createMatter, deleteMatter, assignMatter, getNotifications, waitForNotification, assignStep, currentStep } from './api';
 import { env } from './helpers';
+import { solidPng } from './png';
 
 /**
  * #123 — per-matter discussion thread (client ⇄ internal team).
@@ -514,5 +515,134 @@ test('#295: a 5,000-word message can be sent; the counter shows the 5,000 limit'
     await expect(adminPage.getByText(/4,200 \/ 5,000 words/)).toBeVisible();
     await adminPage.getByRole('button', { name: /^Send$/ }).click();
     await expect(adminPage.getByText('internal').first()).toBeVisible();
+  } finally { await deleteMatter(taskId); }
+});
+
+/* ── #297 follow-up: received bubble and drafts ─────────────────────────── */
+
+test('#297: a received message sits on a darker grey bubble with readable meta text', async ({ adminPage }) => {
+  const taskId = await createMatter();
+  const client = await apiAs('client');
+  try {
+    const text = `RECEIVED-${Date.now()}`;
+    await client.post(`/api/tasks/${taskId}/messages`, { data: { body: text } });
+    await adminPage.goto(`tasks/${taskId}`);
+    await adminPage.getByRole('button', { name: 'Chat', exact: true }).click();
+    const theirs = adminPage.getByTestId('chat-bubble').filter({ hasText: text }).filter({ visible: true });
+    await expect(theirs).toBeVisible();
+    await expect(theirs).toHaveClass(/bg-surface-strong/);
+    // #e5e7eb — no longer the near-white #f8f9fa that vanished on the white thread.
+    expect(await theirs.evaluate((el) => getComputedStyle(el).backgroundColor)).toBe('rgb(229, 231, 235)');
+    // Meta text on it is ink-soft (AA on the grey), not the faint grey it was.
+    await expect(theirs.getByText('shared', { exact: true })).toHaveClass(/text-ink-soft/);
+  } finally { await client.dispose(); await deleteMatter(taskId); }
+});
+
+test('#297: an unsent Chat draft survives a tab switch and a reload, and is gone once sent', async ({ adminPage }) => {
+  const taskId = await createMatter();
+  try {
+    await adminPage.goto(`tasks/${taskId}`);
+    const chatTab = adminPage.getByRole('button', { name: 'Chat', exact: true });
+    await chatTab.click();
+    const draft = `DRAFT-${Date.now()}`;
+    const editor = adminPage.getByLabel('Message', { exact: true });
+    await editor.click();
+    await editor.pressSequentially(draft);
+
+    // Straight to another tab — no pause for the autosave — and back.
+    await adminPage.getByRole('button', { name: 'Steps', exact: true }).click();
+    await chatTab.click();
+    await expect(adminPage.getByLabel('Message', { exact: true })).toContainText(draft);
+
+    // A reload keeps it too.
+    await adminPage.reload();
+    await adminPage.getByRole('button', { name: 'Chat', exact: true }).click();
+    await expect(adminPage.getByLabel('Message', { exact: true })).toContainText(draft);
+
+    // Sent → the box is empty, and stays empty after a tab switch.
+    await adminPage.getByRole('button', { name: /^Send$/ }).click();
+    await expect(adminPage.getByTestId('chat-bubble-mine').filter({ hasText: draft })).toBeVisible();
+    await adminPage.getByRole('button', { name: 'Steps', exact: true }).click();
+    await adminPage.getByRole('button', { name: 'Chat', exact: true }).click();
+    await expect(adminPage.getByTestId('chat-bubble-mine').filter({ hasText: draft })).toBeVisible();
+    await expect(adminPage.getByLabel('Message', { exact: true })).not.toContainText(draft);
+  } finally { await deleteMatter(taskId); }
+});
+
+test('#297: an edit in progress survives a tab switch; Cancel discards it', async ({ adminPage }) => {
+  const taskId = await createMatter();
+  const admin = await apiAs('admin');
+  try {
+    const original = `ORIGINAL-${Date.now()}`;
+    await admin.post(`/api/tasks/${taskId}/messages`, { data: { body: original, clientVisible: false } });
+    await adminPage.goto(`tasks/${taskId}`);
+    await adminPage.getByRole('button', { name: 'Chat', exact: true }).click();
+    await adminPage.getByRole('button', { name: 'Edit message' }).click();
+    const changed = `${original}-HALF-DONE`;
+    await adminPage.getByLabel('Edit message', { exact: true }).fill(changed);
+
+    await adminPage.getByRole('button', { name: 'Steps', exact: true }).click();
+    await adminPage.getByRole('button', { name: 'Chat', exact: true }).click();
+    // Back in edit mode, with the unsaved text.
+    await expect(adminPage.getByLabel('Edit message', { exact: true })).toContainText(changed);
+
+    await adminPage.getByTestId('chat-bubble-mine').getByRole('button', { name: 'Cancel', exact: true }).click();
+    await adminPage.getByRole('button', { name: 'Steps', exact: true }).click();
+    await adminPage.getByRole('button', { name: 'Chat', exact: true }).click();
+    await expect(adminPage.getByLabel('Edit message', { exact: true })).toHaveCount(0);
+    await expect(adminPage.getByText(original, { exact: true })).toBeVisible();
+  } finally { await admin.dispose(); await deleteMatter(taskId); }
+});
+
+/* ── #319: images in Chat ───────────────────────────────────────────────── */
+
+test('#319: Chat images load and show in one fixed box, whatever their shape', async ({ adminPage }) => {
+  const taskId = await createMatter();
+  try {
+    await adminPage.goto(`tasks/${taskId}`);
+    await adminPage.getByRole('button', { name: 'Chat', exact: true }).click();
+    const msg = `IMG-SIZE-${Date.now()}`;
+    await adminPage.getByLabel('Message', { exact: true }).pressSequentially(msg);
+    const input = adminPage.getByTestId('comment-image-input').first();
+    // A tall strip and a wide banner — very different shapes.
+    await input.setInputFiles({ name: 'tall.png', mimeType: 'image/png', buffer: solidPng(40, 1600) });
+    await input.setInputFiles({ name: 'wide.png', mimeType: 'image/png', buffer: solidPng(1600, 60) });
+    await expect(adminPage.getByLabel('Message', { exact: true }).locator('img[data-lt-image][src^="blob:"]')).toHaveCount(2, { timeout: 15_000 });
+    await adminPage.getByRole('button', { name: /^Send$/ }).click();
+
+    const bubble = adminPage.getByTestId('chat-bubble-mine').filter({ hasText: msg }).filter({ visible: true });
+    await expect(bubble).toBeVisible();
+    const imgs = bubble.locator('img[data-lt-image]');
+    await expect(imgs).toHaveCount(2);
+    // Both really decoded (the bug: a broken box with "Read more" under it).
+    for (const i of [0, 1]) {
+      await expect.poll(() => imgs.nth(i).evaluate((el) => (el as HTMLImageElement).naturalWidth), { timeout: 15_000 }).toBeGreaterThan(0);
+    }
+    const boxes = await Promise.all([0, 1].map((i) => imgs.nth(i).boundingBox()));
+    for (const b of boxes) {
+      expect(Math.round(b!.height)).toBe(180); // 11.25rem
+    }
+    expect(Math.round(boxes[0]!.width)).toBe(Math.round(boxes[1]!.width));
+    expect(await imgs.first().evaluate((el) => getComputedStyle(el).objectFit)).toBe('contain');
+  } finally { await deleteMatter(taskId); }
+});
+
+test('#319: an image outside 20–8,000 px is refused before sending, with a clear reason', async ({ adminPage }) => {
+  const taskId = await createMatter();
+  try {
+    await adminPage.goto(`tasks/${taskId}`);
+    await adminPage.getByRole('button', { name: 'Chat', exact: true }).click();
+    const editor = adminPage.getByLabel('Message', { exact: true });
+    const input = adminPage.getByTestId('comment-image-input').first();
+
+    await input.setInputFiles({ name: 'dot.png', mimeType: 'image/png', buffer: solidPng(10, 10) });
+    await expect(adminPage.getByRole('alert').filter({ hasText: /too small.*10 × 10 pixels.*at least 20 × 20/ })).toBeVisible();
+    await expect(editor.locator('img')).toHaveCount(0);
+
+    await input.setInputFiles({ name: 'huge.png', mimeType: 'image/png', buffer: solidPng(8001, 20) });
+    await expect(adminPage.getByRole('alert').filter({ hasText: /too large.*8,000 pixels/ })).toBeVisible();
+    await expect(editor.locator('img')).toHaveCount(0);
+    // Nothing to send: no text, no image.
+    await expect(adminPage.getByRole('button', { name: /^Send$/ })).toBeDisabled();
   } finally { await deleteMatter(taskId); }
 });

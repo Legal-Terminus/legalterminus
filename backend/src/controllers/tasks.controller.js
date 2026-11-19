@@ -8,7 +8,7 @@ import { loadPhaseAssignments } from './workflowDefinitions.controller.js';
 import { createNotification, resolveNotificationsForTask } from './notifications.controller.js';
 import { finalizeMatterDocuments } from './documents.controller.js';
 import { publicSiteUrl, sendTemplatedEmail } from '../services/emailService.js';
-import { renderTemplate } from '../services/emailTemplates.service.js';
+import { renderTemplate, completionMarketingBlock } from '../services/emailTemplates.service.js';
 import { prepareRichText, richTextToPlain } from '../services/richText.service.js';
 import { resolveCommentImages, shareCommentImages } from '../services/commentImages.service.js';
 import { compileDefinition } from '../../../shared/workflows/compileDefinition.js';
@@ -180,13 +180,13 @@ async function attachClientContacts(rows) {
 // Fire-and-forget in-app notification. NEVER let a notification failure break the
 // workflow action that triggered it — we log and move on. Skips self-notification
 // (don't ping someone for their own action) and empty recipients.
-async function notify({ recipientUid, actorUid, type = 'info', title, message, taskId, stepNumber }) {
+async function notify({ recipientUid, actorUid, type = 'info', title, message, taskId, stepNumber, emailAppendix }) {
   try {
     if (!recipientUid || recipientUid === actorUid) return;
     // #293: a system actor (`system:gst-returns`) is recorded as a matter's
     // creator but is nobody's inbox — "Matter approved" to it was a dead write.
     if (String(recipientUid).startsWith('system:')) return;
-    await createNotification({ recipientUid, type, title, message, taskId, stepNumber });
+    await createNotification({ recipientUid, type, title, message, taskId, stepNumber, emailAppendix });
   } catch (err) {
     logger.warn({ err: err?.message }, 'notify: failed to create notification');
   }
@@ -218,8 +218,8 @@ async function adminUids() {
 // masks comments that aren't client-visible (fail closed), but the raw remark on
 // the step record bypassed that — so it must never reach the client either. The
 // client sees a comment only via the (filtered) event feed.
-// #294: filedOnCorrection carries who corrected a filing date — staff detail; the client sees the date (filedOn).
-const CLIENT_STEP_HIDDEN = ['assignedTo', 'assignedToUids', 'assignedRole', 'completedBy', 'isUrgent', 'remark', 'filedOnCorrection'];
+// #294: filingDate / filedOnCorrection carry who saved a filing date — staff detail; the client sees the date (filedOn).
+const CLIENT_STEP_HIDDEN = ['assignedTo', 'assignedToUids', 'assignedRole', 'completedBy', 'isUrgent', 'remark', 'filedOnCorrection', 'filingDate'];
 
 /**
  * #166 — the client identity a request acts as.
@@ -3142,8 +3142,13 @@ export async function transitionTask(req, res) {
       const ctx = `${task.clientName ?? ''} · ${task.serviceName ?? task.workflowType ?? ''}`;
       if (isComplete) {
         // Matter finished — congratulate the client + tell the matter owner.
+        // #310: the CLIENT's completion email also carries the firm's editable
+        // "Explore more services" block (Settings → Email Templates). Null when
+        // it is switched off or empty, and the email is then exactly as before.
+        // The owner's internal notice never carries it.
+        const completionAppendix = await completionMarketingBlock();
         await notify({ recipientUid: task.clientUid, actorUid: uid, type: 'success',
-          title: 'Your service is complete', message: ctx, taskId });
+          title: 'Your service is complete', message: ctx, taskId, emailAppendix: completionAppendix });
         await notify({ recipientUid: task.assignedTo, actorUid: uid, type: 'success',
           title: 'Matter completed', message: ctx, taskId });
       } else if (newStep !== task.currentStepNumber) {
@@ -3279,7 +3284,8 @@ export async function deleteTask(req, res) {
     // NOTE: this list is explicit — a NEW subcollection must be added here too.
     const counts = {};
     // #122 follow-up: + commentImages (the bytes go with the Storage prefix below).
-    for (const sub of ['steps', 'events', 'documents', 'payments', 'commentImages']) {
+    // #313: + invoices (their bytes are under tasks/{taskId}/invoices/, swept below).
+    for (const sub of ['steps', 'events', 'documents', 'payments', 'commentImages', 'invoices']) {
       const subSnap = await taskRef.collection(sub).get();
       counts[sub] = subSnap.size;
       if (subSnap.empty) continue;

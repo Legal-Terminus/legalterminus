@@ -1,6 +1,11 @@
 import { Router } from 'express';
 import { verifyToken, requireRole } from '../middleware/auth.middleware.js';
-import { getEmailTemplatesSettings, putEmailTemplatesSettings } from '../controllers/settings.controller.js';
+import { validate } from '../middleware/validate.middleware.js';
+import { completionMarketingSchema } from '../schemas/settings.schema.js';
+import {
+  getEmailTemplatesSettings, putEmailTemplatesSettings,
+  getCompletionMarketingSettings, putCompletionMarketingSettings,
+} from '../controllers/settings.controller.js';
 import { getStatutoryCalendar, putStatutoryOverride } from '../controllers/statutoryCalendar.controller.js';
 
 const router = Router();
@@ -8,6 +13,13 @@ const router = Router();
 // Admin-only app settings. Email templates edited from Settings → Email Templates.
 router.get('/email-templates', verifyToken, requireRole('admin'), getEmailTemplatesSettings);
 router.put('/email-templates', verifyToken, requireRole('admin'), putEmailTemplatesSettings);
+
+// #310: the "Explore more services" block on the client's completion email.
+// Admins AND managers edit it (the firm asked for both); the rest of the email
+// templates stay admin-only.
+router.get('/completion-marketing', verifyToken, requireRole('admin', 'manager'), getCompletionMarketingSettings);
+router.put('/completion-marketing', verifyToken, requireRole('admin', 'manager'),
+  validate(completionMarketingSchema), putCompletionMarketingSettings);
 
 // The statutory calendar. READING is open to any staff member — the compliance
 // calendar is a view of the firm's year and everyone benefits from it. EDITING

@@ -5,6 +5,8 @@ import PageShell from '../../components/common/PageShell';
 import CollapsibleSection from '../../components/common/CollapsibleSection';
 import { useToast } from '../../components/common/toastContext';
 import { getEmailTemplates, putEmailTemplates, type EmailTemplate } from '../../api/settings';
+import { useAuthStore } from '../../store/authStore';
+import CompletionMarketingSection from './CompletionMarketingSection';
 
 type SaveState = 'idle' | 'saving' | 'saved' | 'error';
 
@@ -15,10 +17,16 @@ type SaveState = 'idle' | 'saving' | 'saved' | 'error';
  */
 export default function EmailTemplatesPage() {
   const toast = useToast();
+  // #310: managers reach this page too, but only to edit the completion email's
+  // "Explore more services" block — the templates themselves stay admin-only
+  // (the API refuses them), so the template list is not even requested.
+  const role = useAuthStore((s) => s.role);
+  const isAdmin = role === 'admin';
   const { data, isLoading, error } = useQuery({
     queryKey: ['email-templates'],
     queryFn: getEmailTemplates,
     staleTime: 60_000,
+    enabled: isAdmin,
   });
 
   const [edits, setEdits] = useState<Record<string, EmailTemplate>>({});
@@ -148,6 +156,17 @@ export default function EmailTemplatesPage() {
     );
   };
 
+  if (!isAdmin) {
+    return (
+      <PageShell
+        title="Email Templates"
+        subtitle="Edit the “Explore more services” block added to the email a client receives when their service is complete."
+      >
+        <CompletionMarketingSection />
+      </PageShell>
+    );
+  }
+
   return (
     <PageShell
       title="Email Templates"
@@ -167,6 +186,7 @@ export default function EmailTemplatesPage() {
             <section key={audience}>
               <h2 className="text-sm font-semibold text-ink mb-3 inline-flex items-center gap-2">{icon}{label}</h2>
               <div className="space-y-3">
+                {audience === 'client' && <CompletionMarketingSection />}
                 {groups[audience].map(renderCard)}
               </div>
             </section>

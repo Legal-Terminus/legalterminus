@@ -5,12 +5,13 @@ import { logger } from '../config/logger.js';
 import { BOOKS, SHEETS, MODULES } from '../config/worksheetDefinitions.js';
 import {
   resolveSheet, bookFields, computeValues, cleanRecordValues, sheetRecordKey, applyColumnEdit, applyOptionsEdit,
-  planImport, encodeCursor, decodeCursor,
+  planImport, encodeCursor, decodeCursor, withStaffChoices,
 } from '../services/worksheetEngine.service.js';
+import { loadWorksheetStaff } from '../services/worksheetStaff.service.js';
 import { runWorksheetReminderSweep } from '../services/worksheetReminders.service.js';
 import { syncSheetFromMatters } from '../services/gstReturnSheetSync.service.js';
 import { invalidateGstReturnServiceKeys } from '../services/gstMatterTags.service.js';
-import { matterOwnedDateFields } from '../services/gstReturnSheet.service.js';
+import { matterOwnedDateFields, matterIdentityOf, checkMatterLink } from '../services/gstReturnSheet.service.js';
 import {
   secretFieldsOf, splitSecretValues, secretWrites, secretsSetOf, withoutSecrets, sealSecret, openSecret,
 } from '../services/worksheetSecrets.service.js';
@@ -52,6 +53,13 @@ async function loadConfig(db, book) {
   return snap.exists ? snap.data() : {};
 }
 
+/**
+ * #280: the staff list, read only when the book has a staff column (TDS:
+ * Assigned to, Checker) — every other sheet never queries users.
+ */
+const hasStaffField = (fields) => fields.some((fd) => fd.type === 'staff');
+const staffFor = (db, fields) => (hasStaffField(fields) ? loadWorksheetStaff(db) : Promise.resolve([]));
+
 /** The sheet named in the URL, resolved against the firm's edits, or a 404. */
 async function sheetContext(req, res) {
   const key = req.params.sheet;
@@ -81,6 +89,31 @@ async function loadRecord(db, sheet, id, tx) {
  */
 const matterLink = (sheet, values) => (BOOKS[sheet.book]?.sync && typeof values?.matter === 'string' && values.matter
   ? { sourceMatterId: values.matter } : {});
+
+/**
+ * #294 — the wrong-record fix, at the point of linking. Picking a matter in a
+ * row's Matter cell used to link ANY GST matter to ANY row, and the sync then
+ * wrote that matter's data over the row (see gstReturnSheet.service.js, "which
+ * row is a matter's"). Now the matter must be a return of this sheet's kind
+ * (Monthly / Quarterly), for this row's client and return period, and not
+ * already have its own row. `rowValues` are the row's values after the edit;
+ * `recordId` the row being edited (null when adding). Throws a 400 / 409.
+ */
+async function guardMatterLink(db, sheet, matterId, rowValues, recordId = null) {
+  if (!BOOKS[sheet.book]?.sync || typeof matterId !== 'string' || !matterId) return;
+  const t = await db.collection('tasks').doc(matterId).get();
+  if (!t.exists) throw httpError(400, 'That matter no longer exists.');
+  const task = { id: t.id, ...t.data() };
+  const client = task.clientUid ? ((await db.collection('users').doc(task.clientUid).get()).data() ?? null) : null;
+  const linked = await db.collection(RECORDS).where('book', '==', sheet.book).where('sourceMatterId', '==', matterId).limit(5).get();
+  const bad = checkMatterLink({
+    sheetFrequency: SHEETS[sheet.key]?.frequency ?? null,
+    row: { values: rowValues },
+    identity: matterIdentityOf({ task, client }),
+    otherRowIds: linked.docs.map((d) => d.id).filter((id) => id !== recordId),
+  });
+  if (bad) throw httpError(bad.status, bad.message, { code: 'MATTER_LINK' });
+}
 
 const reminderDueFor = (bookKey, fields, values) => {
   const r = BOOKS[bookKey]?.reminder;
@@ -155,9 +188,12 @@ export async function getModule(req, res) {
     const snaps = await db.getAll(...books.map((b) => db.collection(CONFIG).doc(b)));
     const configs = Object.fromEntries(snaps.map((s) => [s.id, s.exists ? s.data() : {}]));
     const isAdmin = req.user.role === 'admin';
+    const sheets = mod.sheets.map((s) => resolveSheet(s, configs[SHEETS[s].book]));
+    // #280: staff columns carry their choices (uid + name) with the sheet.
+    const staff = sheets.some((sh) => sh.columns.some((c) => c.type === 'staff')) ? await loadWorksheetStaff(db) : [];
     res.json({
       module: { key: mod.key, label: mod.label },
-      sheets: mod.sheets.map((s) => resolveSheet(s, configs[SHEETS[s].book])),
+      sheets: sheets.map((sh) => withStaffChoices(sh, staff)),
       // Everyone on the staff views and edits (firm, 29 Oct); columns and
       // deleting a record are the admin's.
       canEdit: true,
@@ -206,9 +242,10 @@ export async function createRecord(req, res) {
     const { db, sheet, fields } = ctx;
     // #279: secret cells are taken out first and kept, as typed, under `secrets`.
     const split = splitSecretValues(sheet.book, req.body.values);
-    const values = dropNulls(cleanRecordValues(fields, split.values));
+    const values = dropNulls(cleanRecordValues(fields, split.values, { staff: await staffFor(db, fields) }));
     if (Object.keys(values).length === 0 && Object.keys(split.secrets).length === 0) return res.status(400).json({ message: 'Fill in at least one column.' });
     await checkMatters(db, sheet, fields, values);
+    await guardMatterLink(db, sheet, values.matter, values);
     const sealed = secretWrites(sheet.book, { values, incoming: split.secrets });
     const sheets = cleanMemberships(sheet, [sheet.key, ...(req.body.sheets ?? [])]);
     const recordKey = sheetRecordKey(sheet, values);
@@ -248,8 +285,16 @@ export async function updateRecord(req, res) {
     const { db, sheet, fields } = ctx;
     // #279: secret cells are taken out first (an empty password box means "no change").
     const split = splitSecretValues(sheet.book, req.body.values ?? {});
-    const patch = req.body.values ? cleanRecordValues(fields, split.values) : {};
+    const patch = req.body.values ? cleanRecordValues(fields, split.values, { staff: await staffFor(db, fields) }) : {};
     await checkMatters(db, sheet, fields, patch);
+    if (BOOKS[sheet.book]?.sync && typeof patch.matter === 'string' && patch.matter) {
+      // #294: only a NEW link is checked — re-saving a row with its own matter is not.
+      const current = await loadRecord(db, sheet, req.params.id);
+      if (!current) return res.status(404).json({ message: 'Record not found' });
+      if (patch.matter !== current.data.sourceMatterId) {
+        await guardMatterLink(db, sheet, patch.matter, { ...(current.data.values ?? {}), ...patch }, current.ref.id);
+      }
+    }
     const sheets = req.body.sheets ? cleanMemberships(sheet, req.body.sheets) : null;
     const now = new Date().toISOString();
 
@@ -262,7 +307,7 @@ export async function updateRecord(req, res) {
       const owned = matterOwnedDateFields(rec.data, patch);
       if (owned.length) {
         const label = fields.find((fd) => fd.key === owned[0])?.label ?? 'This date';
-        throw httpError(409, `${label} comes from the matter. Correct it on the matter's filing task ("Filed on").`, { code: 'MATTER_OWNED_DATE' });
+        throw httpError(409, `${label} comes from the matter. Change it on the matter's filing task ("Filed on").`, { code: 'MATTER_OWNED_DATE' });
       }
       // Merged inside the transaction so two people editing different cells
       // of the same row never overwrite each other.
@@ -320,7 +365,7 @@ export async function putColumns(req, res) {
     // #292: the GST sheet's linked services decide which matters show a Filing Month.
     if (ctx.sheet.book === 'gst_return') invalidateGstReturnServiceKeys();
     logger.info({ sheet: ctx.sheet.key, actorUid: req.user.uid }, 'Worksheet columns updated');
-    res.json(resolveSheet(ctx.sheet.key, { ...ctx.config, ...next }));
+    res.json(withStaffChoices(resolveSheet(ctx.sheet.key, { ...ctx.config, ...next }), await staffFor(ctx.db, ctx.fields)));
   } catch (err) { sendKnown(res, err, 'putColumns failed'); }
 }
 
@@ -338,7 +383,7 @@ export async function putOptions(req, res) {
     await ctx.db.collection(CONFIG).doc(ctx.sheet.book).set({ optionOverrides, updatedAt: now, updatedBy: req.user.uid }, { merge: true });
     const config = { ...ctx.config, optionOverrides: { ...(ctx.config.optionOverrides ?? {}), ...optionOverrides } };
     logger.info({ sheet: ctx.sheet.key, field: req.params.field, count: optionOverrides[req.params.field].length, actorUid: req.user.uid }, 'Worksheet dropdown options updated');
-    res.json(resolveSheet(ctx.sheet.key, config));
+    res.json(withStaffChoices(resolveSheet(ctx.sheet.key, config), await staffFor(ctx.db, ctx.fields)));
   } catch (err) { sendKnown(res, err, 'putOptions failed'); }
 }
 
@@ -364,7 +409,9 @@ export async function importRows(req, res) {
         });
       }
     }
-    const plan = planImport({ sheet, fields, headers, rows, existingByKey, startRow });
+    // #280: Assigned to / Checker cells are matched to staff by name or email.
+    const staff = await staffFor(db, fields);
+    const plan = planImport({ sheet, fields, headers, rows, existingByKey, startRow, staff });
     // #294: an upload never overwrites a filing date that comes from a matter (see updateRecord).
     for (const up of plan.updates) {
       const ex = existingByKey.get(up.key);
@@ -374,7 +421,7 @@ export async function importRows(req, res) {
       up.changed = Object.entries(up.values).some(([k, v]) => ex.values?.[k] !== v);
       if (plan.warnings.length < 50) {
         plan.warnings.push({ row: null, column: owned.map((k) => fields.find((fd) => fd.key === k)?.label ?? k).join(', '),
-          message: `Kept the matter's date for ${up.key}: correct it on the matter's filing task.` });
+          message: `Kept the matter's date for ${up.key}: change it on the matter's filing task.` });
       }
     }
     plan.summary.updatedRows = plan.updates.filter((u) => u.changed || u.addsSheet).length;
