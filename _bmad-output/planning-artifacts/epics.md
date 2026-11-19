@@ -7990,6 +7990,50 @@ architecture.md, "Invoices on a matter's Payments tab".
 - Not built: notifying or emailing the client when an invoice is added (not asked).
 - Tests: `backend/src/__tests__/invoices.test.js` (14), `Portal/e2e/invoices.spec.ts` (8).
 
+
+### Chat: received bubble, drafts kept, images shown at one size (2026-11-19, #297 follow-up, #319) 🔄 In review
+
+**#297 follow-up (2026-11-16 comment) — the firm meant the RECEIVED bubble.** It was
+near-white (`surface-soft`, #f8f9fa — 1.05:1 against the white thread). It is now
+`surface-strong` (#e5e7eb) with a visible edge; the sent bubble is unchanged. On the darker
+grey the name, shared/internal hint and time move to `ink-soft` (8.3:1), and "Read more"
+moves to `brand-700` (5.4:1), so all text stays WCAG AA.
+
+**#297 follow-up — drafts.** The Chat tab unmounts when someone opens another tab of the
+matter, so an unsent message was lost. The new-message box and an edit in progress are now
+kept with the step-comment draft store (`hooks/useCommentDraft.ts`, #83): localStorage,
+keyed per matter (and per message for an edit) AND per signed-in user, so a draft never
+shows on another matter or to another person on a shared computer. It survives tab
+switches and reloads, and goes when it is sent/saved, cancelled, or emptied. The hook used
+to DROP the last keystrokes (still in the 800 ms autosave delay) on unmount; it now writes
+them — step comments benefit too. The "Visible to client" tick is not kept: a restored
+draft is internal until ticked again (#115).
+
+**#319 — images in Chat did not display.** Root cause: `RichText` returned its content bare
+while it fitted and wrapped it in a new `<div>` once it overflowed the "Read more" fold.
+A tall image overflows only after it loads, so its load event flipped the fold, React
+remounted the content node from the stored HTML — where an image never has a src (bytes
+are fetched with the viewer's credentials) — and the hydrate effect did not re-run: a
+broken-image box with "Read more" under it. The wrapper is now always rendered. This also
+affected step comments with tall images.
+- **One display size:** every image in Chat (thread and composer) is shown in a 15rem ×
+  11.25rem box (240 × 180 px; narrower on a small phone), the whole picture fitted inside
+  (`object-fit: contain`). Click still opens the original full size.
+- **Dimension check before sending:** at least **20 × 20 px** and at most **8,000 px** on
+  either side. One copy in `shared/richText/limits.js`; the editor reads the image's size
+  in the browser before uploading and shows a clear error (nothing is uploaded or
+  inserted), and the upload endpoint enforces the same rule from the real bytes (sharp
+  header read) with 422 `IMAGE_DIMENSIONS`. Type (JPEG/PNG/WebP) and 5 MB checks unchanged.
+  20 px (not 50) so a cropped screenshot of one line of text is still accepted; 8,000 px
+  because a 5 MB PNG can claim enormous dimensions that every viewer's browser must decode.
+- Tests: `backend/src/__tests__/commentImages.test.js` (+5: limits, edges, messages, reading
+  PNG/JPEG/WebP sizes, unreadable bytes). Playwright: `discussion.spec.ts` (+5: received
+  bubble colour, draft across tab switch/reload/send, edit draft, fixed image box with
+  decoded images, too-small/too-large refused); `comment-images.spec.ts` (API 422 for
+  out-of-range sizes; a tall image in a step comment still decodes; fixtures are now real
+  64×48 PNGs from `e2e/png.ts`, since a 1×1 pixel is refused). Playwright not run by the
+  author (QA after merge). User-visible: yes.
+
 ### Completion email: "Explore more services" block (2026-11-19, #310) — E-07 🔄 In review
 
 The firm asked that the thank-you email a client gets when a service is completed also

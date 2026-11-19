@@ -1,5 +1,6 @@
 import { randomUUID } from 'crypto';
 import sanitizeHtml from 'sanitize-html';
+import sharp from 'sharp';
 import { RICH_TEXT_OPTIONS, IMAGE_ID_RE } from './richText.service.js';
 
 /**
@@ -49,6 +50,21 @@ export function sniffImageType(buf) {
   if (buf.toString('ascii', 0, 4) === 'RIFF' && buf.toString('ascii', 8, 12) === 'WEBP') return 'image/webp';
   return null;
 }
+
+/**
+ * #319 — the pixel size of an uploaded image, read from its header (sharp's
+ * metadata() does not decode the bitmap). null when the bytes cannot be read.
+ * The limits themselves are the shared rule the editor applies before upload.
+ */
+export async function readImageDimensions(buf) {
+  try {
+    const { width, height } = await sharp(buf).metadata();
+    return width && height ? { width, height } : null;
+  } catch {
+    return null;
+  }
+}
+export { commentImageDimensionProblem, COMMENT_IMAGE_MIN_SIDE_PX, COMMENT_IMAGE_MAX_SIDE_PX } from '../../../shared/richText/limits.js';
 
 /** Image ids referenced by (sanitised) rich text, de-duplicated, in order. */
 export function extractImageIds(html) {
