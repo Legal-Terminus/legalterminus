@@ -387,6 +387,22 @@ Staff ask a matter's client for an additional payment — typically government f
 
 ---
 
+### User Story 15c — Invoices on a Matter's Payments Tab (Priority: P2) — #313
+
+Admins and managers upload a matter's invoices as PDF files in its Payments tab; the matter's client downloads them.
+
+**Acceptance Scenarios**:
+
+1. **Given** an admin or manager is on a matter's Payments tab, **When** they press Upload invoice and choose a PDF (up to 10 MB), **Then** the invoice is listed with its file name and upload date. A matter can hold several invoices, newest first.
+2. **Given** a file that is not a PDF — by its declared type or by its bytes (a PDF starts `%PDF-`) — or is over 10 MB, **Then** it is refused and nothing is kept.
+3. **Given** an admin or manager presses Replace on an invoice and chooses a PDF, **Then** the new file takes its place (with the new upload date) and the old file is removed. Delete removes an invoice after a confirmation. Each upload, replacement and deletion is on the matter's activity log.
+4. **Given** the matter's client (or an additional client login or matter contact who can see the matter) opens its Payments tab, **Then** they see the invoices with their upload dates and can download each one; they cannot upload, replace or delete, and are not shown which member of staff uploaded it. A client with no invoices sees no Invoices card.
+5. **Given** a client asks for the invoices of a matter that is not theirs, **Then** the answer is 404 — the same as a matter that does not exist.
+6. **Given** a team member or a professional, **Then** they never see invoices: they have no Payments tab and the API refuses them (403), as for every other payment record (#148).
+7. The download streams through the backend after the access check; the browser is never given a storage link.
+
+---
+
 ### User Story 16 — Admin Broadcast Notifications (Priority: P3)
 
 Admin can push a notification (offer, news, alert) to all clients or a filtered group. The notification appears in-app on next open and is optionally sent as email.
@@ -678,6 +694,14 @@ recordedBy, recordedByName, recordedAt, updatedAt,
 statusHistory[{ status, at, by, byName }]
 // The parent (task or order) carries refundSummary:
 //   { count, activeTotal, creditedTotal, latest{ status, refundAmount, reason, initiatedAt, transactionId } }
+```
+
+### `tasks/{taskId}/invoices/{invoiceId}` — invoices (#313)
+```
+taskId, fileName, contentType ('application/pdf'), objectPath (bucket: tasks/{taskId}/invoices/{invoiceId}/{fileName}),
+status (awaiting_upload|uploaded), size?, replaces (invoiceId)|null,
+uploadedBy, uploadedByName, createdAt, uploadedAt?
+// Backend-only (firestore.rules: read, write false). Deleting the matter deletes them.
 ```
 
 ### `taskSteps/{taskId}/steps/{stepId}`

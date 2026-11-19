@@ -24,6 +24,12 @@ export const PAYMENT_LEDGER_EVENT_TYPES = Object.freeze([
   'PAYMENT_REQUEST_CANCELLED',
   'REFUND_RECORDED',
   'REFUND_UPDATED',
+  // #313: invoices carry no figure in the event text, but an invoice is payment
+  // information all the same (its file name often carries the amount), so the
+  // same roles that may not see payments do not see invoice activity either.
+  'INVOICE_UPLOADED',
+  'INVOICE_REPLACED',
+  'INVOICE_DELETED',
 ]);
 
 /** True for an event type that carries payment figures. */

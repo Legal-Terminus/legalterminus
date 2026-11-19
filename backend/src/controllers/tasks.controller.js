@@ -3267,7 +3267,8 @@ export async function deleteTask(req, res) {
     // NOTE: this list is explicit — a NEW subcollection must be added here too.
     const counts = {};
     // #122 follow-up: + commentImages (the bytes go with the Storage prefix below).
-    for (const sub of ['steps', 'events', 'documents', 'payments', 'commentImages']) {
+    // #313: + invoices (their bytes are under tasks/{taskId}/invoices/, swept below).
+    for (const sub of ['steps', 'events', 'documents', 'payments', 'commentImages', 'invoices']) {
       const subSnap = await taskRef.collection(sub).get();
       counts[sub] = subSnap.size;
       if (subSnap.empty) continue;

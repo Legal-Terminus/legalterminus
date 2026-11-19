@@ -3120,6 +3120,50 @@ a refund exists. The switch after approval needs nothing: the matter appears in
 `/api/tasks` and the order's stage becomes `approved`.
 
 
+## Invoices on a matter's Payments tab (#313, 2026-11-19)
+
+Admins and managers upload a matter's invoices as PDFs; the matter's client downloads
+them. Several per matter; each can be replaced or deleted.
+
+- **Storage.** Metadata `tasks/{taskId}/invoices/{invoiceId}` (`fileName`, `size`,
+  `status` `awaiting_upload|uploaded`, `replaces`, `uploadedBy`, `uploadedByName`,
+  `createdAt`, `uploadedAt`); bytes `tasks/{taskId}/invoices/{invoiceId}/{fileName}` in
+  the bucket — under the matter's prefix, so `deleteTask` sweeps them, and `invoices` is
+  on its subcollection list. A separate subcollection rather than `documents` with a
+  type: documents have their own review lifecycle, client-visibility toggle and staff
+  access (team members see all of them), and invoices must have none of that.
+- **Upload reuses the document transport** (§7, E-05): `POST …/invoices/signed-upload-url`
+  `{ fileName, contentType: 'application/pdf', replaces? }` (`invoice.schema.js`,
+  `.strict()`, PDF literal) returns a 15-minute V4 signed PUT URL with the content type
+  pinned; the browser PUTs; `POST …/invoices/:id/confirm` then checks the object exists,
+  its size is ≤ 10 MB and its first bytes are `%PDF-` (the signed URL bounds the type
+  label only), and marks it `uploaded`. A refused upload is deleted, bytes and record.
+  An `awaiting_upload` record is never listed or downloadable.
+- **Replace** is a fresh upload with `replaces: <invoiceId>`; on its confirm the replaced
+  invoice's record and bytes are removed, so the list never shows both and a failed
+  replacement leaves the original untouched. The new upload date is the replacement's.
+- **Download** `GET …/invoices/:id/download` streams through the backend
+  (`Content-Disposition: attachment`, `Cache-Control: private, no-store`, `nosniff`) —
+  never a signed URL (security rule 8).
+- **Access.** Route guards: list and download admin, manager, client; upload, confirm and
+  `DELETE` admin, manager. The controller re-checks (`canManageInvoices`,
+  `canReadInvoices` in `services/invoices.service.js`, pure and unit-tested) and adds
+  ownership: a client only via `clientCanSeeMatter` (own scope #166, matter contact
+  #188), otherwise **404**, as refunds. **Team members and professionals are refused
+  (403)**: an invoice is payment information (#148), and the Payments tab is already
+  hidden from them. Clients are not sent `uploadedBy*`. Firestore rule:
+  `tasks/{id}/invoices` read and write never — everything goes through the API.
+- **Activity.** `INVOICE_UPLOADED` / `INVOICE_REPLACED` / `INVOICE_DELETED` events; they
+  are on `PAYMENT_LEDGER_EVENT_TYPES` (shared), so team members and professionals do not
+  get them in the feed, and clients never do (not on the client whitelist).
+- **List is not paginated**: a matter holds a handful of invoices (as with documents);
+  one subcollection read per Payments tab open.
+- **Not built:** emailing or notifying the client when an invoice is added (not asked —
+  a one-line `createNotification` on confirm if the firm wants it); generating invoices.
+- Code: `services/invoices.service.js`, `controllers/invoices.controller.js`,
+  `schemas/invoice.schema.js`; Portal `api/invoices.ts`,
+  `components/payments/InvoicesCard.tsx` (in the Payments tab, after Payment History).
+
 ## Whole lists in the browser; a client's name on their matters (#275, #277, 2026-11-10)
 
 **Lists the browser filters are loaded whole.** The Matters page (`TasksPage`) and the

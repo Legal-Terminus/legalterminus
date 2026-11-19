@@ -7883,3 +7883,21 @@ team.
   kept as typed, migration, lists never include it, guard, no caching or logging);
   `gst-return-filing.spec.ts` (masked; click copies it and opens the GST portal; client 403).
 
+### Invoices on a matter's Payments tab (2026-11-19, #313) 🔄 In review
+
+The firm asked for invoice upload and download in a matter's Payments section. Design in
+architecture.md, "Invoices on a matter's Payments tab".
+- Admins and managers press **Upload invoice** in the Payments tab and choose a PDF (up to
+  10 MB). A matter can hold several; each is listed with its file name and upload date, and
+  can be **Replaced** (the new file takes its place) or **Deleted** (after a confirmation).
+  Each change is on the matter's activity log.
+- The matter's client sees an **Invoices** card on their Payments tab once one is uploaded,
+  and downloads each invoice. A client asking for another client's matter gets 404.
+- **Decision — team members:** the issue does not mention them. They are refused (no
+  Payments tab, API 403), because a team member must not see payment information (#148).
+  Opening invoices to them read-only is one line on two routes if the firm wants it.
+- Only PDFs: the type is checked on the request, pinned into the upload link, and the
+  file's first bytes are checked before it is accepted.
+- Not built: notifying or emailing the client when an invoice is added (not asked).
+- Tests: `backend/src/__tests__/invoices.test.js` (14), `Portal/e2e/invoices.spec.ts` (8).
+
