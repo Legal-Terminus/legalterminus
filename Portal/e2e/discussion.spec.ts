@@ -589,7 +589,10 @@ test('#297: an edit in progress survives a tab switch; Cancel discards it', asyn
     await adminPage.getByTestId('chat-bubble-mine').getByRole('button', { name: 'Cancel', exact: true }).click();
     await adminPage.getByRole('button', { name: 'Steps', exact: true }).click();
     await adminPage.getByRole('button', { name: 'Chat', exact: true }).click();
-    await expect(adminPage.getByLabel('Edit message', { exact: true })).toHaveCount(0);
+    // The edit BOX is gone. (The bubble's Edit button is also labelled "Edit
+    // message", so match the editable area, not any element with that label.)
+    await expect(adminPage.locator('[contenteditable="true"][aria-label="Edit message"]')).toHaveCount(0);
+    await expect(adminPage.getByRole('button', { name: 'Edit message' })).toBeVisible();
     await expect(adminPage.getByText(original, { exact: true })).toBeVisible();
   } finally { await admin.dispose(); await deleteMatter(taskId); }
 });
