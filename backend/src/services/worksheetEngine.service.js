@@ -237,7 +237,54 @@ export function normalizeDate(raw) {
 }
 
 // stripTags lives in utils/sanitize.js — one linear copy for the whole backend.
-const MAX_LEN = { text: 500, longtext: 5000, select: 200, image: 200, date: 100, number: 100 };
+const MAX_LEN = { text: 500, longtext: 5000, select: 200, staff: 200, image: 200, date: 100, number: 100 };
+
+/* ── Staff columns (#280: Assigned to, Checker) ─────────────────────────── */
+
+/*
+ * A `staff` column lists the portal's staff. `staff` below is the list the
+ * controller loads (services/worksheetStaff.service.js):
+ *   [{ uid, name, email, active }]
+ * The email is used here, on the server, to match an uploaded cell — it is never
+ * sent to the page (`staffChoices` carries uid and name only).
+ */
+const personKey = (s) => String(s ?? '').trim().toLowerCase().replace(/\s+/g, ' ');
+
+/**
+ * Who an uploaded / typed cell names: a uid, a display name (case and spacing
+ * ignored) or an email address. Active staff are tried first, then former
+ * staff (a sheet from last year may name someone who has left — their rows
+ * still show their name). Returns { uid } | { ambiguous: true } | null.
+ */
+export function matchStaff(text, staff = []) {
+  const t = personKey(text);
+  if (!t) return null;
+  const list = Array.isArray(staff) ? staff : [];
+  const byUid = list.find((p) => p.uid === String(text).trim());
+  if (byUid) return { uid: byUid.uid };
+  for (const pool of [list.filter((p) => p.active), list.filter((p) => !p.active)]) {
+    const named = pool.filter((p) => personKey(p.name) === t);
+    if (named.length === 1) return { uid: named[0].uid };
+    if (named.length > 1) return { ambiguous: true };
+    const mailed = pool.filter((p) => p.email && personKey(p.email) === t);
+    if (mailed.length === 1) return { uid: mailed[0].uid };
+  }
+  return null;
+}
+
+/** What the page receives for a staff column: active people first, by name; no emails. */
+export function staffChoices(staff = []) {
+  return (Array.isArray(staff) ? staff : [])
+    .map((p) => ({ value: p.uid, label: p.name, active: !!p.active }))
+    .sort((a, b) => Number(b.active) - Number(a.active) || a.label.localeCompare(b.label));
+}
+
+/** A resolved sheet with the staff list attached to each of its staff columns. */
+export function withStaffChoices(sheet, staff = []) {
+  if (!sheet || !sheet.columns.some((c) => c.type === 'staff')) return sheet;
+  const choices = staffChoices(staff);
+  return { ...sheet, columns: sheet.columns.map((c) => (c.type === 'staff' ? { ...c, choices } : c)) };
+}
 
 /**
  * One cell, cleaned for its field. Returns { value, warning? }: a value that
@@ -245,7 +292,7 @@ const MAX_LEN = { text: 500, longtext: 5000, select: 200, image: 200, date: 100,
  * text with a warning — the firm's data is never dropped for being untidy.
  * Empty → null (the field is cleared).
  */
-export function normalizeValue(field, raw) {
+export function normalizeValue(field, raw, { staff } = {}) {
   if (raw == null) return { value: null };
   // #279: a secret (a GST portal password) is kept exactly as typed — never
   // tag-stripped or trimmed — only bounded. It is never rendered as HTML.
@@ -275,6 +322,18 @@ export function normalizeValue(field, raw) {
   }
   const text = stripTags(typeof raw === 'number' ? String(raw) : raw).trim().slice(0, MAX_LEN[type] ?? MAX_LEN.text);
   if (!text) return { value: null };
+  // #280: a staff cell becomes the person's uid. A name that matches nobody (or
+  // two people) is KEPT as written, with a warning — never dropped, never guessed.
+  if (type === 'staff' && Array.isArray(staff)) {
+    const hit = matchStaff(text, staff);
+    if (hit?.uid) return { value: hit.uid };
+    return {
+      value: text,
+      warning: hit?.ambiguous
+        ? `"${field.label}": more than one staff member is called "${text}" — kept as written; pick the person on the row`
+        : `"${field.label}": "${text}" is not a staff member — kept as written`,
+    };
+  }
   if (type === 'select' && Array.isArray(field.options)) {
     const hit = field.options.find((o) => o.toLowerCase() === text.toLowerCase());
     return { value: hit ?? text };
@@ -450,8 +509,9 @@ export function applyOptionsEdit(sheetKey, config = {}, fieldKey, options) {
  * upload, a manual edit that does not fit its type is REFUSED (the person is
  * right there to correct it). Computed fields cannot be written.
  */
-export function cleanRecordValues(fields, values) {
+export function cleanRecordValues(fields, values, { staff = [] } = {}) {
   const byKey = new Map(fields.map((fd) => [fd.key, fd]));
+  const activeStaff = new Set((Array.isArray(staff) ? staff : []).filter((p) => p.active).map((p) => p.uid));
   const out = [];
   for (const [key, raw] of Object.entries(values ?? {})) {
     const fd = isSafeKey(key) ? byKey.get(key) : undefined;
@@ -460,6 +520,10 @@ export function cleanRecordValues(fields, values) {
     const { value, warning } = normalizeValue(fd, raw);
     if (warning && (fd.type === 'number' || fd.type === 'matter')) throw httpError(400, `${warning}.`);
     if (warning && fd.type === 'date') throw httpError(400, `${warning} — use the date picker.`);
+    // #280: a person is picked from the list — the value is an active staff uid.
+    if (fd.type === 'staff' && value != null && !activeStaff.has(value)) {
+      throw httpError(400, `Pick a person from the "${fd.label}" list.`);
+    }
     out.push([fd.key, value]);
   }
   // Entries → object, so a key can only be an own property (js/remote-property-injection).
@@ -483,11 +547,14 @@ const SERIAL_HEADERS = new Set(['SLNO', 'SNO', 'SRNO', 'SERIALNO', 'SERIALNUMBER
  * - A key repeated in the file is merged into one record (later cells win).
  * - Unknown headers are reported, never silently dropped; calculated columns
  *   in the file are ignored (the portal calculates them).
+ * - #280: a staff cell (Assigned to, Checker) is matched to a person by name or
+ *   email (`staff`, see matchStaff); one that matches nobody is kept as written
+ *   and reported in `warnings`.
  *
  * `existingByKey`: Map(recordKey → { id, values }) for the keys in this file.
  * `startRow`: the sheet row number of rows[0], for warnings.
  */
-export function planImport({ sheet, fields, headers, rows, existingByKey = new Map(), startRow = 2 }) {
+export function planImport({ sheet, fields, headers, rows, existingByKey = new Map(), startRow = 2, staff }) {
   // The sheet's visible columns are tried first; then every other field of the
   // book (hidden here, or shown only on another report) with all its headings.
   const visible = sheet.columns.filter((col) => !col.hidden);
@@ -512,7 +579,7 @@ export function planImport({ sheet, fields, headers, rows, existingByKey = new M
   rows.forEach((row, i) => {
     const values = {};
     for (const m of writable) {
-      const { value, warning } = normalizeValue(byKey.get(m.key), row?.[m.index]);
+      const { value, warning } = normalizeValue(byKey.get(m.key), row?.[m.index], { staff });
       if (value == null) continue;
       values[m.key] = value;
       if (warning && warnings.length < MAX_WARNINGS) warnings.push({ row: startRow + i, column: m.header, message: warning });

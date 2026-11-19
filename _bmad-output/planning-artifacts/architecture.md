@@ -2591,7 +2591,41 @@ accept the 24Q/26Q spelling). The seven yellow columns are selects: Assigned to,
 Checker and Client start empty (the firm fills them under Edit dropdowns); the four
 status columns start Yes/No. PR numbers are text so a 15-digit number is never
 rounded or shown as a percentage. Traces/IT passwords are plain text fields, as in
-the firm's file — see the open question in epics.md.
+the firm's file; the firm confirmed on 11 Nov that they stay visible to Admin,
+Manager and Team, that the Form 138 / 140 labels are right, and one row per TAN.
+Assigned to and Checker are `staff` columns (below), not selects.
+
+**Staff columns (#280, 2026-11-19).** Field type `staff`: a choice list filled from
+the portal's own staff instead of typed options (TDS: Assigned to, Checker).
+- *Source.* `services/worksheetStaff.service.js` `loadWorksheetStaff(db)`: one query
+  `users where role in STAFF_ROLES` (admin, manager, team member — bounded by the
+  team), cached in-process for 60 s, so a sheet open and every 200-row batch of an
+  upload do not each re-read users. Gives `[{ uid, name, email, active }]`;
+  `active: false` for `status: 'deactivated'`; `e2e: true` accounts dropped outside
+  test runs (the @mentions rule). The query runs only for a book that has a staff
+  field — no other sheet touches `users`.
+- *What the page gets.* `withStaffChoices` adds `choices: [{ value: uid, label:
+  name, active }]` to each staff column in `getModule`, `putColumns` and
+  `putOptions` responses. No email leaves the server. Pickers (grid cell, record
+  form) offer active staff, plus whatever the cell holds now if it is not one of
+  them (`staffOptions` in `Portal/src/lib/worksheets.ts`).
+- *What is stored.* The uid. `displayValue` turns it into the name, so search,
+  filters, sort and Download Excel all read the name. A value that is not a known
+  uid — a name typed when the column was a select, or an unmatched upload cell — is
+  shown as written. Existing live rows are not migrated.
+- *Writes.* `cleanRecordValues(fields, values, { staff })`: a staff value must be an
+  active staff uid, or null (400 otherwise). `planImport({ …, staff })` →
+  `normalizeValue(field, raw, { staff })` → `matchStaff`: uid, then display name
+  (case/spacing-insensitive), then email; active staff before former staff; two
+  people of one name is ambiguous. Unmatched or ambiguous → the text is kept, with
+  a warning, like an untidy date.
+- *Edit dropdowns.* `applyOptionsEdit` accepts `select` only, so a staff column
+  answers 400; `bookFields` applies `optionOverrides` to selects only, so the
+  firm's earlier typed list for these columns is ignored (left in the document).
+- Not addable under Edit columns (`ADDABLE_TYPES` unchanged). The GST sheet's Assign
+  Person stays a select: the matter sync writes an assignee *name* there.
+- Known gap: a uid of a user who was later deleted (no user document) has no name
+  to show and displays as the raw id.
 
 ### GST Return Filing sheet (#279, 2026-11-10)
 
