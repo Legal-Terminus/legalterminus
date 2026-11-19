@@ -58,6 +58,9 @@ export default function TopBar({ onMenuClick }: Props) {
         <div className="relative">
           <button
             onClick={() => setShowMenu(!showMenu)}
+            aria-label={user?.displayName ?? user?.email ?? 'Account'}
+            aria-haspopup="menu"
+            aria-expanded={showMenu}
             className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-surface-soft transition-colors"
           >
             <div className="w-7 h-7 bg-ink rounded-full flex items-center justify-center">

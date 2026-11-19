@@ -7,7 +7,6 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "build:mobile": "tsc -b && vite build --mode mobile --outDir dist-mobile",
     "preview": "vite preview",
     "test": "node --test tests/",
     "test:e2e": "playwright test",

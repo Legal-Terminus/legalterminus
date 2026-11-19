@@ -5,13 +5,10 @@ import { accountLinkPath } from './nativeRules';
 export const isIosApp = (): boolean => Capacitor.getPlatform() === 'ios';
 
 /**
- * The website's address. In a browser that is this page's origin; inside the app the
- * page runs at https://localhost (Android) or capacitor://localhost (iOS), so a link to
- * a website page must name the environment's host instead (the build's API base URL —
- * the API is served from the site's own host).
+ * The website's address. The apps open the hosted Portal, so in a browser and in the apps
+ * alike that is this page's own origin.
  */
-export const siteOrigin = (): string =>
-  Capacitor.isNativePlatform() ? (import.meta.env.VITE_API_BASE_URL ?? '') : window.location.origin;
+export const siteOrigin = (): string => window.location.origin;
 
 /**
  * Behaviour that only exists inside the Android and iPhone apps. A no-op in the browser,
@@ -22,6 +19,13 @@ export async function initNative(): Promise<void> {
   // E29-S06: CSS hooks for the app only (safe areas, overscroll) — `html[data-native]`.
   // The web build never has the attribute, so the website's layout cannot change.
   document.documentElement.dataset.native = Capacitor.getPlatform();
+  // The app opens the hosted Portal, so the page's own viewport tag is the website's. Inside the
+  // app only, draw under the status bar and home indicator; index.css pads with the safe-area
+  // insets (which are zero without viewport-fit=cover).
+  const viewport = document.querySelector('meta[name="viewport"]');
+  if (viewport && !/viewport-fit=cover/.test(viewport.getAttribute('content') ?? '')) {
+    viewport.setAttribute('content', `${viewport.getAttribute('content')}, viewport-fit=cover`);
+  }
   if (isIosApp()) {
     // Dark text on the white top bar.
     const { StatusBar, Style } = await import('@capacitor/status-bar');

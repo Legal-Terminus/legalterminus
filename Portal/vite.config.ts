@@ -1,36 +1,14 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
-import fs from 'fs';
 
-// Pages only the Android app shows (capacitor.config.ts `server.errorPath`). They live
-// in MobileApp/web, not public/, so the website never serves them: the app is still
-// in development and the site must not mention it.
-const appOnlyPages = () => ({
-  name: 'lt-app-only-pages',
-  generateBundle(this: { emitFile: (f: { type: 'asset'; fileName: string; source: string }) => void }) {
-    const dir = path.resolve(__dirname, '../MobileApp/web');
-    for (const fileName of fs.readdirSync(dir)) {
-      this.emitFile({ type: 'asset', fileName, source: fs.readFileSync(path.join(dir, fileName), 'utf8') });
-    }
-  },
-});
-
-// E29-S06: inside the apps the page is drawn under the status bar and home indicator
-// (`viewport-fit=cover`) and pads itself with the safe-area insets (index.css,
-// `html[data-native]`). Only the mobile build gets it, so the website is unchanged.
-const appViewport = () => ({
-  name: 'lt-app-viewport',
-  transformIndexHtml: (html: string) =>
-    html.replace('content="width=device-width, initial-scale=1.0"', 'content="width=device-width, initial-scale=1.0, viewport-fit=cover"'),
-});
-
-export default defineConfig(({ mode }) => ({
+export default defineConfig(() => ({
   // Firebase deployment: base should be '/portal/' so assets are at /portal/assets/...
-  // Direct Cloud Run access: would need base='/' but we prioritize Firebase
-  // `--mode mobile` (Capacitor app bundle) serves from the root. Web builds are unchanged.
-  base: mode === 'mobile' ? '/' : '/portal/',
-  plugins: mode === 'mobile' ? [react(), appOnlyPages(), appViewport()] : [react()],
+  // Direct Cloud Run access: would need base='/' but we prioritize Firebase.
+  // The Android and iPhone apps open this same hosted build (MobileApp/capacitor.config.ts
+  // server.url): there is no separate mobile build.
+  base: '/portal/',
+  plugins: [react()],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),

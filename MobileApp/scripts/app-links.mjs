@@ -4,9 +4,11 @@
 //   node MobileApp/scripts/app-links.mjs <qa|production> <hosting dir>
 //
 // Writes <dir>/.well-known/apple-app-site-association (iOS Universal Links) and
-// <dir>/.well-known/assetlinks.json (Android App Links) naming THAT environment's app
-// (com.legalterminus.app.qa on QA, com.legalterminus.app on production), so a QA build
-// is opened only by QA's links. deploy-qa.yml runs it for the QA site.
+// <dir>/.well-known/assetlinks.json (Android App Links) naming the app,
+// com.legalterminus.app (one app for both environments). Which host the app answers
+// for is the build's choice: a QA build claims only the QA host (Environment.xcconfig
+// LT_LINK_HOST, Gradle linkHost), so QA's links never open a production build or the
+// reverse. deploy-qa.yml runs it for the QA site.
 //
 // A file is written only when its inputs exist in environments.json → appLinks
 // (the Apple team id; the app's signing SHA-256 fingerprints). Until the owner fills
