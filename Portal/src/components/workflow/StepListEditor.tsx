@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Plus, Search } from 'lucide-react';
 import CollapsibleSection from '../common/CollapsibleSection';
 import StepCard from './StepCard';
+import type { PickablePerson } from '../common/PeoplePicker';
 import { inputCls } from './stepEditorVocab';
 import type { PhaseDef, WorkflowStepDef } from '../../api/workflowDefinitions';
 
@@ -21,7 +22,7 @@ const nextNumber = (steps: WorkflowStepDef[]) => steps.reduce((m, s) => Math.max
 export type StepCardRegistry = Record<number, HTMLDivElement | null>;
 
 export default function StepListEditor({
-  steps, stages, activeStepNumber, onActivate, onLocate, onChange, errorsByStep, sectionId = 'steps', cardRegistry,
+  steps, stages, activeStepNumber, onActivate, onLocate, onChange, errorsByStep, sectionId = 'steps', cardRegistry, people,
 }: {
   steps: WorkflowStepDef[];
   stages: PhaseDef[];
@@ -36,6 +37,8 @@ export default function StepListEditor({
   sectionId?: string;
   /** Optional caller-owned registry of step-card elements (see the type above). */
   cardRegistry?: StepCardRegistry;
+  /** #192: team members a step can be given to ("Who does this? → Specific people"). */
+  people?: PickablePerson[];
 }) {
   // Refs to each step card so clicking a node in the preview can scroll its editor
   // into view (reverse of "locate in chart"). When the page supplies `cardRegistry`
@@ -147,6 +150,7 @@ export default function StepListEditor({
               total={steps.length}
               stages={stages}
               allSteps={steps}
+              people={people}
               cardRef={(el) => { cardRefs[s.stepNumber] = el; }}
               isActive={activeStepNumber === s.stepNumber}
               errors={stepErrors}

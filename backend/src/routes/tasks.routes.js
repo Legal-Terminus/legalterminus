@@ -2,7 +2,7 @@ import { Router } from 'express';
 import rateLimit from 'express-rate-limit';
 import { verifyToken, requireRole, denyReadOnlyRoles } from '../middleware/auth.middleware.js';
 import { validate } from '../middleware/validate.middleware.js';
-import { taskCreateSchema, taskUpdateSchema, taskPaymentUpdateSchema, paymentCreateSchema, paymentUpdateSchema, taskListQuerySchema, taskTransitionSchema, taskRejectSchema, taskStopSchema, signedUploadUrlSchema, confirmUploadSchema, reviewDocumentSchema, documentVisibilitySchema, stepNoteSchema, filedOnCorrectionSchema, internalReminderSchema, messageCreateSchema, messageUpdateSchema } from '../schemas/task.schema.js';
+import { taskCreateSchema, taskUpdateSchema, taskPaymentUpdateSchema, paymentCreateSchema, paymentUpdateSchema, taskListQuerySchema, taskTransitionSchema, taskRejectSchema, taskStopSchema, signedUploadUrlSchema, confirmUploadSchema, reviewDocumentSchema, documentVisibilitySchema, stepNoteSchema, stepPatchSchema, filedOnCorrectionSchema, internalReminderSchema, messageCreateSchema, messageUpdateSchema } from '../schemas/task.schema.js';
 import { listTasks, getTask, createTask, patchTask, updatePayment, listPayments, createPayment, patchPayment, deletePayment, patchStep, transitionTask, deleteTask, listMySteps, listTaskEvents, approveTask, rejectTask, stopTask, restartTask, archiveTask, reopenStep, postStepNote, listRecurringDue, duplicateTask } from '../controllers/tasks.controller.js';
 import { listDocuments, createSignedUploadUrl, confirmUpload, downloadDocument, reviewDocument, submitDocuments, deleteDocument, setDocumentVisibility } from '../controllers/documents.controller.js';
 import { listMessages, createMessage, updateMessage, deleteMessage, listMentionable } from '../controllers/messages.controller.js';
@@ -113,7 +113,7 @@ router.post('/:taskId/payment-requests', requireRole('admin', 'manager', 'team_m
 router.post('/:taskId/payment-requests/:requestId/cancel', requireRole('admin', 'manager'), validate(paymentRequestCancelSchema), postCancelPaymentRequest);
 router.post('/:taskId/payment-requests/:requestId/record', requireRole('admin', 'manager'), validate(paymentRequestRecordSchema), postRecordPaymentRequest);
 router.post('/:taskId/payment-requests/:requestId/pay', requireRole('client'), payNowLimiter, validate(paymentRequestPaySchema), postPayPaymentRequest);
-router.patch('/:taskId/steps/:stepId',       patchStep);
+router.patch('/:taskId/steps/:stepId',       requireRole('admin', 'manager'), validate(stepPatchSchema), patchStep);
 router.post('/:taskId/transition',           validate(taskTransitionSchema), transitionTask);
 // Approval chain (E03-S04): admin-only approve / reject of a pending matter.
 router.post('/:taskId/approve',              requireRole('admin'), approveTask);

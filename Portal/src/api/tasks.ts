@@ -226,6 +226,16 @@ export const assignStep = (taskId: string, stepNumber: number, assignedTo: strin
     body: JSON.stringify({ assignedTo }),
   });
 
+/**
+ * #192: set EVERY owner of a step at once (an empty list unassigns it). The
+ * first uid becomes the primary. Any one of them may complete the step.
+ */
+export const setStepAssignees = (taskId: string, stepNumber: number, assignedToUids: string[]) =>
+  apiFetch<void>(`/api/tasks/${taskId}/steps/${stepNumber}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ assignedToUids }),
+  });
+
 /** #116: reopen a completed step — ADMIN only. Rewinds the workflow to that step
  *  (later steps revert to pending). Returns the new current step. */
 export const reopenStep = (taskId: string, stepNumber: number, reason?: string) =>
