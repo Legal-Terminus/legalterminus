@@ -23,6 +23,7 @@ import { getDocuments, openDocument, type TaskDocument } from '../../api/documen
 import { useAuthStore } from '../../store/authStore';
 import PayNowCard from '../../components/tasks/PayNowCard';
 import RefundHistory from '../../components/payments/RefundHistory';
+import InvoicesCard from '../../components/payments/InvoicesCard';
 import PaymentRequestsCard from '../../components/tasks/PaymentRequestsCard';
 import { getTask, advanceTask, assignStep, assignMatter, getTaskEvents, approveTask, rejectTask, stopTask, restartTask, archiveTask, updatePayment, setMatterProfessional, setMatterOrganisation, setMatterCcEmails, setTaskUrgent, setStepUrgent, reopenStep, updateTask, type WorkflowEventInput, type TaskEvent } from '../../api/tasks';
 import { useConfirm } from '../../components/common/confirmContext';
@@ -2774,6 +2775,10 @@ function PaymentsTab({ task, canEdit, isClient }: { task: Task; canEdit: boolean
     {/* #148: the payment LEDGER — clients pay in instalments, so every payment
         received is its own record rather than one overwritten latest figure. */}
     <PaymentHistory task={task} canEdit={canEdit} />
+
+    {/* #313: invoices — admin/manager upload, replace and delete PDFs; the
+        client downloads their own. Team never reaches the Payments tab (#148). */}
+    <InvoicesCard taskId={task.id} canManage={canEdit} />
 
     {/* #240: Refund History. Staff always see it (to record one); the client
         sees it, read-only, once a refund has been recorded on their matter. */}

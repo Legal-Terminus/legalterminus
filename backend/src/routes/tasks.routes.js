@@ -17,6 +17,8 @@ import { getFormStep, saveFormStep } from '../controllers/forms.controller.js';
 import { correctFiledOn } from '../controllers/gstFiling.controller.js';
 import { uploadCommentImage, getCommentImage } from '../controllers/commentImages.controller.js';
 import { commentImageUpload } from '../middleware/commentImageUpload.middleware.js';
+import { listInvoices, createInvoiceUploadUrl, confirmInvoiceUpload, downloadInvoice, deleteInvoice } from '../controllers/invoices.controller.js';
+import { invoiceUploadUrlSchema, invoiceConfirmSchema } from '../schemas/invoice.schema.js';
 
 const router = Router();
 
@@ -80,6 +82,16 @@ router.delete('/:taskId/payments/:paymentId', requireRole('admin', 'manager'), d
 router.get('/:taskId/refunds',               requireRole('admin', 'manager', 'client'), listMatterRefunds);
 router.post('/:taskId/refunds',              requireRole('admin', 'manager'), validate(refundCreateSchema), createMatterRefund);
 router.patch('/:taskId/refunds/:refundId',   requireRole('admin', 'manager'), validate(refundUpdateSchema), patchMatterRefund);
+// #313 invoices — admin/manager upload (signed PUT URL → confirm, PDF only),
+// replace or delete; the CLIENT lists and downloads their own matter's invoices
+// (the controller answers 404 for anyone else's). Team members and professionals
+// are refused: an invoice is payment information (#148). The download streams
+// through the backend — never a signed URL.
+router.get('/:taskId/invoices',                          requireRole('admin', 'manager', 'client'), listInvoices);
+router.post('/:taskId/invoices/signed-upload-url',       requireRole('admin', 'manager'), validate(invoiceUploadUrlSchema), createInvoiceUploadUrl);
+router.post('/:taskId/invoices/:invoiceId/confirm',      requireRole('admin', 'manager'), validate(invoiceConfirmSchema), confirmInvoiceUpload);
+router.get('/:taskId/invoices/:invoiceId/download',      requireRole('admin', 'manager', 'client'), downloadInvoice);
+router.delete('/:taskId/invoices/:invoiceId',            requireRole('admin', 'manager'), deleteInvoice);
 // #220 Pay Now — the CLIENT pays the amount due on their matter online. Creates
 // an order at the gateway, so it is rate-limited like POST /api/orders.
 const isE2E = String(process.env.EMAIL_DISABLED ?? '').toLowerCase() === 'true' || process.env.NODE_ENV === 'test';
