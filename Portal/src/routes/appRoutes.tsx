@@ -151,8 +151,10 @@ export const APP_ROUTES: AppRoute[] = [
 
   // ── Self-service (all roles) — own profile + order history (migrated from the
   //    marketing site's /my-profile, which is now a redirect into the portal) ──
-  // #107/#108/#109: admin-only Settings — Email Templates.
-  { path: '/settings/email-templates', element: <EmailTemplatesPage />, roles: ['admin'], nav: { label: 'Settings', icon: Settings, order: 9 } },
+  // #107/#108/#109: Settings — Email Templates (the templates are admin-only).
+  // #310: managers reach the page too, to edit the completion email's "Explore
+  // more services" block; the page shows them only that block.
+  { path: '/settings/email-templates', element: <EmailTemplatesPage />, roles: ['admin', 'manager'], nav: { label: 'Settings', icon: Settings, order: 9 } },
   { path: '/profile', element: <ProfilePage />, roles: ALL_ROLE_KEYS, nav: { label: 'My Profile', icon: User, order: 10 } },
   // "My Orders" removed from the sidebar for now (all roles) — the route stays
   // reachable by URL so nothing 404s, but it no longer shows as a nav item.

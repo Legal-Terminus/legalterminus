@@ -3161,6 +3161,29 @@ whose `updatedAt` is missing or not an ISO string — an ordered query leaves th
 so such a matter could never be listed. QA had none on 2026-11-10; production was not
 checked (the owner decides whether to run it there).
 
+## Completion email: the "Explore more services" block (#310, 2026-11-19)
+
+- **Storage:** `settings/completionMarketing` → `{ enabled, heading, body }`, apart from
+  `settings/emailTemplates` because it is not a subject/body template and a wider set of
+  roles edits it. `emailTemplates.service.js` owns it: `COMPLETION_MARKETING_DEFAULT`
+  (the firm's seed text) is merged on READ field by field, so the block works with no
+  document written. Unlike the templates, an empty stored field stays empty (clearing the
+  text is a way to stop sending it). Cached 60 s like the templates; a save busts it.
+- **API:** `GET/PUT /api/settings/completion-marketing`, `verifyToken` +
+  `requireRole('admin', 'manager')`, PUT validated by `completionMarketingSchema`
+  (`schemas/settings.schema.js`: `.strict()`, `enabled` required, `stripTags` + length caps).
+- **Send path:** `transitionTask`'s completion branch calls `completionMarketingBlock()`
+  (null when off or empty; never throws) and passes it as `emailAppendix` on the CLIENT's
+  "Your service is complete" `notify` only → `createNotification({ emailAppendix })` →
+  `sendNotificationEmail({ appendix })` → `renderEmail({ appendix })`, which adds one
+  tinted section below the CTA (HTML) and after the link (text). No appendix → output is
+  byte-identical to before. The in-app notification never carries it.
+- **Safety:** the text is plain text. Every piece is HTML-escaped; the only markup added
+  is `<a>` around a bare `http(s)://` URL (href = the escaped URL) and "- " → "•".
+- **Portal:** `pages/settings/CompletionMarketingSection.tsx` on the Email Templates page
+  (first card under "Client emails"). The route is open to `manager`; for a manager the
+  page renders only this section and does not request the admin-only templates.
+
 ## Input sanitising is linear and lives in one module (CodeQL, 2026-11-14)
 
 `backend/src/utils/sanitize.js` is the only place the backend strips tags, checks an email's

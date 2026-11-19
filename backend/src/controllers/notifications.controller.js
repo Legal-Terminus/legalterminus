@@ -120,7 +120,10 @@ export const markAllRead = async (req, res) => {
  * Reusable helper for other backend code (task transitions, document review,
  * payment events) to emit an in-app notification. Fire-and-forget friendly.
  */
-export const createNotification = async ({ recipientUid, type = 'info', title, message, taskId, stepNumber, email = true }) => {
+// #310: `emailAppendix` ({ heading, body }) adds a section to the EMAIL only —
+// the "Explore more services" block on the client's completion email. The
+// in-app notification never carries it.
+export const createNotification = async ({ recipientUid, type = 'info', title, message, taskId, stepNumber, email = true, emailAppendix }) => {
   if (!recipientUid || !title) {
     throw new Error('createNotification requires recipientUid and title');
   }
@@ -179,7 +182,7 @@ export const createNotification = async ({ recipientUid, type = 'info', title, m
           }
         } catch { /* best-effort — fall back to the event title subject */ }
       }
-      if (to) await sendNotificationEmail({ to, cc, title, message: message ?? '', taskId, serviceName, organisation });
+      if (to) await sendNotificationEmail({ to, cc, title, message: message ?? '', taskId, serviceName, organisation, appendix: emailAppendix || undefined });
     } catch (err) {
       logger.warn({ err: err?.message }, '[email] notification email dispatch failed (non-fatal)');
     }
