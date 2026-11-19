@@ -100,7 +100,10 @@ test('email templates auto-save: editing fires a save automatically (no Save but
     adminPage.waitForRequest((r) =>
       r.url().includes('/api/settings/email-templates') && r.method() === 'PUT',
       { timeout: 15_000 }),
-    adminPage.getByRole('button', { name: /^Reset$/i }).first().click(),
+    // The Welcome card's own Reset: since #310 the "Explore more services" card
+    // above it has a Reset too, and `.first()` hit that one.
+    // (Template cards' Reset is titled "…built-in default", the block's "…built-in text".)
+    adminPage.getByTitle('Reset to the built-in default').first().click(),
   ]);
 });
 
