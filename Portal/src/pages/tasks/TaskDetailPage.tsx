@@ -654,7 +654,7 @@ export default function TaskDetailPage() {
         />
       )}
       {tab === 'documents' && <DocumentsPanel taskId={taskId!} isStaff={isStaff} workflowType={task.workflowType} />}
-      {tab === 'discussion' && <DiscussionPanel taskId={taskId!} isStaff={isStaff} />}
+      {tab === 'discussion' && <DiscussionPanel key={taskId} taskId={taskId!} isStaff={isStaff} /* key: a fresh composer (and its saved draft) per matter */ />}
       {tab === 'payments' && (role === 'team_member'
         ? <PaymentRequestsCard task={task} canSend canManage={false} isClient={false} />
         : <PaymentsTab task={task} canEdit={canAssign} isClient={isClient} />)}
