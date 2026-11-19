@@ -5,8 +5,11 @@ import { apiFetch } from './client';
 /* #210 Trademark Reports / #217 Worksheets — one engine, one API. */
 
 export type ModuleKey = 'trademark' | 'company' | 'gst_return';
-export type FieldType = 'text' | 'longtext' | 'date' | 'number' | 'select' | 'computed' | 'image' | 'matter';
+export type FieldType = 'text' | 'longtext' | 'date' | 'number' | 'select' | 'staff' | 'computed' | 'image' | 'matter';
 export type CellValue = string | number | null;
+
+/** #280: one person a staff column (Assigned to, Checker) can hold. `value` is the uid stored on the row. */
+export interface StaffChoice { value: string; label: string; active: boolean }
 
 export interface WsColumn {
   key: string;
@@ -18,6 +21,8 @@ export interface WsColumn {
   aliases: string[];
   /** #279: a secret cell (GST Pswd) — never in a list response; revealed on demand. */
   secret?: boolean;
+  /** #280: a staff column's people — the portal's staff, not a typed list. */
+  choices?: StaffChoice[];
 }
 
 export interface WsSheet {

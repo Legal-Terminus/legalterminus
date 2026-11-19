@@ -389,6 +389,22 @@ Staff ask a matter's client for an additional payment — typically government f
 
 ---
 
+### User Story 15c — Invoices on a Matter's Payments Tab (Priority: P2) — #313
+
+Admins and managers upload a matter's invoices as PDF files in its Payments tab; the matter's client downloads them.
+
+**Acceptance Scenarios**:
+
+1. **Given** an admin or manager is on a matter's Payments tab, **When** they press Upload invoice and choose a PDF (up to 10 MB), **Then** the invoice is listed with its file name and upload date. A matter can hold several invoices, newest first.
+2. **Given** a file that is not a PDF — by its declared type or by its bytes (a PDF starts `%PDF-`) — or is over 10 MB, **Then** it is refused and nothing is kept.
+3. **Given** an admin or manager presses Replace on an invoice and chooses a PDF, **Then** the new file takes its place (with the new upload date) and the old file is removed. Delete removes an invoice after a confirmation. Each upload, replacement and deletion is on the matter's activity log.
+4. **Given** the matter's client (or an additional client login or matter contact who can see the matter) opens its Payments tab, **Then** they see the invoices with their upload dates and can download each one; they cannot upload, replace or delete, and are not shown which member of staff uploaded it. A client with no invoices sees no Invoices card.
+5. **Given** a client asks for the invoices of a matter that is not theirs, **Then** the answer is 404 — the same as a matter that does not exist.
+6. **Given** a team member or a professional, **Then** they never see invoices: they have no Payments tab and the API refuses them (403), as for every other payment record (#148).
+7. The download streams through the backend after the access check; the browser is never given a storage link.
+
+---
+
 ### User Story 16 — Admin Broadcast Notifications (Priority: P3)
 
 Admin can push a notification (offer, news, alert) to all clients or a filtered group. The notification appears in-app on next open and is optionally sent as email.
@@ -444,6 +460,7 @@ The firm's Excel registers live in the portal: five **Trademark Reports** (TM Ma
 7. **Given** a sheet linked to services, **Then** a record can link to a matter of one of those services and shows a link to it.
 8. **Given** the TDS Sheet (#280), **Then** its columns are the firm's Excel file's, in its order and spelling: Sl. No., Company Name, Assigned to, Checker, Client, TAN NO, USER ID, Traces Password, IT Password, TDS Data Received, Excel Prepared, Final Excel Mail to Client, Challan paid by client, SALARY (Form 138) FILING DATE, NON-SALARY (form 140) FILING DATE, SALARY (Form 138) PR NO, NON-SALARY (form 140) PR NO, STATEMENT STATUS 26Q (Form 140), STATEMENT STATUS 24Q (Form 138). Sl. No. is the row number (shown and downloaded, skipped on upload); an upload matches rows by TAN NO.
 9. **Given** a dropdown column (the yellow columns of the firm's files), **When** an admin, manager or team member adds, renames, re-orders or removes its choices under **Edit dropdowns**, **Then** the new list is offered at once when adding or editing a record, and an upload matches the new spelling. Records keep the value they hold: a renamed or removed choice stays on the rows that use it.
+10. **Given** the TDS Sheet's **Assigned to** or **Checker** (#280, firm 11 Nov), **Then** the choices are the portal's active staff (admin, manager, team member) by name — never clients or professionals — and are not edited under Edit dropdowns; the row records the person picked and the grid, search, filters and Download Excel show their name. A colleague who is deactivated still shows by name on their rows but is not offered for new rows. A name typed before this change shows as written until someone picks the person. **When** an Excel file is uploaded, **Then** each cell is matched to a staff member by name (any case) or email; a cell that matches no one, or two people of the same name, is kept as written and listed in the preview's warnings.
 
 ---
 
@@ -471,10 +488,11 @@ A GST return matter says which return it is for, and when each return was filed,
 **Acceptance Scenarios**:
 
 1. **Given** a GST return matter (opened by the GST reminders, or a matter of a service linked to the GST Return Filing sheet), **Then** its header and its row in the matters list (All Matters for staff, My Services for the client) show its **Filing Month** as a tag — "September 2026", or "Q2 2026-27" for a quarterly return — the same period as the sheet's Return Period. Staff and the client both see it. A matter of any other service has no such tag.
-2. **Given** a GST return matter whose GSTR-1 filing task is completed, **Then** that task shows "Filed on: 11 November 2026" next to its name, with the date the task was completed (India); the same for the GSTR-3B filing task, each with its own date. The matter's header also shows "GSTR-1 filed on: …" / "GSTR-3B filed on: …", because completed tasks are folded away in the step list. The two tasks are the ones the sheet's "Date of GSTR-1 Filing" / "Date of GSTR-3B Filing" columns read (matched by the task's name, e.g. "GSTR-1 Filed", "Proceed Towards GSTR-3B Filing"; never the "… filed mail" tasks).
-3. **Given** a filing task that was ticked after the return was actually filed, **When** an admin, manager or a team member working the matter (its owner, or the holder of one of its tasks) corrects the date with the pencil beside "GSTR-1 filed on" / "GSTR-3B filed on" in the matter's header, **Then** the matter, its client and the GST Return Filing sheet's date column all show the corrected date, the completion time is kept, and the matter's history records who changed which date from what to what (staff only). The date must be a real date, not in the future, and not before the 1st of the month after the return's period ended (from 1 October for September or for Q2). "Use completion date" undoes a correction. Clients and professionals cannot correct a date.
-4. **Given** a matter-fed row of the GST Return Filing sheet, **Then** its Date of GSTR-1 / GSTR-3B Filing cell is not typed over (refused, "correct it on the matter") and an Excel upload leaves it as it is; a row with no matter, or whose matter has no such task, keeps the cell typable.
-5. **Given** a filing task that is reopened, **Then** its date (and any correction) is no longer shown; when it is completed again, the new completion date shows.
+2. **Given** a GST return matter that has reached its GSTR-1 filing task ("GSTR-1 Filed") or its GSTR-3B filing task ("Proceed Towards GSTR-3B Filing"), **When** staff (an admin, manager, or a team member working the matter — its owner, or the holder of one of its tasks) press **Add Filing Date** beside that task (on the current task, or in the matter's header), pick the date the return was actually filed and save, **Then** that task shows "Filed on: 11 November 2026" next to its name and the header shows "GSTR-1 filed on: …" / "GSTR-3B filed on: …", for staff and the client. Staff then complete the task. The two tasks are the ones the sheet's "Date of GSTR-1 Filing" / "Date of GSTR-3B Filing" columns read (matched by the task's name; never the "… filed mail" tasks). (#294, firm 17 Nov 2026.)
+3. **Given** a filing task completed without a saved date, **Then** it shows no date (completing a task never sets one) and staff can still add one from the header. The date must be a real date, not in the future, and not before the 1st of the month after the return's period ended (from 1 October for September or for Q2). A saved date can be changed (pencil) or removed; every save is recorded in the matter's history — who, which return, from what to what (staff only). Clients and professionals cannot save a date.
+4. **Given** a filing task completed BEFORE manual filing dates went live, with no saved date, **Then** it keeps the date it showed until then (its completion day, or the correction made to it); saving a date replaces it.
+5. **Given** a saved filing date, **Then** the GST Return Filing sheet's Date of GSTR-1 / GSTR-3B Filing cell of that matter's row shows it, and follows every change, on the sheet's next opening — matter to sheet only: that cell is not typed over (refused, "change it on the matter") and an Excel upload leaves it as it is; nothing typed in the sheet is written back to a matter. A row with no matter, or whose matter has no date for it, keeps the cell typable.
+6. **Given** a GST return matter, **Then** it only ever updates its own row — the row for its client and return period, in the Monthly or the Quarterly sheet by its frequency. A row's Matter cell can only be set to a matter of that row's client and period, of that sheet's kind, that has no row yet (otherwise refused with the reason); a row already wrongly tied to a matter (another client's or period's, or a second row for the same matter) is released by the next sync, keeps what it shows, and is never written to again. A typed or uploaded row is taken over by a matter only when its GSTIN, period and client name match. (#294.)
 
 ---
 
@@ -648,13 +666,15 @@ parallelGroup?,      // step group ID if this step runs in parallel with others
 branches?,           // branch conditions defined in machine topology
 ```
 
-### `tasks/{taskId}/steps/{n}.filedOnCorrection` — #294 corrected filing date
+### `tasks/{taskId}/steps/{n}.filingDate` — #294 the saved GSTR-1 / GSTR-3B filing date
 ```
-date,            // 'YYYY-MM-DD' — the corrected GSTR-1 / GSTR-3B filing date
-forCompletedAt,  // the step's completedAt it corrects; a re-completion makes it stale (ignored)
-previous,        // the date shown before
+date,            // 'YYYY-MM-DD', or null once staff removed it — once this field exists it is the only date
+previous,        // the date shown before this save (null if none)
 byUid, byRole, at
 ```
+`filedOnCorrection` (`date, forCompletedAt, previous, byUid, byRole, at`) is the pre-17-Nov
+correction of a completion-day date; still read for tasks completed before manual dates went live
+(`system/gstFilingDates.manualFrom`), never written now.
 
 ### `tasks/{taskId}` — workflow instances per client
 ```
@@ -680,6 +700,14 @@ recordedBy, recordedByName, recordedAt, updatedAt,
 statusHistory[{ status, at, by, byName }]
 // The parent (task or order) carries refundSummary:
 //   { count, activeTotal, creditedTotal, latest{ status, refundAmount, reason, initiatedAt, transactionId } }
+```
+
+### `tasks/{taskId}/invoices/{invoiceId}` — invoices (#313)
+```
+taskId, fileName, contentType ('application/pdf'), objectPath (bucket: tasks/{taskId}/invoices/{invoiceId}/{fileName}),
+status (awaiting_upload|uploaded), size?, replaces (invoiceId)|null,
+uploadedBy, uploadedByName, createdAt, uploadedAt?
+// Backend-only (firestore.rules: read, write false). Deleting the matter deletes them.
 ```
 
 ### `taskSteps/{taskId}/steps/{stepId}`

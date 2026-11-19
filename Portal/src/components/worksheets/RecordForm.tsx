@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { ArrowLeft, Loader2, Trash2 } from 'lucide-react';
 import type { CellValue, MatterRef, WsRecord, WsSheet } from '../../api/worksheets';
-import { formatDate } from '../../lib/worksheets';
+import { formatDate, staffOptions } from '../../lib/worksheets';
 import WorksheetImage from './WorksheetImage';
 import MatterPicker from './MatterPicker';
 import SecretCell from './SecretCell';
@@ -127,6 +127,12 @@ export default function RecordForm({
                   <option value="">—</option>
                   {draft[c.key] && !(c.options ?? []).includes(draft[c.key]) && <option value={draft[c.key]}>{draft[c.key]}</option>}
                   {(c.options ?? []).map((o) => <option key={o} value={o}>{o}</option>)}
+                </select>
+              ) : c.type === 'staff' ? (
+                // #280: the portal's staff, by name; the row stores who was picked.
+                <select id={id} value={draft[c.key] ?? ''} onChange={(e) => set(c.key, e.target.value)} className="input-field px-4 py-3">
+                  <option value="">—</option>
+                  {staffOptions(c, draft[c.key] ?? '').map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
                 </select>
               ) : (
                 <input id={id} value={draft[c.key] ?? ''} onChange={(e) => set(c.key, e.target.value)} className="input-field px-4 py-3"

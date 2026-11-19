@@ -1,4 +1,4 @@
-import type { CellValue, ImportCell, MatterRef, WsColumn, WsRecord } from '../api/worksheets';
+import type { CellValue, ImportCell, MatterRef, StaffChoice, WsColumn, WsRecord } from '../api/worksheets';
 
 /* #210 / #217 — display, search and filter rules for the worksheet grid. */
 
@@ -10,6 +10,19 @@ export function formatDate(v: CellValue): string {
   return new Date(`${v}T00:00:00`).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
+/**
+ * #280 — the people a staff picker offers: active staff, plus whoever the cell
+ * holds now if that is not one of them (a former colleague, or a name typed
+ * before the column listed staff) so the current value is never lost from view.
+ */
+export function staffOptions(col: WsColumn, current: string): StaffChoice[] {
+  const choices = col.choices ?? [];
+  const active = choices.filter((c) => c.active);
+  if (!current || active.some((c) => c.value === current)) return active;
+  const held = choices.find((c) => c.value === current);
+  return [{ value: current, label: held ? `${held.label} (no longer on staff)` : current, active: false }, ...active];
+}
+
 const inr = new Intl.NumberFormat('en-IN', { maximumFractionDigits: 2 });
 
 /** What a cell shows — also what search, filters and the Excel download use. */
@@ -19,6 +32,9 @@ export function displayValue(col: WsColumn, record: WsRecord, matters: Record<st
   if (col.type === 'date' || col.type === 'computed') return formatDate(v);
   if (col.type === 'number') return typeof v === 'number' ? inr.format(v) : String(v);
   if (col.type === 'matter') return matters[String(v)]?.label ?? String(v);
+  // #280: a staff cell holds a uid and shows the name; anything else (a name
+  // typed or uploaded before it matched a person) shows as written.
+  if (col.type === 'staff') return col.choices?.find((c) => c.value === v)?.label ?? String(v);
   return String(v);
 }
 

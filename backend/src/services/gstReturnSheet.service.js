@@ -14,8 +14,13 @@
  *   Mail ID / Contact    the client's email and mobile
  *   Assign Person        the name of whoever holds the matter's current task, else its professional
  *   Current Status       the current task's name, or Awaiting approval / Completed / Stopped …
- *   step columns         "Yes" (or the date, for the two filing dates) once the task whose
- *                        name says so is completed — see STEP_RULES
+ *   step columns         "Yes" once the task whose name says so is completed — see STEP_RULES;
+ *                        the two filing dates are the date staff SAVED on that filing task
+ *                        (#294, "Add Filing Date"), never its completion day
+ *
+ * MATTER → SHEET ONLY. Values flow from the matter to its row; nothing typed in
+ * the sheet is ever written back to a matter. Which row is a matter's: see
+ * `rowFitsMatter` / `pickMatterRow` (#294, the wrong-record fix).
  *   Completion Check     "Done" when the matter is completed
  *   Return Period        the matter's GST period ("October 2026", "Q2 2026-27")
  *   Matter               a link to the matter
@@ -179,6 +184,124 @@ const STATUS_TEXT = {
 const isDone = (s) => s?.status === 'completed';
 
 /**
+ * Who and which return a matter's row is for — the three cells that identify a
+ * row (with the sheet, from `frequency`). The same values `deriveRow` writes.
+ *   → { frequency, client_name, gstin, period }
+ */
+export function matterIdentityOf({ task, client }) {
+  const frequency = frequencyOf(task, client);
+  return {
+    frequency,
+    client_name: str(task?.organisation) || str(client?.businessName) || str(client?.organisation) || str(task?.clientName) || str(client?.name),
+    gstin: str(client?.gstNumber)?.toUpperCase() ?? null,
+    period: periodOf(task, frequency),
+  };
+}
+
+/* ── #294 (firm, 17 Nov): which row is a matter's ────────────────────────
+ *
+ * ROOT CAUSE of "the sheet updates the wrong record for a matter". A row was
+ * tied to a matter (`sourceMatterId`) in two ways: by the sync itself, and by a
+ * PERSON picking a matter in the row's Matter cell (or a row's Matter cell being
+ * changed). The second had no check at all: any GST matter could be picked on
+ * any row — another client's, another month's or quarter's — and a matter that
+ * already had its own row could be picked on a second one. The sync then took
+ * whichever linked row Firestore listed first and, because a person-linked row
+ * had never been synced, wrote EVERY cell the workflow knows over it (client
+ * name, GSTIN, period, statuses, dates): the matter's data landed on another
+ * client's or another period's row (and a matter with two linked rows wrote to
+ * whichever the query happened to return first). Adoption (a typed row taken
+ * over for the same GSTIN + period) could likewise take a row typed for a
+ * different company: GSTIN comes from the client's profile, and one client
+ * login can hold matters for several organisations.
+ *
+ * THE RULE NOW. A matter only ever writes to a row that is its own:
+ *   - a row the sync has already written FROM THIS matter (`derived.matter`) —
+ *     even if a person has since typed over a cell (last change wins);
+ *   - otherwise a row whose GSTIN, Return Period and client name are each blank
+ *     or the matter's own (`rowFitsMatter`): a row a person linked through the
+ *     Matter cell, or a typed / uploaded row the sync adopts.
+ * Linking is checked when a person sets the Matter cell (worksheets.controller,
+ * `checkMatterLink`) and again on every sync, which RELEASES a wrong link
+ * instead of writing to it (`pickMatterRow`).
+ */
+
+const idNorm = (v) => String(v ?? '').toUpperCase().replace(/\s+/g, '');
+const NAME_NOISE = /\b(m\s*\/\s*s|messrs|the|private|pvt|limited|ltd|llp|opc|co|company|and)\b/g;
+const nameNorm = (v) => String(v ?? '').toLowerCase().replace(/&/g, ' ').replace(NAME_NOISE, ' ').replace(/[^a-z0-9]+/g, '');
+
+/** Two client names name the same business (spelling of "Pvt Ltd", "M/s", case and spaces aside). Blank agrees with anything. */
+export function namesAgree(a, b) {
+  const x = nameNorm(a);
+  const y = nameNorm(b);
+  if (!x || !y) return true;
+  return x === y || x.includes(y) || y.includes(x);
+}
+
+/**
+ * Is this row (its `values`) for the matter whose identity is `want`
+ * (`matterIdentityOf`, or `deriveRow`'s values)? Each of GSTIN, Return Period
+ * and client name is blank in the row or the matter's own.
+ */
+export function rowFitsMatter(row, want) {
+  const values = row?.values ?? {};
+  const fits = (field, same) => {
+    const have = values[field];
+    if (have == null || String(have).trim() === '') return true;
+    return want?.[field] != null && same(have, want[field]);
+  };
+  return fits('gstin', (a, b) => idNorm(a) === idNorm(b))
+    && fits('period', (a, b) => idNorm(a) === idNorm(b))
+    && fits('client_name', namesAgree);
+}
+
+/**
+ * Of the rows linked to one matter (`[{ id, data }]`), the one the sync writes
+ * to, and the ones whose link is released. A row the sync has written before
+ * from this matter stays the matter's even if a person has since typed over its
+ * period or GSTIN — that is their correction, last change wins. A row linked
+ * but never synced (a person picked the matter in its Matter cell) is kept only
+ * if it fits the matter (`rowFitsMatter`). Of several, the sync's own row
+ * first, then one synced before, then the oldest — deterministic, so the same
+ * row is chosen on every run.
+ *   → { keep: row | null, release: row[] }
+ */
+export function pickMatterRow(rows, want) {
+  // "Synced before" means synced FROM THIS matter (`derived.matter`): a row
+  // whose Matter cell was switched from another matter is checked like a new link.
+  const syncedHere = (r) => !!r.data?.derived && want?.matter != null && r.data.derived.matter === want.matter;
+  const rank = (r) => [r.data?.source === 'matter' ? 0 : 1, syncedHere(r) ? 0 : 1, r.data?.createdAt ?? '', r.id ?? ''];
+  const cmp = (a, b) => {
+    const x = rank(a); const y = rank(b);
+    for (let i = 0; i < x.length; i += 1) {
+      if (x[i] < y[i]) return -1;
+      if (x[i] > y[i]) return 1;
+    }
+    return 0;
+  };
+  const keep = (rows ?? []).filter((r) => syncedHere(r) || rowFitsMatter(r.data, want)).sort(cmp)[0] ?? null;
+  return { keep, release: (rows ?? []).filter((r) => r !== keep) };
+}
+
+/**
+ * A person sets a row's Matter cell (create or edit). Allowed only when the
+ * matter is a return of this sheet's kind, the row is for the matter's client
+ * and period (`rowFitsMatter`), and the matter has no other row. `otherRowIds`
+ * are rows already linked to that matter. Returns null, or { status, message }.
+ */
+export function checkMatterLink({ sheetFrequency, row, identity, otherRowIds = [] }) {
+  if (sheetFrequency && identity.frequency && sheetFrequency !== identity.frequency) {
+    return { status: 400, message: `That matter is a ${identity.frequency} return. Link it from the ${identity.frequency === 'quarterly' ? 'Quarterly' : 'Monthly'} sheet.` };
+  }
+  if (!rowFitsMatter(row, identity)) {
+    const what = [identity.client_name, identity.period].filter(Boolean).join(' — ') || 'another client or period';
+    return { status: 409, message: `That matter is for ${what}, not this row's client and return period. Pick the matter of this row's client and period.` };
+  }
+  if (otherRowIds.length) return { status: 409, message: 'That matter already has its own row in this sheet.' };
+  return null;
+}
+
+/**
  * The derived values of one matter's row.
  *   task:  the matter document (with its id)
  *   client: the client's user document, or null
@@ -186,38 +309,40 @@ const isDone = (s) => s?.status === 'completed';
  *   names: Map uid → display name, for the current task's assignee
  * Returns { frequency, values } — `values` has every DERIVED_FIELDS key (null = blank).
  */
-export function deriveRow({ task, client, steps = [], names = new Map() }) {
-  const frequency = frequencyOf(task, client);
+export function deriveRow({ task, client, steps = [], names = new Map(), manualFrom = null }) {
+  const { frequency, ...identity } = matterIdentityOf({ task, client });
   const current = steps.find((s) => s.stepNumber === task.currentStepNumber) ?? null;
   const assignee = current?.assignedTo ? names.get(current.assignedTo) ?? null : null;
   const live = task.status === 'active' || task.status === 'pending';
   const values = {
-    client_name: str(task.organisation) || str(client?.businessName) || str(client?.organisation) || str(task.clientName) || str(client?.name),
+    client_name: identity.client_name,
     constitution: CONSTITUTION[client?.entityType] ?? null,
-    gstin: str(client?.gstNumber)?.toUpperCase() ?? null,
+    gstin: identity.gstin,
     data_email: str(client?.email),
     contact_no: str(client?.mobile) || str(client?.phone),
     assign_person: (live ? assignee : null) || str(task.professionalName),
     current_status: STATUS_TEXT[task.status] ?? (live ? str(current?.title) || 'In progress' : str(task.status)),
     completion_check: task.status === 'completed' ? 'Done' : null,
-    period: periodOf(task, frequency),
+    period: identity.period,
     matter: task.id ?? null,
   };
   for (const rule of STEP_RULES) {
     const step = stepForRule(rule, steps);
-    values[rule.field] = !isDone(step) ? null
-      : rule.kind === 'date' ? filedOnDateOf(step)
-      : 'Yes';
+    // #294 (firm, 17 Nov): a filing date is the date staff SAVED on the filing
+    // task ("Add Filing Date"), shown as soon as it is saved — never the day the
+    // task was ticked. The "Yes" columns still follow completion.
+    values[rule.field] = rule.kind === 'date' ? filedOnDateOf(step, { manualFrom })
+      : isDone(step) ? 'Yes' : null;
   }
   for (const k of DERIVED_FIELDS) if (values[k] === undefined || values[k] === '') values[k] = null;
   return { frequency, values };
 }
 
 /**
- * #294 — the two filing tasks whose completion date is shown on the matter
- * ("Filed on: 11 November 2026"). The SAME rules that fill the sheet's "Date of
- * GSTR-1 Filing" / "Date of GSTR-3B Filing" columns, so the matter and the sheet
- * can never disagree about which task is the filing.
+ * #294 — the two filing tasks that carry a filing date ("Filed on: 11 November
+ * 2026"). The SAME rules that fill the sheet's "Date of GSTR-1 Filing" /
+ * "Date of GSTR-3B Filing" columns, so the matter and the sheet can never
+ * disagree about which task is the filing.
  */
 export const FILING_DATE_FIELDS = { gstr1_date: 'GSTR-1', gstr3b_date: 'GSTR-3B' };
 
@@ -228,56 +353,73 @@ export function isGstReturnMatter(task, linkedServices = []) {
 
 /**
  * #292 / #294 — what a GST return matter shows: its filing period (#292,
- * "September 2026" or "Q2 2026-27"), and for each of the two filing tasks that
- * is completed, its India completion date (#294). Pure; `steps` must carry the
+ * "September 2026" or "Q2 2026-27"), and each filing task the matter has
+ * REACHED (or that has a saved date), with its saved filing date or null (#294:
+ * the matter offers "Add Filing Date" for those). Pure; `steps` must carry the
  * INTERNAL task names (match before the client's projection renames them).
  * Returns null for any other matter.
- * The date is `filedOnDateOf` — a staff correction, else the completion date.
- *   → { period, frequency, filedOn: [{ stepNumber, form, date, completedOn, corrected }] }
+ *   → { period, frequency, filings: [{ stepNumber, form, date, status }],
+ *       filedOn: the filings that have a date }
  */
-export function gstMatterTags({ task, steps = [], client = null, linkedServices = [] }) {
+export function gstMatterTags({ task, steps = [], client = null, linkedServices = [], manualFrom = null }) {
   if (!isGstReturnMatter(task, linkedServices)) return null;
-  const filedOn = [];
-  for (const rule of STEP_RULES) {
-    const form = FILING_DATE_FIELDS[rule.field];
-    if (!form) continue;
-    const step = stepForRule(rule, steps);
-    const date = filedOnDateOf(step);
-    if (date) {
-      filedOn.push({
-        stepNumber: step.stepNumber, form, date,
-        completedOn: dateOnly(step.completedAt), corrected: !!activeCorrection(step),
-      });
-    }
+  const filings = [];
+  for (const { form, step } of filingSteps(steps)) {
+    const date = filedOnDateOf(step, { manualFrom });
+    if (date || isReached(step)) filings.push({ stepNumber: step.stepNumber, form, date, status: step.status ?? null });
   }
   const frequency = frequencyOf(task, client);
-  return { period: periodOf(task, frequency), frequency, filedOn };
+  return { period: periodOf(task, frequency), frequency, filings, filedOn: filings.filter((f) => f.date) };
 }
 
-/* ── #294 follow-up: correcting a filing date ─────────────────────────────
+/* ── #294 (firm, 17 Nov): the filing date is ENTERED, never derived ───────
  *
- * Staff tick a filing task when they get to it, not always the day the return
- * was filed. A correction is stored ON THE STEP as `filedOnCorrection`
- * { date, forCompletedAt, byUid, at, previous } and `completedAt` is never
- * touched. It belongs to ONE completion: `forCompletedAt` is the completedAt it
- * corrected, so a reopened and re-completed task (new completedAt) shows its new
- * completion date and the old correction is simply no longer read.
+ * When the matter reaches the GSTR-1 or GSTR-3B filing task, staff save the
+ * date the return was actually filed ("Add Filing Date"), then complete the
+ * task. The date is stored ON THE STEP as `filingDate`
+ * { date: 'YYYY-MM-DD' | null, previous, byUid, byRole, at } and is the only
+ * date shown — completing the task never sets one, and completing without one
+ * is allowed (the matter simply shows no date until one is added). Once the
+ * field exists it is authoritative: `date: null` means staff removed it.
+ *
+ * EXISTING MATTERS. Before this rule, the date was the day the task was
+ * completed (or a staff correction of it, `filedOnCorrection`). A filing task
+ * completed BEFORE the rule went live (`manualFrom`, recorded once in
+ * `system/gstFilingDates` — gstMatterTags.service.js) and never given a
+ * `filingDate` keeps that date, read exactly as before, so nothing anyone has
+ * seen disappears; saving a date replaces it. A task completed after the rule
+ * went live has no date until one is saved.
  */
+
+/** A task the matter has got to: in progress, waiting, or done (not one still ahead, nor one skipped). */
+export const isReached = (s) => !!s && ['active', 'blocked', 'completed'].includes(s.status);
 
 const activeCorrection = (step) => {
   const c = step?.filedOnCorrection;
   return isDone(step) && c?.date && c.forCompletedAt && c.forCompletedAt === step.completedAt ? c : null;
 };
 
+/** The pre-rule date of a filing task completed before `manualFrom`: its correction, else its completion day. Null otherwise. */
+export function legacyFiledOnOf(step, manualFrom) {
+  if (!isDone(step) || !step.completedAt || !manualFrom) return null;
+  const done = new Date(step.completedAt).getTime();
+  const from = new Date(manualFrom).getTime();
+  if (Number.isNaN(done) || Number.isNaN(from) || done >= from) return null;
+  return activeCorrection(step)?.date ?? dateOnly(step.completedAt);
+}
+
+const hasSavedDate = (step) => !!step?.filingDate && typeof step.filingDate === 'object';
+
 /**
  * THE filing date of a filing task — the one function the matter's "Filed on"
- * tag AND the sheet's "Date of GSTR-1/3B Filing" cells read: the staff
- * correction for this completion, else the India date of completion; null
- * while the task is not completed.
+ * tag AND the sheet's "Date of GSTR-1/3B Filing" cells read: the date staff
+ * saved, else (a task completed before the rule, see above) the date it showed
+ * before; otherwise null.
  */
-export function filedOnDateOf(step) {
-  if (!isDone(step)) return null;
-  return activeCorrection(step)?.date ?? dateOnly(step.completedAt);
+export function filedOnDateOf(step, { manualFrom = null } = {}) {
+  if (!step) return null;
+  if (hasSavedDate(step)) return isCalendarDate(step.filingDate.date) ? step.filingDate.date : null;
+  return legacyFiledOnOf(step, manualFrom);
 }
 
 /** The two filing tasks of a workflow: [{ field, form, step }] — only those the workflow has. */
@@ -316,7 +458,7 @@ export function filedOnBounds(task, frequency, now = new Date()) {
 }
 
 /**
- * Who may correct a filing date: internal staff who work the matter. Admin and
+ * Who may save a filing date: internal staff who work the matter. Admin and
  * manager on any matter (they see every matter); a team member on a matter they
  * own or hold a task of — the same matters their list shows them. Never a
  * client or a professional.
@@ -341,25 +483,33 @@ export function isCalendarDate(v) {
 }
 
 /**
- * Check a correction against the matter. `date` null = go back to the
- * completion date. Returns { ok: true, step, form, from, to } or
- * { ok: false, status, message } (messages are shown to staff as they are).
+ * #294 — check a filing date staff save on a filing task. `date` null = remove
+ * the saved date. Allowed once the matter has reached the task (in progress or
+ * completed), within `filedOnBounds`. Returns { ok: true, step, form, from, to }
+ * or { ok: false, status, message } (messages are shown to staff as they are).
  */
-export function checkFiledOnCorrection({ task, steps, stepNumber, date, frequency, linkedServices, now = new Date() }) {
+export function checkFilingDate({ task, steps, stepNumber, date, frequency, linkedServices, manualFrom = null, now = new Date() }) {
   if (!isGstReturnMatter(task, linkedServices)) {
     return { ok: false, status: 400, message: 'Filing dates are kept only on GST return matters.' };
   }
   const hit = filingSteps(steps).find((x) => x.step.stepNumber === stepNumber);
   if (!hit) return { ok: false, status: 400, message: 'Only the GSTR-1 and GSTR-3B filing tasks have a filing date.' };
-  if (!isDone(hit.step)) return { ok: false, status: 409, message: `Complete the ${hit.form} filing task first.` };
-  const from = filedOnDateOf(hit.step);
+  if (!isReached(hit.step)) return { ok: false, status: 409, message: `The matter has not reached the ${hit.form} filing task yet.` };
+  const from = filedOnDateOf(hit.step, { manualFrom });
   if (date != null) {
     if (!isCalendarDate(date)) return { ok: false, status: 400, message: 'Enter a valid date.' };
     const { min, max } = filedOnBounds(task, frequency, now);
     if (date > max) return { ok: false, status: 400, message: 'The filing date cannot be in the future.' };
     if (min && date < min) return { ok: false, status: 400, message: `The filing date cannot be before ${longDay(min)}, when this return's period ended.` };
   }
-  return { ok: true, step: hit.step, form: hit.form, from, to: date ?? dateOnly(hit.step.completedAt) };
+  return { ok: true, step: hit.step, form: hit.form, from, to: date ?? null };
+}
+
+/** The history line for a saved filing date. */
+export function filingDateComment(form, from, to) {
+  if (!to) return `${form} filing date removed (was ${longDay(from)}).`;
+  if (!from) return `${form} filing date set to ${longDay(to)}.`;
+  return `${form} filing date changed from ${longDay(from)} to ${longDay(to)}.`;
 }
 
 const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June',

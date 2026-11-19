@@ -5,7 +5,7 @@ import {
 } from 'lucide-react';
 import type { CellValue, MatterRef, WsColumn, WsRecord, WsSheet } from '../../api/worksheets';
 import {
-  BLANK, displayValue, isRangeColumn, matchesQuery, passesFilter, slugify, sortValue, splitMatches, type ColumnFilter,
+  BLANK, displayValue, isRangeColumn, matchesQuery, passesFilter, slugify, sortValue, splitMatches, staffOptions, type ColumnFilter,
 } from '../../lib/worksheets';
 import { exportToXlsx } from '../../lib/exportXlsx';
 import WorksheetImage from './WorksheetImage';
@@ -21,9 +21,9 @@ import SecretCell from './SecretCell';
 const PAGE_SIZE = 50;
 const WIDTH: Record<string, string> = {
   longtext: 'min-w-[16rem]', text: 'min-w-[11rem]', date: 'min-w-[8.5rem]', computed: 'min-w-[8.5rem]',
-  number: 'min-w-[8rem]', select: 'min-w-[10rem]', image: 'min-w-[8rem]', matter: 'min-w-[14rem]',
+  number: 'min-w-[8rem]', select: 'min-w-[10rem]', staff: 'min-w-[10rem]', image: 'min-w-[8rem]', matter: 'min-w-[14rem]',
 };
-const EDITABLE = new Set(['text', 'longtext', 'date', 'number', 'select']);
+const EDITABLE = new Set(['text', 'longtext', 'date', 'number', 'select', 'staff']);
 
 export interface GridProps {
   sheet: WsSheet;
@@ -329,6 +329,14 @@ function EditableCell({ column, value, text, q, onSave }: {
           <option value="">—</option>
           {draft && !options.includes(draft) && <option value={draft}>{draft}</option>}
           {options.map((o) => <option key={o} value={o}>{o}</option>)}
+        </select>
+      );
+    }
+    if (column.type === 'staff') {
+      return (
+        <select autoFocus aria-label={editorLabel} value={draft} onChange={(e) => setDraft(e.target.value)} onBlur={commit} onKeyDown={keys} className={cls} disabled={saving}>
+          <option value="">—</option>
+          {staffOptions(column, draft).map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
         </select>
       );
     }

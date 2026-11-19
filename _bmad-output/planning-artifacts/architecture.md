@@ -2591,7 +2591,41 @@ accept the 24Q/26Q spelling). The seven yellow columns are selects: Assigned to,
 Checker and Client start empty (the firm fills them under Edit dropdowns); the four
 status columns start Yes/No. PR numbers are text so a 15-digit number is never
 rounded or shown as a percentage. Traces/IT passwords are plain text fields, as in
-the firm's file — see the open question in epics.md.
+the firm's file; the firm confirmed on 11 Nov that they stay visible to Admin,
+Manager and Team, that the Form 138 / 140 labels are right, and one row per TAN.
+Assigned to and Checker are `staff` columns (below), not selects.
+
+**Staff columns (#280, 2026-11-19).** Field type `staff`: a choice list filled from
+the portal's own staff instead of typed options (TDS: Assigned to, Checker).
+- *Source.* `services/worksheetStaff.service.js` `loadWorksheetStaff(db)`: one query
+  `users where role in STAFF_ROLES` (admin, manager, team member — bounded by the
+  team), cached in-process for 60 s, so a sheet open and every 200-row batch of an
+  upload do not each re-read users. Gives `[{ uid, name, email, active }]`;
+  `active: false` for `status: 'deactivated'`; `e2e: true` accounts dropped outside
+  test runs (the @mentions rule). The query runs only for a book that has a staff
+  field — no other sheet touches `users`.
+- *What the page gets.* `withStaffChoices` adds `choices: [{ value: uid, label:
+  name, active }]` to each staff column in `getModule`, `putColumns` and
+  `putOptions` responses. No email leaves the server. Pickers (grid cell, record
+  form) offer active staff, plus whatever the cell holds now if it is not one of
+  them (`staffOptions` in `Portal/src/lib/worksheets.ts`).
+- *What is stored.* The uid. `displayValue` turns it into the name, so search,
+  filters, sort and Download Excel all read the name. A value that is not a known
+  uid — a name typed when the column was a select, or an unmatched upload cell — is
+  shown as written. Existing live rows are not migrated.
+- *Writes.* `cleanRecordValues(fields, values, { staff })`: a staff value must be an
+  active staff uid, or null (400 otherwise). `planImport({ …, staff })` →
+  `normalizeValue(field, raw, { staff })` → `matchStaff`: uid, then display name
+  (case/spacing-insensitive), then email; active staff before former staff; two
+  people of one name is ambiguous. Unmatched or ambiguous → the text is kept, with
+  a warning, like an untidy date.
+- *Edit dropdowns.* `applyOptionsEdit` accepts `select` only, so a staff column
+  answers 400; `bookFields` applies `optionOverrides` to selects only, so the
+  firm's earlier typed list for these columns is ignored (left in the document).
+- Not addable under Edit columns (`ADDABLE_TYPES` unchanged). The GST sheet's Assign
+  Person stays a select: the matter sync writes an assignee *name* there.
+- Known gap: a uid of a user who was later deleted (no user document) has no name
+  to show and displays as the raw id.
 
 ### GST Return Filing sheet (#279, 2026-11-10)
 
@@ -2646,7 +2680,9 @@ and **Matter**.
   unlinked row of the same sheet with the same GSTIN + period (typed or uploaded
   earlier) instead of adding a duplicate; a person who sets a row's Matter cell
   links it. A key already held by another row is left off the new one (`recordKey:
-  null`) rather than failing the sync.
+  null`) rather than failing the sync. **#294 (2026-11-19):** both are now checked
+  against the matter's client and period, and the sync releases a wrong link
+  instead of writing to it — see "Which row is a matter's" in the next section.
 - **When and how much.** Due on read: `GET …/records` without a cursor (opening
   the sheet) runs the sync first, at most every 15 s, under a lock in
   `system/worksheetSync_gst_return`. A watermark `(updatedAt, id)` there means a
@@ -2697,11 +2733,13 @@ and **Matter**.
   edit dropdowns; admin changes columns and deletes a record; route
   `/reports/gst-returns` with the same three roles; clients and professionals 403.
 
-### GST tags on the matter: Filing Month and "Filed on" (#292, #294, 2026-11-14)
+### GST tags on the matter: Filing Month and "Filed on" (#292, #294, 2026-11-14; manual dates and row mapping 2026-11-19)
 
 **LT only.** A GST return matter shows its period and its two filing dates on the
-matter, worked out by the **sheet's own rules** (#279) so the matter and the sheet
-never disagree. The only thing stored is a staff correction of a filing date (below).
+matter. The period and WHICH tasks are the filings are worked out by the **sheet's
+own rules** (#279), so the matter and the sheet never disagree. The filing date itself
+is **entered by staff** on the filing task (#294, firm 17 Nov) — it is the only thing
+stored.
 
 - **Which matters.** `isGstReturnMatter`: the matter carries `filingPeriod` (opened by
   the #219 sweep) or its `serviceKey` is one of the GST book's linked services
@@ -2715,42 +2753,70 @@ never disagree. The only thing stored is a staff correction of a filing date (be
   case where the client's `gstReturnFrequency` decides). Served as
   `gstFilingPeriodLabel` on `GET /api/tasks` (every role branch; one batched `getAll`
   of those clients, no step reads) and `GET /api/tasks/:id`.
-- **Filed on** = the India date of `completedAt` of the step `stepForRule` picks for the
-  `gstr1_date` / `gstr3b_date` rules (`STEP_RULES`, `FILING_DATE_FIELDS`) — the steps
-  that fill "Date of GSTR-1 Filing" / "Date of GSTR-3B Filing". Matched on the INTERNAL
-  step titles, so `getTask` annotates before the client projection swaps in
-  `clientTitle`. Served as `filedOn` on the step and `gstFilings: [{ stepNumber, form,
-  date }]` on the matter (the header shows them because completed steps are folded
-  behind "Show completed").
-- **Correcting a date (owner's answer, 2026-11-14: yes).** `PUT /api/tasks/:taskId/steps/:stepNumber/filed-on
-  { date: 'YYYY-MM-DD' | null }` (`gstFiling.controller.js`). Route: `requireRole('admin', 'manager',
-  'team_member')` + `filedOnCorrectionSchema` (strict; a real calendar date or null). Handler, in one
-  transaction: `canCorrectFiledOn` (a team member only as the matter's owner or an assignee of one of
-  its steps — the matters their list shows); `checkFiledOnCorrection` (GST return matter; the step is
-  one `filingSteps` picks; it is completed; `filedOnBounds`: min = the 1st of the month after the GST
-  period ends — `filingPeriod.month`, else the period that had ended at creation — max = today in
-  India). Writes `filedOnCorrection { date, forCompletedAt, previous, byUid, byRole, at }` on the step
-  (null when set back to the completion date), a `FILED_ON_CORRECTED` event (comment "GSTR-1 filing
-  date corrected from … to …", `filedOn {form, from, to}`, `commentClientVisible: false`, not in the
-  client whitelist), and the matter's `updatedAt` (the sheet sync's watermark). `completedAt` is
-  never touched; `filedOnCorrection` is in `CLIENT_STEP_HIDDEN`.
-- **One source.** `filedOnDateOf(step)` — the correction whose `forCompletedAt` equals the step's
-  `completedAt`, else the India date of `completedAt`, null while not completed — is the ONLY reader:
-  `gstMatterTags` (the tags) and `deriveRow` (the sheet's two date columns) both call it.
-- **Reopen.** A correction belongs to one completion. Reopening clears `completedAt` (no date); a
-  re-completion sets a new `completedAt`, so the old correction no longer matches and is ignored
-  (left on the doc, never read). No change to the reopen code was needed.
-- **The sheet's own cell.** On a row with `sourceMatterId` whose `derived.<gstr1_date|gstr3b_date>`
-  is set (the workflow fills it), `matterOwnedDateFields` makes `updateRecord` refuse a changed value
-  (409 `MATTER_OWNED_DATE`, "correct it on the matter's filing task") and `importRows` drop it (with
-  a warning). Rows without a matter, or whose matter has no such completed task, stay typable —
-  so each date cell has exactly one owner.
-- **Portal.** `components/tasks/GstFilingTags.tsx` (`badge-gray` for the period — an
-  identifier, not a state; `badge-green` for a filing — done). `PageShell` gained an
-  optional `titleAddon` beside the title, which wraps under it on a phone. Staff (admin,
-  manager, team member) get a pencil beside each header filing tag opening a native date
-  input bounded by `gstFilingDateBounds` (44 px targets on a phone), with "Use completion
-  date" to undo a correction; the step row's tag shows the same date read-only.
+- **Which tasks.** The steps `stepForRule` picks for the `gstr1_date` / `gstr3b_date`
+  rules (`STEP_RULES`, `FILING_DATE_FIELDS`, `filingSteps`) — the steps that fill "Date of
+  GSTR-1 Filing" / "Date of GSTR-3B Filing" (the firm's "Step 6 – GSTR-1 Filed" and "Step 13
+  – Proceed Towards GSTR-3B Filing", matched by name). Matched on the INTERNAL step titles,
+  so `getTask` annotates before the client projection swaps in `clientTitle`.
+- **The date is entered, never derived (#294, firm 17 Nov 2026).** Completing a filing task
+  sets no date. Staff save it with `PUT /api/tasks/:taskId/steps/:stepNumber/filed-on
+  { date: 'YYYY-MM-DD' | null }` (`gstFiling.controller.js`, `saveFilingDate`). Route:
+  `requireRole('admin', 'manager', 'team_member')` + `filedOnCorrectionSchema` (strict; a real
+  calendar date or null). Handler, in one transaction: `canCorrectFiledOn` (a team member only as
+  the matter's owner or an assignee of one of its steps); `checkFilingDate` (GST return matter;
+  the step is one `filingSteps` picks; the matter has **reached** it — `isReached`: active,
+  blocked or completed, so the date can be saved before completing; `filedOnBounds`: min = the 1st
+  of the month after the GST period ends, max = today in India). Writes
+  `filingDate { date, previous, byUid, byRole, at }` on the step (`date: null` = removed; once the
+  field exists it is authoritative), a `FILING_DATE_SET` event ("GSTR-1 filing date set to … /
+  changed from … to … / removed (was …)", `filedOn {form, from, to}`, `commentClientVisible:
+  false`) and the matter's `updatedAt` (the sheet sync's watermark). `completedAt` is never
+  touched; `filingDate` and `filedOnCorrection` are in `CLIENT_STEP_HIDDEN`.
+  - **Completing without a date is allowed** (decision): the workflow is never blocked; the task
+    shows no date and the header keeps offering "Add Filing Date".
+- **Existing matters (decision: nothing visible disappears).** `system/gstFilingDates.manualFrom`
+  is recorded once — create-if-absent by the first instance that needs it, i.e. at deploy — and
+  cached per process (`manualFilingDatesFrom`). A filing task completed before it with no
+  `filingDate` keeps the date it showed under the old rule (`legacyFiledOnOf`: the matching
+  `filedOnCorrection`, else the India date of `completedAt`). No migration script. A task
+  completed after it has a date only once one is saved. If `manualFrom` cannot be read, the
+  matter page shows no legacy dates for that request, and the sheet sync does not run at all
+  (it must not mistake a failed read for "no dates" and blank cells).
+- **One source.** `filedOnDateOf(step, { manualFrom })` — the saved `filingDate`, else the
+  legacy date, else null — is the ONLY reader: `gstMatterTags` (the tags) and `deriveRow` (the
+  sheet's two date columns). Served as `filedOn` + `gstFilingForm` on the two steps and
+  `gstFilings: [{ stepNumber, form, date | null, status }]` on the matter (every filing task
+  reached, or with a date).
+- **Matter → sheet only (owner, 17 Nov).** The sync copies the date into that matter's row
+  (`RULES_VERSION` 3 re-derives every row once). On a row with `sourceMatterId` whose
+  `derived.<gstr1_date|gstr3b_date>` is set, `matterOwnedDateFields` makes `updateRecord` refuse
+  a changed value (409 `MATTER_OWNED_DATE`, "change it on the matter's filing task") and
+  `importRows` drop it. Nothing in the sheet code writes to `tasks`.
+- **Which row is a matter's (#294 wrong-record fix).** Root cause: `sourceMatterId` was also set
+  whenever a PERSON picked a matter in a row's Matter cell (`matterLink`), with no check that the
+  matter was for that row's client and period or that it had no row yet; the sync then wrote to
+  `linkedRows.get(id)[0]` — whichever linked row the query returned first — and, the row never
+  having been synced, overwrote every derived cell (client, GSTIN, period, statuses, dates). Now:
+  - `pickMatterRow` (sync): of the rows linked to a matter, keep one synced before FROM THIS
+    matter (`derived.matter`), or one that `rowFitsMatter` (GSTIN, Return Period and client name
+    each blank or the matter's own — names compared loosely: case, punctuation, "Pvt Ltd"/"M/s");
+    prefer `source: 'matter'`, then synced-here, then oldest. Every other link is RELEASED
+    (`sourceMatterId`, `derived` and a Matter cell pointing at that matter are deleted; the cells
+    stay) and logged.
+  - Adoption of a typed / uploaded row also requires `rowFitsMatter` (a client login can hold
+    matters for several organisations while GSTIN comes from the one profile).
+  - `guardMatterLink` (`createRecord` / `updateRecord`, only when the link changes):
+    `checkMatterLink` — the matter's frequency matches the sheet (400), the row fits the matter
+    (`matterIdentityOf`, 409), no other row is linked to it (409).
+  - Not changed: a hand-opened matter's period is still the period that had ended when it was
+    opened (a matter opened late for an older month maps to the later month — open item).
+- **Portal.** `components/tasks/GstFilingTags.tsx`: `FilingDateControl` — the saved date
+  (`badge-green`) with a pencil ("Change … filing date"), or a dashed "Add Filing Date" button
+  while none is saved (staff only; clients see only a saved date) — opening a native date input
+  bounded by `gstFilingDateBounds`, with Save / Remove date / Cancel (44 px targets on a phone).
+  Rendered in the matter's header for every reached filing task (`GstMatterTags`, beside the
+  `badge-gray` Filing Month in `PageShell`'s `titleAddon`) and beside the current task's title in
+  `StepHeroPanel` (`filingSlot`); the step row's tag shows the date read-only.
 
 ## Dependency sources and the Node.js pin (#218, 2026-10-30)
 
@@ -3119,6 +3185,50 @@ a "Waiting for approval" list when requests are still open. A fifth **Refund** c
 a refund exists. The switch after approval needs nothing: the matter appears in
 `/api/tasks` and the order's stage becomes `approved`.
 
+
+## Invoices on a matter's Payments tab (#313, 2026-11-19)
+
+Admins and managers upload a matter's invoices as PDFs; the matter's client downloads
+them. Several per matter; each can be replaced or deleted.
+
+- **Storage.** Metadata `tasks/{taskId}/invoices/{invoiceId}` (`fileName`, `size`,
+  `status` `awaiting_upload|uploaded`, `replaces`, `uploadedBy`, `uploadedByName`,
+  `createdAt`, `uploadedAt`); bytes `tasks/{taskId}/invoices/{invoiceId}/{fileName}` in
+  the bucket — under the matter's prefix, so `deleteTask` sweeps them, and `invoices` is
+  on its subcollection list. A separate subcollection rather than `documents` with a
+  type: documents have their own review lifecycle, client-visibility toggle and staff
+  access (team members see all of them), and invoices must have none of that.
+- **Upload reuses the document transport** (§7, E-05): `POST …/invoices/signed-upload-url`
+  `{ fileName, contentType: 'application/pdf', replaces? }` (`invoice.schema.js`,
+  `.strict()`, PDF literal) returns a 15-minute V4 signed PUT URL with the content type
+  pinned; the browser PUTs; `POST …/invoices/:id/confirm` then checks the object exists,
+  its size is ≤ 10 MB and its first bytes are `%PDF-` (the signed URL bounds the type
+  label only), and marks it `uploaded`. A refused upload is deleted, bytes and record.
+  An `awaiting_upload` record is never listed or downloadable.
+- **Replace** is a fresh upload with `replaces: <invoiceId>`; on its confirm the replaced
+  invoice's record and bytes are removed, so the list never shows both and a failed
+  replacement leaves the original untouched. The new upload date is the replacement's.
+- **Download** `GET …/invoices/:id/download` streams through the backend
+  (`Content-Disposition: attachment`, `Cache-Control: private, no-store`, `nosniff`) —
+  never a signed URL (security rule 8).
+- **Access.** Route guards: list and download admin, manager, client; upload, confirm and
+  `DELETE` admin, manager. The controller re-checks (`canManageInvoices`,
+  `canReadInvoices` in `services/invoices.service.js`, pure and unit-tested) and adds
+  ownership: a client only via `clientCanSeeMatter` (own scope #166, matter contact
+  #188), otherwise **404**, as refunds. **Team members and professionals are refused
+  (403)**: an invoice is payment information (#148), and the Payments tab is already
+  hidden from them. Clients are not sent `uploadedBy*`. Firestore rule:
+  `tasks/{id}/invoices` read and write never — everything goes through the API.
+- **Activity.** `INVOICE_UPLOADED` / `INVOICE_REPLACED` / `INVOICE_DELETED` events; they
+  are on `PAYMENT_LEDGER_EVENT_TYPES` (shared), so team members and professionals do not
+  get them in the feed, and clients never do (not on the client whitelist).
+- **List is not paginated**: a matter holds a handful of invoices (as with documents);
+  one subcollection read per Payments tab open.
+- **Not built:** emailing or notifying the client when an invoice is added (not asked —
+  a one-line `createNotification` on confirm if the firm wants it); generating invoices.
+- Code: `services/invoices.service.js`, `controllers/invoices.controller.js`,
+  `schemas/invoice.schema.js`; Portal `api/invoices.ts`,
+  `components/payments/InvoicesCard.tsx` (in the Payments tab, after Payment History).
 
 ## Whole lists in the browser; a client's name on their matters (#275, #277, 2026-11-10)
 

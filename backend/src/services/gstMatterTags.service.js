@@ -10,10 +10,13 @@
  * services are read from `worksheetConfig/gst_return`, cached for a minute and
  * dropped at once when this instance saves the sheet's columns.
  *
- * NOTHING STORED. The period is the matter's `filingPeriod`, or — for a matter
- * opened by hand — the period that had ended when it was opened; the filing date
- * is the task's `completedAt`. Both are computed on read, so there is no second
- * copy to keep in step. A reopened task loses its date until it is completed again.
+ * THE PERIOD is computed on read: the matter's `filingPeriod`, or — for a
+ * matter opened by hand — the period that had ended when it was opened.
+ *
+ * THE FILING DATE (#294, firm 17 Nov) is the date staff save on the filing task
+ * (`filingDate` on the step, PUT …/filed-on), never the day it was completed.
+ * Tasks completed before that rule went live keep the date they showed — see
+ * `manualFilingDatesFrom` and gstReturnSheet.service.js.
  */
 import { getDb } from '../config/firebase.js';
 import { logger } from '../config/logger.js';
@@ -41,6 +44,37 @@ export async function gstReturnServiceKeys(now = Date.now()) {
     .flatMap((s) => resolveSheet(s.key, config)?.linkedServices ?? []))];
   cached = { at: now, keys };
   return keys;
+}
+
+/**
+ * #294 — when "the filing date is entered, not derived" went live: an ISO time,
+ * recorded ONCE in `system/gstFilingDates` by the first instance that needs it
+ * (create-if-absent, so every instance agrees) and cached for the process's
+ * life — it never changes. A filing task completed before it, with no saved
+ * date, keeps the date it showed (its completion day or correction). Throws if
+ * it cannot be read: a caller that writes (the sheet sync) must not mistake a
+ * failed read for "no dates".
+ */
+let manualFrom = null;
+export async function manualFilingDatesFrom() {
+  if (manualFrom) return manualFrom;
+  const ref = getDb().collection('system').doc('gstFilingDates');
+  const snap = await ref.get();
+  let at = snap.exists ? snap.data()?.manualFrom ?? null : null;
+  if (!at) {
+    const now = new Date().toISOString();
+    try {
+      await ref.create({ manualFrom: now, why: '#294: filing dates are entered on the filing task from this time; tasks completed before keep their completion date' });
+      at = now;
+      logger.info({ manualFrom: now }, '#294 manual GST filing dates start now');
+    } catch (err) {
+      if (err?.code !== 6) throw err; // ALREADY_EXISTS: another instance recorded it first
+      at = (await ref.get()).data()?.manualFrom ?? null;
+    }
+  }
+  if (!at) throw new Error('gstFilingDates.manualFrom missing');
+  manualFrom = at;
+  return at;
 }
 
 /** Called when the sheet's columns (and with them its linked services) are saved. */
@@ -84,9 +118,10 @@ export async function attachGstFilingPeriods(rows) {
 
 /**
  * #292 / #294 — one matter (with its steps, INTERNAL names): sets
- * `gstFilingPeriodLabel`, `gstFilings` ([{ stepNumber, form, date, completedOn,
- * corrected }]) and `gstFilingDateBounds` ({ min, max }) on the matter, and
- * `filedOn` ('YYYY-MM-DD') on the completed GSTR-1 / GSTR-3B filing tasks. Call
+ * `gstFilingPeriodLabel`, `gstFilings` ([{ stepNumber, form, date | null,
+ * status }] — the filing tasks the matter has reached, or that have a date) and
+ * `gstFilingDateBounds` ({ min, max }) on the matter, and on the GSTR-1 /
+ * GSTR-3B filing tasks `gstFilingForm` and, once saved, `filedOn`. Call
  * before the client's projection. `definitionSteps` (the service's authored list)
  * gives the flow order the tasks are matched in.
  * Never throws.
@@ -96,17 +131,30 @@ export async function annotateGstMatter(full, { definitionSteps = null } = {}) {
     const linked = await gstReturnServiceKeys();
     if (!isGstReturnMatter(full, linked)) return full;
     const clients = needsClient(full) ? await readClients([full.clientUid]) : new Map();
-    const tags = gstMatterTags({ task: full, steps: withAuthoredOrder(full.steps ?? [], definitionSteps), client: clients.get(full.clientUid) ?? null, linkedServices: linked });
+    const tags = gstMatterTags({
+      task: full, steps: withAuthoredOrder(full.steps ?? [], definitionSteps), client: clients.get(full.clientUid) ?? null,
+      linkedServices: linked,
+      // Display only: if it cannot be read, older tasks show no date this once.
+      manualFrom: await manualFilingDatesFrom().catch((err) => {
+        logger.warn({ err, taskId: full?.id }, '#294 could not read when manual filing dates began');
+        return null;
+      }),
+    });
     if (!tags) return full;
     full.gstFilingPeriodLabel = tags.period;
-    // The completed filings, for the matter's header: the step list hides
-    // completed tasks until "Show completed" is pressed.
-    full.gstFilings = tags.filedOn;
-    // #294 follow-up: the range a filing date may be corrected to (the date picker's min / max).
+    // The filings, for the matter's header (the step list hides completed tasks
+    // until "Show completed" is pressed): dated ones, and reached ones staff
+    // still have to add a date to.
+    full.gstFilings = tags.filings;
+    // #294: the range a filing date may be saved in (the date picker's min / max).
     full.gstFilingDateBounds = filedOnBounds(full, tags.frequency);
-    const byStep = new Map(tags.filedOn.map((f) => [f.stepNumber, f.date]));
+    const byStep = new Map(tags.filings.map((f) => [f.stepNumber, f]));
     if (byStep.size && Array.isArray(full.steps)) {
-      full.steps = full.steps.map((s) => (byStep.has(s.stepNumber) ? { ...s, filedOn: byStep.get(s.stepNumber) } : s));
+      full.steps = full.steps.map((s) => {
+        const f = byStep.get(s.stepNumber);
+        if (!f) return s;
+        return { ...s, gstFilingForm: f.form, ...(f.date ? { filedOn: f.date } : {}) };
+      });
     }
   } catch (err) {
     logger.warn({ err, taskId: full?.id }, '#292 could not work out the GST tags of a matter');
