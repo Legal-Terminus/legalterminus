@@ -291,3 +291,95 @@ export async function renderTemplate(key, vars = {}) {
  */
 export const REMINDER_TEMPLATE_KEYS = ['reminder_gentle', 'reminder_followup', 'reminder_urgent'];
 export const isReminderTemplate = (key) => REMINDER_TEMPLATE_KEYS.includes(key);
+
+// ─── #310: "Explore more services" block on the completion email ────────────
+//
+// One common marketing block, the same for every service, appended to the
+// email the client receives when their matter completes ("Your service is
+// complete"). Admins AND managers edit it from Settings → Email Templates.
+//
+// Stored apart from the templates, in `settings/completionMarketing`
+// → { enabled, heading, body }, because it is not a subject/body template and
+// a wider set of roles may edit it. Like the templates, the built-in default
+// below is merged on READ, so nothing has to be written to the database for
+// the block to appear. Unlike the templates, an empty stored field stays empty
+// (it does not fall back to the default): clearing the block is a legitimate
+// way to stop sending it, alongside the on/off switch.
+
+const MARKETING_DOC = 'completionMarketing';
+export const MARKETING_LIMITS = { heading: 200, body: 4000 };
+
+export const COMPLETION_MARKETING_DEFAULT = Object.freeze({
+  enabled: true,
+  heading: 'Explore More Services with Us',
+  body:
+    '- Business Registration: Private Limited, LLP & OPC Registration\n' +
+    '- Government Registrations: GST, MSME & Startup India Registration\n' +
+    '- Brand Protection: Trademark Registration & Renewal\n' +
+    '- Licenses & Certifications: FSSAI, Trade License, IEC & ISO Certification\n' +
+    '- Tax & Compliance: GST Return Filing, ITR Filing & Annual Filing\n' +
+    '- Employee Compliance: EPF & ESIC Registration\n\n' +
+    'One Partner. Multiple Business Solutions.\n' +
+    'Let us simplify your business registrations, taxation and compliance requirements.\n\n' +
+    'Explore All Our Services:\n' +
+    'https://legalterminus.com/',
+});
+
+/** Stored fields over the default; a field that was never stored keeps the default. */
+export function mergeCompletionMarketing(stored = {}) {
+  const s = stored && typeof stored === 'object' ? stored : {};
+  const d = COMPLETION_MARKETING_DEFAULT;
+  return {
+    enabled: typeof s.enabled === 'boolean' ? s.enabled : d.enabled,
+    heading: typeof s.heading === 'string' ? s.heading : d.heading,
+    body: typeof s.body === 'string' ? s.body : d.body,
+  };
+}
+
+/**
+ * What the completion email should carry: `{ heading, body }`, or null when the
+ * block is switched off or has nothing in it — in which case the email is sent
+ * exactly as it was before #310.
+ */
+export function marketingBlockForEmail(settings) {
+  if (!settings || settings.enabled !== true) return null;
+  const heading = String(settings.heading ?? '').trim();
+  const body = String(settings.body ?? '').trim();
+  if (!heading && !body) return null;
+  return { heading, body };
+}
+
+let _mCache = null;
+let _mCacheAt = 0;
+
+/** The effective block settings (default merged with any stored edit). Cached briefly. */
+export async function getCompletionMarketing() {
+  const now = Date.now();
+  if (_mCache && now - _mCacheAt < CACHE_TTL_MS) return _mCache;
+  let stored = {};
+  try {
+    const snap = await getDb().collection(SETTINGS_COLLECTION).doc(MARKETING_DOC).get();
+    if (snap.exists) stored = snap.data() || {};
+  } catch { /* fall back to the default */ }
+  _mCache = mergeCompletionMarketing(stored);
+  _mCacheAt = now;
+  return _mCache;
+}
+
+/** Persist an edit (shape already validated by the route's schema). Busts the cache. */
+export async function saveCompletionMarketing({ enabled, heading, body }) {
+  await getDb().collection(SETTINGS_COLLECTION).doc(MARKETING_DOC).set({
+    enabled: enabled === true,
+    heading: String(heading ?? '').slice(0, MARKETING_LIMITS.heading),
+    body: String(body ?? '').slice(0, MARKETING_LIMITS.body),
+  });
+  _mCache = null;
+  _mCacheAt = 0;
+  return getCompletionMarketing();
+}
+
+/** The block to append to the completion email right now, or null. Never throws. */
+export async function completionMarketingBlock() {
+  try { return marketingBlockForEmail(await getCompletionMarketing()); }
+  catch { return null; }
+}

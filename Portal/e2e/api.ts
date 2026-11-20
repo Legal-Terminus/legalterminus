@@ -882,7 +882,11 @@ export function withGrant(base: SectionGrants, uid: string, levels: Record<strin
 export interface WsRecordLite { id: string; sheets: string[]; values: Record<string, string | number | null> }
 export interface WsSheetLite {
   key: string; label: string; linkedServices: string[];
-  columns: { key: string; label: string; hidden: boolean; type: string; builtIn: boolean; options?: string[] }[];
+  columns: {
+    key: string; label: string; hidden: boolean; type: string; builtIn: boolean; options?: string[];
+    /** #280: a staff column's people (uid + name). */
+    choices?: { value: string; label: string; active: boolean }[];
+  }[];
   serial?: boolean;
 }
 

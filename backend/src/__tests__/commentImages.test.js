@@ -13,6 +13,7 @@
  */
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import sharp from 'sharp';
 
 import {
   sanitizeRichText,
@@ -31,6 +32,10 @@ import {
   isImageId,
   newImageId,
   commentImageObjectPath,
+  readImageDimensions,
+  commentImageDimensionProblem,
+  COMMENT_IMAGE_MIN_SIDE_PX,
+  COMMENT_IMAGE_MAX_SIDE_PX,
 } from '../services/commentImages.service.js';
 
 const A = 'a'.repeat(32);
@@ -184,4 +189,43 @@ test('a client cannot publish an internal image by quoting its id', () => {
   assert.equal(canReferenceCommentImage({ role: 'client', uid: 'c1', image: shared }), true);
   assert.equal(canReferenceCommentImage({ role: 'manager', uid: 's2', image: clientOwn }), true);
   assert.equal(canReferenceCommentImage({ role: 'admin', uid: 's2', image: null }), false);
+});
+
+// ── #319: pixel dimensions ───────────────────────────────────────────────
+
+const solid = (width, height, fmt = 'png') =>
+  sharp({ create: { width, height, channels: 3, background: '#336699' } })[fmt]().toBuffer();
+
+test('#319: the limits are 20 px minimum and 8,000 px maximum on each side', () => {
+  assert.equal(COMMENT_IMAGE_MIN_SIDE_PX, 20);
+  assert.equal(COMMENT_IMAGE_MAX_SIDE_PX, 8000);
+});
+
+test('#319: sizes inside the limits pass, including the exact edges and a one-line text strip', () => {
+  for (const [w, h] of [[20, 20], [8000, 8000], [1920, 1080], [600, 22], [20, 8000]]) {
+    assert.equal(commentImageDimensionProblem(w, h), null, `${w}x${h}`);
+  }
+});
+
+test('#319: too small, too large or unreadable is refused with a reason a person can act on', () => {
+  assert.match(commentImageDimensionProblem(1, 1), /too small.*1 × 1 pixels.*at least 20 × 20/);
+  assert.match(commentImageDimensionProblem(400, 19), /too small/);
+  assert.match(commentImageDimensionProblem(8001, 600), /too large.*8,001 × 600 pixels.*8,000 pixels/);
+  assert.match(commentImageDimensionProblem(600, 12000), /too large/);
+  for (const [w, h] of [[undefined, undefined], [0, 10], [NaN, 5], [null, 40]]) {
+    assert.match(commentImageDimensionProblem(w, h), /could not be read/, `${w}x${h}`);
+  }
+  // Never a code or a stack: the message is shown to the person as is.
+  assert.doesNotMatch(commentImageDimensionProblem(1, 1), /IMAGE_|Error/);
+});
+
+test('#319: dimensions are read from the real bytes for PNG, JPEG and WebP', async () => {
+  assert.deepEqual(await readImageDimensions(await solid(64, 48, 'png')), { width: 64, height: 48 });
+  assert.deepEqual(await readImageDimensions(await solid(30, 200, 'jpeg')), { width: 30, height: 200 });
+  assert.deepEqual(await readImageDimensions(await solid(120, 90, 'webp')), { width: 120, height: 90 });
+});
+
+test('#319: bytes that are not a readable image give null (refused, never a 500)', async () => {
+  assert.equal(await readImageDimensions(Buffer.from('not an image at all')), null);
+  assert.equal(await readImageDimensions(Buffer.alloc(0)), null);
 });

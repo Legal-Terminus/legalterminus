@@ -220,7 +220,6 @@ jobs:
             --set-env-vars="^||^GMAIL_APP_PASSWORD=${{ secrets.BACKEND_GMAIL_APP_PASSWORD }}" \
             --set-env-vars="EMAIL_FROM=${{ secrets.BACKEND_EMAIL_FROM }}" \
             --set-env-vars="CONTACT_LEADS_EMAIL=${{ vars.CONTACT_LEADS_EMAIL || 'noreply@legalterminus.com' }}" \
-            --set-env-vars="CORS_ORIGINS=https://localhost" \
             --set-env-vars="SCHEDULER_SA_EMAIL=lt-scheduler@legal-terminus-web.iam.gserviceaccount.com" \
             --project=${{ secrets.FIREBASE_QA_PROJECT_ID }}
 
@@ -399,8 +398,9 @@ jobs:
   # ── E29-S09: the Android app, built and signed here from a release tag ─────────────────
   # Model (docs/mobile-release.md): Android is built by this job on a release; iOS is
   # archived from Xcode on the Mac. Same `production` environment, so the same approval.
-  # Refused unless run by hand from a v*-lt.* tag. The environment switch is PRODUCTION
-  # (LT_APP_ENV); the guard (check-bundle.mjs) fails the run if any QA value got in.
+  # Refused unless run by hand from a v*-lt.* tag. The app opens the hosted Portal; the
+  # environment switch (LT_APP_ENV) is PRODUCTION, so this build opens legalterminus.com/portal/.
+  # Nothing of the Portal is bundled, so no Portal values are needed here.
   build-android:
     if: ${{ github.event_name == 'workflow_dispatch' && inputs.build_android && startsWith(github.ref, 'refs/tags/v') }}
     # Pinned (2026-11-14): ubuntu-latest moved to 26.04, where Playwright cannot
@@ -432,15 +432,6 @@ jobs:
 
       - uses: android-actions/setup-android@be39fa834029ff78f1a44aa3bb0819b8fc2bd8fd # v4.0.4
 
-      # The same FRONTEND values the production Portal deploy uses. The environment-defining
-      # ones (API host, database, bucket, auth domain) come from MobileShared/environments.json.
-      - name: Production values for the app's Portal bundle
-        run: |
-          printf 'VITE_FIREBASE_API_KEY=%s\nVITE_FIREBASE_MESSAGING_SENDER_ID=%s\nVITE_FIREBASE_APP_ID=%s\nVITE_THEME_C=true\nVITE_PAYMENTS_ENABLED=true\n' \
-            "${{ secrets.FIREBASE_QA_API_KEY }}" "${{ secrets.FIREBASE_QA_MESSAGING_SENDER_ID }}" "${{ secrets.FIREBASE_QA_APP_ID }}" \
-            > "$RUNNER_TEMP/production.env"
-          echo "LT_MOBILE_ENV_FILE=$RUNNER_TEMP/production.env" >> "$GITHUB_ENV"
-
       - name: Signing material
         run: |
           echo "${{ secrets.GOOGLE_SERVICES_JSON_B64 }}" | base64 -d > AndroidApp/android/app/google-services.json
@@ -449,10 +440,16 @@ jobs:
             "${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" "${{ secrets.ANDROID_KEY_ALIAS }}" "${{ secrets.ANDROID_KEY_PASSWORD }}" \
             > AndroidApp/android/key.properties
 
-      - run: npm ci --prefix Portal && npm ci --prefix AndroidApp
+      - run: npm ci --prefix AndroidApp
 
-      # app-env (production) → build:mobile → check-bundle production → cap sync android.
+      # app-env (production: server.url = https://legalterminus.com/portal/) → cap sync android.
+      # The Portal is not built or bundled: the app opens the hosted Portal.
       - run: npm run sync --prefix AndroidApp
+
+      - name: The app opens the production Portal
+        run: |
+          grep -q '"url": "https://legalterminus.com/portal/"' AndroidApp/android/app/src/main/assets/capacitor.config.json \
+            || { echo "capacitor.config.json does not open the production Portal"; cat AndroidApp/android/app/src/main/assets/capacitor.config.json; exit 1; }
 
       - name: Version
         run: |

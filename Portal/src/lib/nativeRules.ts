@@ -14,6 +14,38 @@ export function accountLinkPath(raw: string): string | null {
 }
 
 /**
+ * The Portal's entry script path (e.g. /portal/assets/index-AbC123.js) from its index.html,
+ * or null. Vite gives every build a new hashed name, so a different name means a new
+ * website version was deployed.
+ */
+export function entryScriptOf(html: string): string | null {
+  const tag = /<script\b[^>]*\btype="module"[^>]*>/i.exec(html)?.[0];
+  const src = tag ? /\bsrc="([^"]+)"/i.exec(tag)?.[1] : null;
+  if (!src) return null;
+  try { return new URL(src, 'https://site.invalid/').pathname; } catch { return null; }
+}
+
+/**
+ * Whether the app should reload to pick up a newly deployed website version.
+ * Only after the app has been in the background long enough (not on every quick app switch),
+ * only when the entry script really changed, and never while the person is busy
+ * (an upload in flight, or typing in a field).
+ */
+export function shouldReloadForUpdate(o: {
+  hiddenMs: number;
+  minHiddenMs: number;
+  current: string | null;
+  latest: string | null;
+  busy: boolean;
+  editing: boolean;
+}): boolean {
+  if (o.hiddenMs < o.minHiddenMs) return false;
+  if (o.busy || o.editing) return false;
+  if (!o.current || !o.latest) return false;
+  return o.current !== o.latest;
+}
+
+/**
  * E29-S11 / D6: where the "Sign in with Apple" button shows. Always in the iPhone app
  * (App Store guideline 4.8: an app offering Google sign-in must offer Apple's too);
  * never in the Android app for the first release; on the website only once the firm

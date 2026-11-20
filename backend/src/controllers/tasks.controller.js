@@ -8,7 +8,7 @@ import { loadPhaseAssignments } from './workflowDefinitions.controller.js';
 import { createNotification, resolveNotificationsForTask } from './notifications.controller.js';
 import { finalizeMatterDocuments } from './documents.controller.js';
 import { publicSiteUrl, sendTemplatedEmail } from '../services/emailService.js';
-import { renderTemplate } from '../services/emailTemplates.service.js';
+import { renderTemplate, completionMarketingBlock } from '../services/emailTemplates.service.js';
 import { prepareRichText, richTextToPlain } from '../services/richText.service.js';
 import { resolveCommentImages, shareCommentImages } from '../services/commentImages.service.js';
 import { compileDefinition } from '../../../shared/workflows/compileDefinition.js';
@@ -21,11 +21,14 @@ import { getOverrides, makeStatutoryResolver } from '../services/statutoryCalend
 import { clientDisplayName } from '../services/clientName.service.js';
 import { logValue } from '../utils/sanitize.js';
 import { announceStepAssignment } from '../services/stepAssignmentNotice.service.js';
+import { stepAssigneeList, requestedStepOwners, assertStaffOwners } from '../services/stepAssignees.service.js';
+import { STAFF_ROLES } from '../config/roles.js';
 import { isPaymentLedgerEvent } from '../../../shared/payments/ledgerEvents.js';
 
 // #148: the roles that may see a matter's payment figures.
 const PAYMENT_VIEW_ROLES = ['admin', 'manager'];
-import { annotateGstMatter, attachGstFilingPeriods, gstFirstEmailFor } from '../services/gstMatterTags.service.js';
+import { annotateGstMatter, attachGstFilingPeriods, gstFirstEmailFor, gstFrequencyOf, gstReturnServiceKeys } from '../services/gstMatterTags.service.js';
+import { isGstReturnMatter, frequencyOf } from '../services/gstReturnSheet.service.js';
 import { emailVars as gstEmailVars } from '../services/gstReturns.service.js';
 
 // ─── ETA / due-date helpers (E13-S02) ──────────────────────────────────────
@@ -178,13 +181,13 @@ async function attachClientContacts(rows) {
 // Fire-and-forget in-app notification. NEVER let a notification failure break the
 // workflow action that triggered it — we log and move on. Skips self-notification
 // (don't ping someone for their own action) and empty recipients.
-async function notify({ recipientUid, actorUid, type = 'info', title, message, taskId, stepNumber }) {
+async function notify({ recipientUid, actorUid, type = 'info', title, message, taskId, stepNumber, emailAppendix }) {
   try {
     if (!recipientUid || recipientUid === actorUid) return;
     // #293: a system actor (`system:gst-returns`) is recorded as a matter's
     // creator but is nobody's inbox — "Matter approved" to it was a dead write.
     if (String(recipientUid).startsWith('system:')) return;
-    await createNotification({ recipientUid, type, title, message, taskId, stepNumber });
+    await createNotification({ recipientUid, type, title, message, taskId, stepNumber, emailAppendix });
   } catch (err) {
     logger.warn({ err: err?.message }, 'notify: failed to create notification');
   }
@@ -216,8 +219,8 @@ async function adminUids() {
 // masks comments that aren't client-visible (fail closed), but the raw remark on
 // the step record bypassed that — so it must never reach the client either. The
 // client sees a comment only via the (filtered) event feed.
-// #294: filedOnCorrection carries who corrected a filing date — staff detail; the client sees the date (filedOn).
-const CLIENT_STEP_HIDDEN = ['assignedTo', 'assignedToUids', 'assignedRole', 'completedBy', 'isUrgent', 'remark', 'filedOnCorrection'];
+// #294: filingDate / filedOnCorrection carry who saved a filing date — staff detail; the client sees the date (filedOn).
+const CLIENT_STEP_HIDDEN = ['assignedTo', 'assignedToUids', 'assignedRole', 'completedBy', 'isUrgent', 'remark', 'filedOnCorrection', 'filingDate'];
 
 /**
  * #166 — the client identity a request acts as.
@@ -674,9 +677,11 @@ export async function createTask(req, res) {
     // collection-group index are untouched) and `assignedToUids` carries everyone.
     // The sentinel resolves per-entry, so a mixed client+staff list still works.
     const assigneesForStep = (s) => {
-      const list = Array.isArray(s.defaultAssigneeUids) ? s.defaultAssigneeUids.filter(Boolean) : [];
+      // stepAssigneeList ignores a list that disagrees with the primary (written
+      // by a screen that only knew the single field), so that edit wins.
+      const list = stepAssigneeList(s);
       const resolved = [...new Set(list.map((u) => (u === CLIENT_ASSIGNEE ? clientUid : u)))];
-      if (resolved.length) return resolved;
+      if (resolved.length > 1) return resolved;
       const single = assigneeForStep(s);
       return single ? [single] : [];
     };
@@ -806,6 +811,15 @@ export async function createTask(req, res) {
       updatedAt: now,
       createdBy: req.user.uid ?? null,
     };
+    // #219 (firm, 16 Nov): a GST return matter keeps the frequency it was created
+    // with — "Repeats: Quarterly" (or a quarterly service, or the client's setting),
+    // or for a copy the frequency of the matter it copies (`req.gstFrequency`, set
+    // only by duplicateMatterCore, never from the body). Frozen here so the tag,
+    // every email subject and the sheet row keep saying the same period even after
+    // the client's setting or the matter's "Repeats" changes, or its series ends.
+    if (!filingPeriod && isGstReturnMatter(task, await gstReturnServiceKeys())) {
+      task.gstFrequency = frequencyOf({ ...task, gstFrequency: req.gstFrequency ?? null }, c);
+    }
 
     // Atomically create the task doc + its step subcollection.
     const ref = db.collection('tasks').doc();
@@ -2528,7 +2542,8 @@ export async function patchStep(req, res) {
     }
 
     const { taskId, stepId } = req.params;
-    const { isUrgent, assignedTo } = req.body;
+    const { isUrgent } = req.body; // shape validated by stepPatchSchema
+    const owners = requestedStepOwners(req.body);
 
     // Try sub-collection approach first
     const stepRef = db.collection('tasks').doc(taskId).collection('steps').doc(stepId);
@@ -2536,20 +2551,29 @@ export async function patchStep(req, res) {
 
     if (stepDoc.exists) {
       const prev = stepDoc.data();
+      const prevOwners = Array.isArray(prev.assignedToUids) && prev.assignedToUids.length
+        ? prev.assignedToUids
+        : (prev.assignedTo ? [prev.assignedTo] : []);
       const now = new Date().toISOString();
       const update = { updatedAt: now };
       if (isUrgent !== undefined) update.isUrgent = isUrgent;
-      // Assign/unassign this step to a specific staff user. `null`/'' clears it
-      // (back to the shared/unassigned pool). Surfaced in the My Tasks worklist.
-      const reassigning = assignedTo !== undefined && (assignedTo || null) !== (prev.assignedTo ?? null);
-      if (assignedTo !== undefined) {
-        update.assignedTo = assignedTo || null;
-        // #192: keep the multi-assignee list in step with a reassignment. Without
-        // this, reassigning a step would leave the PREVIOUS assignees in
-        // `assignedToUids` — they would keep seeing it in My Tasks and could still
-        // complete it. A per-step reassignment is a deliberate "this is now
-        // theirs", so the list collapses to exactly that person (or empties).
-        update.assignedToUids = assignedTo ? [assignedTo] : [];
+      // Assign/unassign this step. An empty list clears it (back to the shared/
+      // unassigned pool). Surfaced in the My Tasks worklist.
+      // #192 (reopened 2026-11-18): the matter screen could only pick ONE owner -
+      // a single dropdown whose every change collapsed the list to that person -
+      // so a step shared by two people lost one of them the moment anyone touched
+      // it, and that person could no longer complete it. `assignedToUids` now
+      // sets the whole list; `assignedTo` stays the first entry so My Tasks
+      // routing, the matters filter and the steps/assignedTo index keep working.
+      // The list is always rewritten, never merged, so a removed person loses
+      // access instead of keeping it through a stale entry.
+      const added = owners ? owners.filter((u) => !prevOwners.includes(u)) : [];
+      const reassigning = owners !== undefined
+        && (owners.length !== prevOwners.length || added.length > 0 || owners[0] !== prevOwners[0]);
+      if (owners !== undefined) {
+        await assertStaffOwners(db, added, { staffRoles: STAFF_ROLES });
+        update.assignedTo = owners[0] ?? null;
+        update.assignedToUids = owners;
       }
 
       const batch = db.batch();
@@ -2559,16 +2583,11 @@ export async function patchStep(req, res) {
       // change takes effect immediately — no acceptance needed — but is audited so
       // everyone can see who routed the step to whom.
       if (reassigning) {
-        const nameFor = async (u) => {
-          if (!u) return null;
-          const s = await db.collection('users').doc(u).get();
-          const d = s.exists ? s.data() : null;
-          return d ? (d.name || d.fullName || d.email || 'User') : 'User';
-        };
-        const [fromName, toName] = await Promise.all([nameFor(prev.assignedTo), nameFor(update.assignedTo)]);
-        const comment = update.assignedTo
-          ? `Reassigned to ${toName}${prev.assignedTo ? ` (from ${fromName})` : ''}`
-          : `Unassigned${prev.assignedTo ? ` (was ${fromName})` : ''}`;
+        const names = await resolveUserNames([...prevOwners, ...owners]);
+        const list = (uids) => uids.map((u) => names[u] ?? 'User').join(', ');
+        const comment = owners.length
+          ? `Reassigned to ${list(owners)}${prevOwners.length ? ` (from ${list(prevOwners)})` : ''}`
+          : `Unassigned${prevOwners.length ? ` (was ${list(prevOwners)})` : ''}`;
         batch.set(db.collection('tasks').doc(taskId).collection('events').doc(), {
           type: 'STEP_REASSIGNED',
           fromStep: prev.stepNumber ?? parseInt(stepId, 10),
@@ -2581,15 +2600,17 @@ export async function patchStep(req, res) {
       }
       await batch.commit();
 
-      // Notify the new step assignee that work was routed to them (E07-S01).
-      if (reassigning && update.assignedTo) {
+      // Notify each person newly given the step (E07-S01) — not the ones who
+      // already had it, and not the person making the change.
+      const toTell = added.filter((u) => u !== req.user.uid);
+      if (toTell.length) {
         const t = (await db.collection('tasks').doc(taskId).get()).data() ?? {};
-        await notify({
-          recipientUid: update.assignedTo, actorUid: req.user.uid, type: 'info',
+        await Promise.all(toTell.map((recipientUid) => notify({
+          recipientUid, actorUid: req.user.uid, type: 'info',
           title: 'Step assigned to you',
           message: `${t.clientName ?? ''} · ${t.serviceName ?? t.workflowType ?? ''}: ${prev.title ?? `Step ${prev.stepNumber}`}`,
           taskId,
-        });
+        })));
       }
 
       return res.json({ success: true });
@@ -2612,6 +2633,7 @@ export async function patchStep(req, res) {
     await taskRef.update({ steps, updatedAt: new Date().toISOString() });
     res.json({ success: true });
   } catch (err) {
+    if (err && err.status) return res.status(err.status).json({ message: err.message });
     logger.error({ err: err }, 'patchStep error:');
     res.status(500).json({ message: 'Failed to update step' });
   }
@@ -3130,8 +3152,13 @@ export async function transitionTask(req, res) {
       const ctx = `${task.clientName ?? ''} · ${task.serviceName ?? task.workflowType ?? ''}`;
       if (isComplete) {
         // Matter finished — congratulate the client + tell the matter owner.
+        // #310: the CLIENT's completion email also carries the firm's editable
+        // "Explore more services" block (Settings → Email Templates). Null when
+        // it is switched off or empty, and the email is then exactly as before.
+        // The owner's internal notice never carries it.
+        const completionAppendix = await completionMarketingBlock();
         await notify({ recipientUid: task.clientUid, actorUid: uid, type: 'success',
-          title: 'Your service is complete', message: ctx, taskId });
+          title: 'Your service is complete', message: ctx, taskId, emailAppendix: completionAppendix });
         await notify({ recipientUid: task.assignedTo, actorUid: uid, type: 'success',
           title: 'Matter completed', message: ctx, taskId });
       } else if (newStep !== task.currentStepNumber) {
@@ -3267,7 +3294,8 @@ export async function deleteTask(req, res) {
     // NOTE: this list is explicit — a NEW subcollection must be added here too.
     const counts = {};
     // #122 follow-up: + commentImages (the bytes go with the Storage prefix below).
-    for (const sub of ['steps', 'events', 'documents', 'payments', 'commentImages']) {
+    // #313: + invoices (their bytes are under tasks/{taskId}/invoices/, swept below).
+    for (const sub of ['steps', 'events', 'documents', 'payments', 'commentImages', 'invoices']) {
       const subSnap = await taskRef.collection(sub).get();
       counts[sub] = subSnap.size;
       if (subSnap.empty) continue;
@@ -3435,6 +3463,11 @@ async function duplicateMatterCore(taskId, actorUser) {
       // duplicate never spawns a second competing series.
       paymentStatus: 'not_paid',
     },
+    // #219 (16 Nov): the copy is not recurring, so it cannot say "Quarterly" through
+    // `recurrence` — it inherits the source's GST frequency instead (read only for a
+    // GST return matter, in createTask). Without this the next quarter's copy
+    // showed as a month.
+    gstFrequency: await gstFrequencyOf(src).catch(() => null),
   };
 
   let created = null;

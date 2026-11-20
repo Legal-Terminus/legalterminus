@@ -12,12 +12,12 @@ def stateFile = new File(mobileDir, '.app-env.json')
 def syncedEnv = stateFile.exists() ? new JsonSlurper().parse(stateFile).env : null
 def askedEnv = project.findProperty('appEnv') ?: System.getenv('LT_APP_ENV')
 if (askedEnv && syncedEnv && askedEnv != syncedEnv) {
-    throw new GradleException("The web bundle was synced for '${syncedEnv}', but this build asks for '${askedEnv}'. Run LT_APP_ENV=${askedEnv} npm run sync:android first.")
+    throw new GradleException("The app was synced for '${syncedEnv}', but this build asks for '${askedEnv}'. Run LT_APP_ENV=${askedEnv} npm run sync:android first.")
 }
 def appEnvName = syncedEnv ?: askedEnv ?: environments.default
 def appEnv = environments.environments[appEnvName]
 if (appEnv == null) throw new GradleException("Unknown app environment '${appEnvName}'")
-logger.lifecycle("Legal Terminus app environment: ${appEnvName} (${environments.baseAppId}${appEnv.appIdSuffix}, ${appEnv.host})")
+logger.lifecycle("Legal Terminus app environment: ${appEnvName} (${environments.appId} opens ${appEnv.portalUrl})")
 
 // E29-S09: release signing from key.properties (written by the CI job from secrets, or on
 // the release Mac). Absent, a local release build falls back to the debug key.

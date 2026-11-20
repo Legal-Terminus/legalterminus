@@ -1,7 +1,10 @@
 # Legal Terminus — Android app (`AndroidApp/`)
 
-A Capacitor shell around the Portal. Separate from `iOSApp/`; both share `MobileShared/`
-(`environments.json`, build scripts) and the web bundle `Portal/dist-mobile`.
+A Capacitor shell that **opens the hosted Portal** (`https://<host>/portal/`; nothing of the Portal is
+bundled), so a website deployment reaches installed apps with no new Play release. Only native changes
+(plugins, permissions, manifest, icons, SDK, Capacitor config) need a new build. Separate from `iOSApp/`
+(which still bundles the Portal); both share `MobileShared/environments.json`.
+`web-src/*.html` are the local fallback pages (offline / old WebView); `npm run sync` generates `web/` from them.
 Full process: `docs/mobile-release.md`.
 
 | | QA | Production |

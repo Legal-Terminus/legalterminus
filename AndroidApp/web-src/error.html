@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Legal Terminus</title>
+<!-- Shown by the Android app (capacitor.config.ts server.errorPath) when the hosted Portal cannot
+     be loaded (no connection, hosting briefly down) and when the phone's WebView is older than
+     android.minWebViewVersion. Plain HTML and old-safe CSS so it renders on the very WebViews it
+     warns about. The one script only makes "Try again" go back to this build's Portal
+     (__PORTAL_URL__ is filled in by scripts/write-web-env.mjs when the app is synced). The page loads
+     nothing else: with server.url set, Capacitor serves only the error page itself, not files next to it. -->
+<style>
+  body { margin: 0; padding: 48px 24px 32px; font-family: sans-serif; color: #111111; background: #ffffff; }
+  h1 { font-size: 22px; margin: 0 0 12px 0; }
+  h2 { font-size: 17px; margin: 28px 0 8px 0; }
+  p { font-size: 16px; line-height: 1.5; margin: 0 0 12px 0; color: #444444; }
+  .bar { width: 48px; height: 6px; background: #27B811; margin: 0 0 24px 0; }
+  a.button { display: inline-block; margin: 8px 0 0 0; padding: 14px 24px; min-height: 20px; border-radius: 8px;
+             background: #111111; color: #ffffff; font-size: 16px; font-weight: 600; text-decoration: none; }
+</style>
+</head>
+<body>
+  <div class="bar"></div>
+  <h1>Legal Terminus could not be opened</h1>
+  <p>Check that the phone is connected to the internet, then try again. If the website is being updated, it will be back in a minute.</p>
+  <a class="button" id="retry" href="#">Try again</a>
+
+  <h2>Still not opening?</h2>
+  <p>The app needs an up-to-date <b>Android System WebView</b>. Open the <b>Play Store</b>, search for
+     <b>Android System WebView</b> (and <b>Google Chrome</b>), tap <b>Update</b>, then open the app again.
+     If there is no update, this phone may be too old for the app: please use the website in a browser.</p>
+<script>
+  document.getElementById('retry').onclick = function (e) {
+    e.preventDefault();
+    window.location.replace('__PORTAL_URL__');
+  };
+</script>
+</body>
+</html>

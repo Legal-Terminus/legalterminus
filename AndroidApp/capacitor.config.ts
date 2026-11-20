@@ -25,18 +25,20 @@ const config: CapacitorConfig = {
   // Production id registered in Play Console; it cannot be changed after the first upload.
   appId: `${environments.baseAppId}${target.appIdSuffix}`,
   appName: target.appName,
-  // Output of `npm run build:mobile` in Portal/.
-  webDir: '../Portal/dist-mobile',
-  // Android keeps the default https scheme (origin https://localhost). iOS keeps Capacitor's
-  // own capacitor://localhost: WKWebView refuses http/https as a custom scheme handler, so
-  // server.iosScheme must NOT be set to 'https' (E29-S03 allows that origin on the API).
-  // No allowNavigation list: every other host opens outside the app (Safari / the browser),
-  // which is what external links, receipts and the website should do (E29-S06).
+  // Only the local fallback pages (offline, old WebView) are bundled; the Portal is not.
+  // Hosted design (owner request 2026-11-20): the app opens the live Portal, so a website
+  // deployment reaches installed apps with no new Play release.
+  webDir: 'web',
   server: {
-    androidScheme: 'https',
-    // Shown instead of a blank screen when the phone's WebView is too old (Android only —
-    // iOS uses the system Safari engine, so it has no old-WebView case).
-    errorPath: 'webview-update.html',
+    // The page's origin is the real site, so API calls are same-origin through the Hosting
+    // rewrite (/api/** to Cloud Run) and no https://localhost CORS entry is needed.
+    url: `https://${target.host}/portal/`,
+    // Only this exact host loads inside the app (and gets the native bridge). Every other
+    // host (receipts, payment hand-offs, other sites) opens outside the app, in the browser.
+    allowNavigation: [target.host],
+    // Shown instead of a blank screen when the Portal cannot be loaded (no connection,
+    // hosting down) and when the phone's WebView is older than minWebViewVersion.
+    errorPath: 'error.html',
   },
   android: {
     // The Portal is built for Chrome 111+ (Vite's default target, and Tailwind 4's own
@@ -50,7 +52,10 @@ const config: CapacitorConfig = {
     FirebaseAuthentication: { skipNativeAuth: true, providers: ['google.com', 'apple.com'] },
     // Keep the splash up until the Portal has drawn its first screen (hidden in lib/native.ts),
     // so there is no blank white gap while the page loads.
-    SplashScreen: { launchAutoHide: false, backgroundColor: '#ffffff' },
+    // Hosted design: a failed load (offline, hosting down) shows the local error page, and only the
+    // Portal's own hide() would remove the splash, so the error page would stay hidden behind it.
+    // So the splash also hides by itself after 3 s; a Portal that paints sooner still hides it sooner.
+    SplashScreen: { launchAutoHide: true, launchShowDuration: 3000, launchFadeOutDuration: 200, backgroundColor: '#ffffff' },
     // E29-S06: a focused input near the bottom (login, Chat composer) is scrolled into view.
     Keyboard: { resize: 'body', resizeOnFullScreen: true },
   },

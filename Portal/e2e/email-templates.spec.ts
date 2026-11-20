@@ -100,8 +100,101 @@ test('email templates auto-save: editing fires a save automatically (no Save but
     adminPage.waitForRequest((r) =>
       r.url().includes('/api/settings/email-templates') && r.method() === 'PUT',
       { timeout: 15_000 }),
-    adminPage.getByRole('button', { name: /^Reset$/i }).first().click(),
+    // The Welcome card's own Reset: since #310 the "Explore more services" card
+    // above it has a Reset too, and `.first()` hit that one.
+    // (Template cards' Reset is titled "…built-in default", the block's "…built-in text".)
+    adminPage.getByTitle('Reset to the built-in default').first().click(),
   ]);
+});
+
+// ─── #310: the "Explore more services" block on the completion email ─────────
+// Admins AND managers edit it; everyone else is refused. Each test puts back
+// the block it found, so the run leaves the firm's text as it was.
+
+const MARKETING = '/api/settings/completion-marketing';
+
+test('#310 completion block: admin and manager can read it; team member and client cannot', async () => {
+  for (const role of ['admin', 'manager'] as const) {
+    const api = await apiAs(role);
+    const res = await api.get(MARKETING);
+    expect(res.ok(), `${role} reads the block`).toBeTruthy();
+    const body = await res.json();
+    expect(typeof body.settings.enabled).toBe('boolean');
+    expect(body.default.heading).toBe('Explore More Services with Us');
+    expect(body.default.body).toContain('https://legalterminus.com/');
+    await api.dispose();
+  }
+  for (const role of ['team', 'client'] as const) {
+    const api = await apiAs(role);
+    expect((await api.get(MARKETING)).status(), `${role} GET`).toBe(403);
+    expect((await api.put(MARKETING, { data: { enabled: false, heading: '', body: '' } })).status(), `${role} PUT`).toBe(403);
+    await api.dispose();
+  }
+});
+
+test('#310 completion block: a manager\'s edit round-trips, tags are stripped, bad input is refused', async () => {
+  const manager = await apiAs('manager');
+  const original = (await (await manager.get(MARKETING)).json()).settings;
+  try {
+    const heading = `E2E heading ${Date.now()}`;
+    const put = await manager.put(MARKETING, {
+      data: { enabled: false, heading: `<b>${heading}</b>`, body: 'Line one\n- A bullet' },
+    });
+    expect(put.ok()).toBeTruthy();
+    const after = (await (await manager.get(MARKETING)).json()).settings;
+    expect(after).toEqual({ enabled: false, heading, body: 'Line one\n- A bullet' });
+
+    // Unknown fields and a missing switch are refused.
+    expect((await manager.put(MARKETING, { data: { enabled: true, heading: '', body: '', extra: 1 } })).status()).toBe(400);
+    expect((await manager.put(MARKETING, { data: { heading: '', body: '' } })).status()).toBe(400);
+  } finally {
+    await manager.put(MARKETING, { data: original });
+    await manager.dispose();
+  }
+});
+
+test('#310 completion block: a manager sees only the block on the Email Templates page, and editing it saves', async ({ managerPage }) => {
+  const api = await apiAs('manager');
+  const original = (await (await api.get(MARKETING)).json()).settings;
+  try {
+    await managerPage.goto('settings/email-templates');
+    await expect(managerPage.getByRole('heading', { name: 'Email Templates' })).toBeVisible();
+    await expect(managerPage.getByText(/Service completed: Explore more services/)).toBeVisible();
+    // The templates themselves stay admin-only.
+    await expect(managerPage.getByText('Internal team emails')).toHaveCount(0);
+    await expect(managerPage.getByRole('button', { name: /Welcome email/i })).toHaveCount(0);
+
+    const heading = managerPage.getByLabel('Heading', { exact: true });
+    // The section opens by default; open it if a previous run collapsed it.
+    if (!(await heading.isVisible())) {
+      await managerPage.getByText(/Service completed: Explore more services/).click();
+    }
+    const value = `E2E block ${Date.now()}`;
+    const [putReq] = await Promise.all([
+      managerPage.waitForRequest((r) => r.url().includes(MARKETING) && r.method() === 'PUT', { timeout: 15_000 }),
+      heading.fill(value),
+    ]);
+    expect(JSON.parse(putReq.postData() || '{}').heading).toBe(value);
+
+    // The on/off switch saves too.
+    const toggle = managerPage.getByRole('switch', { name: /Add this block to the completion email/i });
+    const wasOn = (await toggle.getAttribute('aria-checked')) === 'true';
+    const [switchReq] = await Promise.all([
+      managerPage.waitForRequest((r) => r.url().includes(MARKETING) && r.method() === 'PUT', { timeout: 15_000 }),
+      toggle.click(),
+    ]);
+    expect(JSON.parse(switchReq.postData() || '{}').enabled).toBe(!wasOn);
+  } finally {
+    await api.put(MARKETING, { data: original });
+    await api.dispose();
+  }
+});
+
+test('#310 completion block: an admin sees it among the client emails', async ({ adminPage }) => {
+  await adminPage.goto('settings/email-templates');
+  await expect(adminPage.getByText('Client emails')).toBeVisible();
+  await expect(adminPage.getByText(/Service completed: Explore more services/)).toBeVisible();
+  await expect(adminPage.getByRole('button', { name: /Welcome email/i })).toBeVisible();
 });
 
 test('a client cannot reach the Settings page', async ({ clientPage }) => {

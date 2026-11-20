@@ -1,4 +1,3 @@
-import { Capacitor } from '@capacitor/core';
 import { Check, Circle } from 'lucide-react';
 import { checkPassword } from '@shared/auth/passwordRules.js';
 
@@ -24,14 +23,9 @@ export default function PasswordChecklist({ password, id }: { password: string; 
   );
 }
 
-/**
- * The website's policy pages. In the browser the Portal shares the website's
- * address; inside the app (served from https://localhost) the link must name
- * the site, which is the API's address in that build.
- */
-const SITE = Capacitor.isNativePlatform() ? (import.meta.env.VITE_API_BASE_URL ?? '') : '';
-const TERMS_URL = `${SITE}/policies/terms`;
-const PRIVACY_URL = `${SITE}/policies/privacy`;
+/** The website's policy pages: the Portal shares the website's address, in a browser and in the apps alike. */
+const TERMS_URL = '/policies/terms';
+const PRIVACY_URL = '/policies/privacy';
 
 function PolicyLinks() {
   return (

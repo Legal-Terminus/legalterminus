@@ -2859,6 +2859,8 @@ layout, with the yellow columns as dropdowns whose choices staff manage.
   order and spelling (see the 2026-11-10 change-log entry); "Sl. No." is the row number.
 - Add record, Upload Excel (matched by TAN NO), Edit columns (admin), Search, Download Excel — as every sheet.
 - **Edit dropdowns** (admin, manager, team member) for every dropdown column of every worksheet and report.
+- **Assigned to** and **Checker** list the portal's staff (admin, manager, team member) by name, not a
+  typed list (firm, 11 Nov — see the 2026-11-19 change-log entry).
 
 **e2e**: `Portal/e2e/worksheets.spec.ts` (#280 tests).
 
@@ -2895,13 +2897,20 @@ actually filed, on the matter itself.
 - A GST return matter (sweep-opened, or of a service linked to the GST Return Filing sheet) shows
   its Filing Month ("September 2026" / "Q2 2026-27") as a tag in its header and in the matters
   list, for staff and the client; other matters do not.
-- The GSTR-1 and GSTR-3B filing tasks, once completed, show "Filed on: <date>" next to their
-  names, each with its own completion date (India); the header repeats them.
-- The period and the tasks are identified by the sheet's rules (no second rule).
-- Staff (admin, manager, a team member working the matter) correct a filing date when the task
-  was ticked late — a real date, not in the future, not before the period ended; recorded in the
-  matter's history; the sheet's date column shows the same date (one reader, `filedOnDateOf`);
-  clients and professionals cannot (owner's answer, 2026-11-14).
+- ~~The GSTR-1 and GSTR-3B filing tasks, once completed, show "Filed on: <date>" with their
+  completion date~~ — superseded 2026-11-19 (firm, 17 Nov): when the matter reaches the GSTR-1 or
+  GSTR-3B filing task, staff (admin, manager, a team member working the matter) press **Add
+  Filing Date** beside it, save the actual filing date, then complete the task. Completing never
+  sets a date; completing without one is allowed (no date shown, still addable from the header).
+  The saved date shows next to the task and in the header, for staff and the client; it can be
+  changed or removed — a real date, not in the future, not before the period ended — and every
+  save is in the matter's history; clients and professionals cannot.
+- Tasks completed before manual dates went live keep the date they showed.
+- The period and the tasks are identified by the sheet's rules (no second rule); the sheet's date
+  column shows the saved date (one reader, `filedOnDateOf`), matter → sheet only.
+- A matter updates only its own row (its client and return period, Monthly or Quarterly); the
+  Matter cell cannot tie a matter to another client's or period's row or to a second row, and the
+  sync releases such links instead of writing to them (#294 wrong-record fix).
 
 **e2e**: `Portal/e2e/gst-return-filing.spec.ts` (#292 / #294 tests).
 
@@ -4139,14 +4148,20 @@ Firebase's sign-up call is answered by the specs, so no account is created.
 (E-26), for the same roles, installable from the App Store in India. The website must not change
 in any way, and nothing on the live site may point at the app until its launch is approved.
 
-**Status (2026-11-11)**: 🔄 In progress on branch `feat/ios-app` (not yet merged). The code-side of
-S02–S09 and S11 is built; the iOS app builds for the simulator and opens on the sign-in page; the Android QA app builds (debug and minified release). Everything that needs the firm's
-Apple Developer account, Firebase registrations or a real iPhone is open — the owner checklist is
-in `docs/mobile-release.md`. Both apps point at **QA** by default (D7).
+**Status (2026-11-19)**: 🔄 In progress. **Redesigned to one app on the hosted Portal (D7, owner
+2026-11-19, story E29-S13).** Both apps are `com.legalterminus.app`, "Legal Terminus", and open
+`https://legal-terminus-qa.web.app/portal/` until they are switched to
+`https://legalterminus.com/portal/`. Nothing of the Portal is bundled; no localhost or
+`capacitor://` origin is allowed anywhere. The QA app `com.legalterminus.app.qa` (TestFlight builds
+5–7) and the split into `iOSApp/` / `iOSAppProd/` (branch `feat/ios-android-app-split`, not merged)
+are retired. Everything that needs the firm's Apple Developer account, Firebase registrations or a
+real iPhone is open — the owner checklist is in `docs/mobile-release.md`. **Next steps for Akash:
+E29-S13 below.**
 
 **Why this is an epic.** It is the Android epic again on a second platform, but four things are
-different enough to be their own stories: the iOS WebView serves the app from
-`capacitor://localhost`, which the API's allowlist refuses by name today; App Store rules force a
+different enough to be their own stories: the iOS WebView served a bundled app from
+`capacitor://localhost`, which the API's allowlist refused by name (resolved 2026-11-19 by not
+bundling at all: the app opens the hosted Portal, D7); App Store rules force a
 decision on sign-in (guideline 4.8) and require that account deletion can be *started inside the
 app* (5.1.1(v)) — which Android's open point D2 also needs, so it is built once here; emailed links
 need Apple's Universal Links instead of Android's App Links; and the build is made on a Mac in
@@ -4177,24 +4192,93 @@ Xcode 16, a real iPhone, and the decisions below.
 | D5 | **Bundle id.** | **Decided 2026-11-10: `com.legalterminus.app`**, the same as Android, if it is free in the Apple portal. If not, `com.legalterminus.ios` — record it here; it cannot change after the first upload. |
 | D6 | **Apple sign-in on the website and Android.** Only the iOS app is required to offer it. | **Decided 2026-11-10: on the website, yes** — someone who signed up with Apple on an iPhone (possibly with "Hide my email", so no password and an address they never see) must be able to sign in on legalterminus.com too. **On Android, hidden** for the first release. |
 | D7 | **Which environment the apps talk to.** | **Decided by the owner 2026-11-11: QA first, for both apps.** One build-time switch, `LT_APP_ENV` (`qa` default, `production` for a release), drives everything environment-specific from `MobileShared/environments.json`. A QA build is a separate app — **"Legal Terminus QA", `com.legalterminus.app.qa`** — so it installs next to the production app and is never mistaken for it. This supersedes D5's "same bundle id for every build": the production id stays `com.legalterminus.app`; QA gets the `.qa` suffix on both platforms. |
+| D7 | **Which environment the apps talk to, and how.** | **Owner, 2026-11-11 and 2026-11-19: ONE app, pointed at QA first, then switched to production; it opens the hosted Portal.** The app (`com.legalterminus.app`, "Legal Terminus", D5) loads `https://legal-terminus-qa.web.app/portal/` or `https://legalterminus.com/portal/` (`server.url`); one build-time switch, `LT_APP_ENV`, picks which, from `MobileApp/environments.json`. No Portal bundle, no bundle guard, no app origin: the page is the site, so CORS is not involved, and `localhost` is removed from every allowlist (API and both buckets). **Reverted 2026-11-19:** the separate QA app `com.legalterminus.app.qa` "Legal Terminus QA" (built 2026-11-11), the bundled Portal (`vite build --mode mobile`, `check-bundle.mjs`), the `capacitor://localhost` / `https://localhost` origins, and the `iOSApp/` + `iOSAppProd/` + iPad work on `feat/ios-android-app-split` — each went against the instruction of one app that is switched. BeatMyEMI's app (`server.url = https://app.beatmyemi.com`) passed App Store review with this design. |
 
 | Story | What | Status |
 |---|---|---|
 | E29-S01 | Accounts and decisions: Apple Developer org account, App Store Connect access, D1–D5 recorded, GitHub issue numbers | ⏳ Not started (👤) — D7 recorded 2026-11-11 |
 | E29-S02 | iOS platform in `MobileApp/`: `cap add ios`, bundle id, signing, `GoogleService-Info.plist` ignored, usage strings, scripts, QA build runs on the simulator | 🔄 Code done (simulator build); signing waits on S01 |
-| E29-S03 | The app's origin on the API and the buckets: `capacitor://localhost` allowed exactly, QA first, production with the release (security change) | 🔄 Code + QA workflow done; QA bucket CORS and production wait for the owner |
+| E29-S03 | ~~The app's origin on the API and the buckets~~ — **superseded by D7 (2026-11-19)**: the app opens the hosted Portal, so it has no origin of its own. Replaced by "no localhost anywhere" in E29-S13 | ✅ Superseded |
 | E29-S04 | Sign-in on iOS: native Google (same flow as Android, iOS plugin set-up), email, sign-in link; session survives restart; offline "try again"; refused-account message | 🔄 Project set-up done; needs the plist (S01) and the device checklist |
 | E29-S05 | Files on iOS: View and share, uploads from Files / Photos / Camera, exports, image zoom | 🔄 Audit done, no code needed; device checklist open |
 | E29-S06 | Shell behaviour: safe areas, keyboard, status bar, overscroll, swipe back, external links in Safari, Razorpay inside WKWebView, icon and splash | 🔄 Code done; device checklist open |
 | E29-S07 | Emailed links open the app: `apple-app-site-association`, Associated Domains; QA host only until launch | 🔄 Code done (per-environment host); needs Team ID + fingerprints |
 | E29-S08 | Account deletion started in the app (closes Android D2 too) | 🔄 Code + tests done; Playwright spec written, not yet run |
-| E29-S09 | `docs/mobile-release.md` + the Android build job in GitHub Actions + the production build guard | 🔄 Guard, switch and job done; secrets and the dry run are the owner's |
+| E29-S09 | `docs/mobile-release.md` + the Android build job in GitHub Actions (the bundle guard is gone with the bundle, D7; the job now checks the synced app opens the production Portal) | 🔄 Switch and job done; secrets and the dry run are the owner's |
 | E29-S10 | App Store Connect: listing, privacy labels, age rating, reviewer account, screenshots, review notes; TestFlight on QA values; submission; phased release | ⏳ Not started (👤 for the console) |
 | E29-S11 | Sign in with Apple: required by guideline 4.8 because Google is offered; Firebase provider, Apple key, name-on-first-sign-in and "Hide my email" handling; the website offers it too (parity) | 🔄 Code done (web switched off until the provider exists); Apple portal + Firebase are the owner's |
 | E29-S12 | Push notifications (= E26-S06, both platforms) | ⏸ Deferred |
+| E29-S13 | **One app on the hosted Portal** (D7, 2026-11-19): `server.url`, one id, no bundle, no localhost in any allowlist; Akash's Portal fixes kept; QA-pointed build 8 on TestFlight and Internal testing | 🔄 Code done on `fix/mobile-hosted-portal`; Akash's steps below |
 
-**Order.** S01 → S02 → S03 (QA part) → S04 + S11 together, S05, S06 in any order → S07 → S08 → S09 → S10.
+**Order.** S13 first (it changes what every other story runs on). Then S01 → S04 + S11 together, S05, S06 in any order → S07 → S08 → S09 → S10.
 S08 and S09 touch Android too and can be done by someone else in parallel from S03 on.
+
+### E29-S13 — One app on the hosted Portal (owner decision 2026-11-19)
+
+**Why.** The owner asked for one app that is pointed at QA first and then switched to production.
+What was built instead was a separate QA app (`com.legalterminus.app.qa`), a Portal bundled into the
+app (which needed `capacitor://localhost` and `https://localhost` on the API and the buckets, and a
+bundle guard), and — on Akash's branch — two app folders (`iOSApp/` QA, `iOSAppProd/` production)
+plus an iPad layout (against D4). Uploads in the iPhone app failed (Akash's D-5) because the QA
+bucket had no `capacitor://localhost` entry: a symptom of the bundled design, not of the bucket.
+
+**What changed (branch `fix/mobile-hosted-portal`)**
+- `MobileApp/capacitor.config.ts`: `server.url` = the environment's Portal, `allowNavigation` = its
+  host only, `webDir: 'web'` (just `error.html` and a placeholder `index.html`), `errorPath:
+  'error.html'` (no connection; Android WebView < 111). One `appId` / `appName` for both environments.
+- `MobileApp/environments.json`: `appId`, `appName`, and per environment only `host` + `portalUrl`.
+- `scripts/app-env.mjs`: no Portal values any more; writes `web/app-env.js` for "Try again".
+  `scripts/check-bundle.mjs` and its fixtures deleted. Gradle: no `applicationIdSuffix`.
+- Portal: `vite build --mode mobile` and `build:mobile` removed (the app opens the normal build);
+  `viewport-fit=cover` is set at runtime inside the app only (`initNative`); policy links are plain
+  relative links. Kept from Akash's branch: 16px fields on iOS (no focus-zoom), the account
+  button's accessible name, Chat Send above the keyboard, the friendly upload error, the phone-width
+  Playwright adjustments, `contentInset: 'never'` and `Keyboard.resize: 'native'`.
+- **No localhost in any allowlist.** `corsOrigins.js` allows no `localhost` / loopback origin in
+  any environment and refuses one in `CORS_ORIGINS`; the `capacitor://` exception is gone; both
+  deploy workflows stop setting `CORS_ORIGINS`. Local development calls the API same-origin through
+  the Vite `/api` proxy (`VITE_API_BASE_URL` empty). `storage-cors.json` (production bucket) and
+  the new `storage-cors.qa.json` (QA bucket) list only the sites' own origins.
+
+**Akash — what to do next, in order**
+1. **Stop using `feat/ios-android-app-split` and the "Legal Terminus QA" app.** Do not merge the
+   branch; its Portal fixes are already on `main` with this story. Keep your QA reports there for
+   reference; the defects they list (D-1 to D-6) are re-checked under the new design in step 5.
+2. Pull `main`, then `cd MobileApp && npm ci && npm run sync` (QA is the default). Open the iOS
+   project (`npm run open:ios`); Bundle Identifier must read `com.legalterminus.app`, Display Name
+   "Legal Terminus". The app must open `https://legal-terminus-qa.web.app/portal/login`.
+3. **Port your XCUITests** (`iOSApp/ios/App/AppUITests/LaunchAndSignInUITests.swift`) into
+   `MobileApp/ios/App` as a UI-test target, without the iPad window code. They now drive the hosted
+   QA Portal; the QA accounts (`qa-*@legalterminus.test`) are unchanged.
+4. **Firebase:** the iOS app is `com.legalterminus.app` only. Put its `GoogleService-Info.plist` in
+   `~/lt-android-release/keys/qa/` (and `production/`, the same file). `app-env.mjs` refuses a
+   plist for any other bundle id, including the old `.qa` one.
+5. **Re-run your QA rounds on the simulator and a real iPhone, QA-pointed build:** sign-in for all
+   five roles, Google prompt, session after restart, offline start (the app must show
+   `error.html`, and "Try again" must reopen the Portal), Chat Send with the keyboard open, form
+   fields not zooming, header spacing (no doubled safe area), **upload from Photos and Files — D-5
+   must now pass with no bucket change**, View and share a document, the Razorpay checkout and a
+   UPI hand-off (they must open outside the app). Record results in this story.
+6. **Build 8** (the next number for both platforms): iOS → TestFlight of the app "Legal Terminus"
+   (`com.legalterminus.app`) once its App Store Connect record exists (owner checklist 4);
+   Android → `npm run sync:android`, `./gradlew bundleRelease`, upload to the **Internal testing**
+   track of the existing Play app. Neither is sent for review.
+7. **Never publish Android version code 3** (bundled, runs at `https://localhost`, now refused by
+   production). When the owner says to switch to production: `LT_APP_ENV=production npm run sync`,
+   the next build number, and that build replaces version code 3 in the Play Production release
+   and goes to App Store review.
+8. Any Portal change you need for the app: make it in the Portal, guarded by
+   `Capacitor.isNativePlatform()`; it reaches the QA app when it merges, without a new app build.
+   A new **native plugin** needs a new app build, and the Portal must check
+   `Capacitor.isPluginAvailable()` before using it.
+
+**Acceptance criteria**
+- One app id (`com.legalterminus.app`) and one name everywhere; no `.qa` id in code or config.
+- A QA-pointed build opens `https://legal-terminus-qa.web.app/portal/`; a production-pointed build
+  opens `https://legalterminus.com/portal/`; the switch is only `LT_APP_ENV`.
+- No `localhost`, `127.0.0.1` or `capacitor://` origin is allowed by the QA or production API, or by
+  either bucket (checked with preflights), and `corsOrigins.js` cannot be configured to allow one.
+- On a real iPhone, a QA-pointed build uploads a document from Photos (D-5 closed).
 
 **Implementation record (2026-11-11, branch `feat/ios-app`, #268 iOS / #267 Android).** Per story:
 what was built, what is verified, and what is still open. LT keeps story status here, not in
@@ -4202,6 +4286,12 @@ separate story files. The owner checklist (every Apple / Firebase / Play / GitHu
 `docs/mobile-release.md` → "Owner checklist".
 
 *The environment switch (D7, all stories).* `MobileShared/environments.json` describes QA and
+> **Superseded 2026-11-19 (E29-S13):** the paragraphs below describe the bundled design (a `.qa`
+> app, `Portal/.env.mobile.local`, the bundle guard, `capacitor://localhost` on the API). They are
+> kept as the record of what was built on 2026-11-11; the current design is E29-S13 and
+> `docs/mobile-release.md`.
+
+*The environment switch (D7, all stories).* `MobileApp/environments.json` describes QA and
 production (app id suffix, name, host, the Portal values that define the environment, the guard's
 patterns, app-link inputs). `LT_APP_ENV` picks one; `MobileShared/scripts/app-env.mjs` runs first in
 every `npm run sync:*` and writes `<app>/.app-env.json`, `Portal/.env.mobile.local` (outranks
@@ -7570,6 +7660,39 @@ choices", "Row numbers", "TDS Sheet".
   (columns and buttons; a team member adds a choice and uses it in a new record; upload in the firm's
   layout; clients refused, non-dropdown column refused). Run locally against QA on 2026-11-10: worksheets.spec 13/13 passed.
 
+### TDS Sheet: Assigned to and Checker list the portal's staff (2026-11-19, #280) — E18-S10 🔄 In review
+
+The firm answered the four questions on 11 Nov: (1) "Form 138" / "form 140" are correct — no change;
+(2) one row per TAN — already how the upload works (key `tan`), no change; (3) the Traces / IT
+password columns stay visible to Admin, Manager and Team — no change; (4) **Assigned to** and
+**Checker** should list the portal's staff automatically. Only (4) is code. Design in
+architecture.md, "Worksheets" → "Staff columns".
+- New field type **`staff`**. Assigned to and Checker are `staff` columns: the picker lists the
+  active admins, managers and team members by name (never clients or professionals; seeded e2e
+  accounts are hidden outside test runs). The row stores the person's **uid**; the grid, search,
+  filters, sort and Download Excel show the **name**. A deactivated colleague still shows by name on
+  the rows that hold them, but is not offered for new picks.
+- **Edit dropdowns** no longer lists these two columns (`PUT …/options/assigned_to` → 400 "not a
+  dropdown column"). The firm's typed list for them (`optionOverrides.assigned_to/checker` on live)
+  is left in the config and ignored.
+- **Existing rows on live keep what they hold.** A name typed before this change is not a uid; it
+  shows as written (and filters together with the same person's picked rows, since both read as the
+  same name). Picking the person on the row, or uploading the sheet again, turns it into the person.
+  No data migration.
+- **Upload:** a cell is matched to a person by display name (case and spacing ignored) or email;
+  active staff first, then former staff. A cell that matches nobody — or two people of the same
+  name — is **kept as written** and listed in the preview's "cells were kept as written" warnings,
+  the same way untidy dates are. Download → upload round-trips (the download writes names).
+- **Manual edits** must pick an active staff member (`400 Pick a person from the "Assigned to"
+  list.`); clearing is allowed.
+- The GST Return Filing sheet's **Assign Person** is unchanged: the matter sync writes the matter's
+  assignee there as a name, so making it a staff column is a separate change, not the same mechanism.
+- Tests: `backend/src/__tests__/worksheetEngine.test.js` (6 new, 3 adjusted to use Client as the
+  editable list); `Portal/e2e/worksheets.spec.ts` (the Edit dropdowns list omits Assigned to /
+  Checker; a team member picks a staff member, the row shows the name and stores the uid; upload
+  matches a name in capitals, keeps an unknown name with a warning; typed name refused by the API;
+  options on Checker refused).
+
 ### GST Return Filing sheet under Reports, kept up to date from the GST matters (2026-11-10, #279) — E18-S11 🔄 In review
 
 The firm asked for a GST Return Filing sheet under Reports (not Worksheets), filled automatically
@@ -7836,6 +7959,53 @@ filing task was ticked after the real filing. Design in architecture.md, "GST ta
   guards, header correction, step row, history, sheet follows and refuses a typed edit, client view).
   Playwright not yet run.
 
+### Filing dates entered on the task; a matter updates only its own sheet row (2026-11-19, #294) — E18-S12 🔄 In review
+
+The firm asked (17 Nov) for an **Add Filing Date** option beside the GSTR-1 filed task ("Step 6")
+and the GSTR-3B task ("Step 13"): staff pick and save the actual filing date, then complete the
+task — "do not automatically update the date"; the saved date and every edit to show in the GST
+Return Filing sheet's Date of GSTR-1 / GSTR-3B Filing column; and they reported that the sheet
+updates the wrong record for a matter. Design in architecture.md, "GST tags on the matter".
+- **Manual date (decision):** saved on the filing task once the matter has reached it (in
+  progress or completed), beside the current task and in the matter's header; changeable (pencil)
+  and removable; same range and same who-may as the 14 Nov correction; each save in the history
+  ("GSTR-1 filing date set to … / changed from … to … / removed"). Completing a filing task sets
+  no date.
+- **Completing without a date (decision): allowed.** Blocking the step would stop the workflow
+  for a missing date; instead the task shows no date and "Add Filing Date" stays in the header.
+  The sheet's cell stays blank (and typable) until a date is saved.
+- **Existing matters (decision): nothing visible disappears.** A filing task completed before the
+  release, with no saved date, keeps the date it showed (its completion day or its correction).
+  The cut-off is recorded automatically the first time the new code runs (`system/gstFilingDates`),
+  so no migration script is needed. Saving a date replaces it.
+- **Sync (owner: matter → report only):** the sheet shows the saved date and follows every edit on
+  its next opening; the sheet never writes to a matter, and a matter-fed date cell cannot be typed
+  over or uploaded over.
+- **Wrong record — root cause:** a row was tied to a matter not only by the sync but whenever a
+  person picked a matter in the row's Matter cell, with no check that the matter was for that
+  row's client and period, or that it did not already have a row. The sync then wrote to whichever
+  linked row it read first and, that row never having been synced, overwrote its client, GSTIN,
+  period, statuses and dates with the matter's. Adoption of a typed row (same GSTIN + period)
+  could also take another company's row, because the GSTIN comes from the client's one profile
+  while a client can hold matters for several organisations.
+- **Fix:** the Matter cell only accepts a matter of the row's client and period, of that sheet's
+  kind, with no row yet (otherwise refused, with the reason); every sync keeps only the matter's
+  own row and **releases** any other link (the released row keeps its cells, loses its link, and
+  is never written to again); adoption also checks the client name. Rows damaged before this fix
+  keep the values they were given — staff should check rows the sync released (logged) and delete
+  duplicates.
+- **Not changed (open):** a matter opened BY HAND takes the period that had just ended when it was
+  opened; a matter opened late for an older month still maps to the later month. A period picker
+  on hand-opened GST matters would close this.
+- Tests: `backend/src/__tests__/gstReturnSheet.test.js` — 28 (was 23): manual date shown before /
+  after completion, never from completion; legacy dates; validation incl. a reached-not-completed
+  task and removal; history lines; the sheet follows an edit; row fit; the bug case (another
+  client's row linked by the Matter cell is released, the matter's own row kept, order-independent);
+  link check; source checks of the sync and controller. `Portal/e2e/gst-return-filing.spec.ts`
+  updated: completion sets no date; Add Filing Date beside the current task; add and change from
+  the header; history; sheet follows and refuses a typed edit; the Matter cell refuses another
+  client's row and a second row. Playwright not yet run (to run on QA after merge).
+
 ### GST Return Filing sheet: GSTR-1 date shown under GSTR-3B (2026-11-14, #279) — E18-S11 🔄 In review
 
 The firm reported (11 Nov) a GSTR-1 filing date (11 Nov 2026) under "Date of GSTR-3B Filing".
@@ -7923,3 +8093,162 @@ team.
   kept as typed, migration, lists never include it, guard, no caching or logging);
   `gst-return-filing.spec.ts` (masked; click copies it and opens the GST portal; client 403).
 
+### Invoices on a matter's Payments tab (2026-11-19, #313) 🔄 In review
+
+The firm asked for invoice upload and download in a matter's Payments section. Design in
+architecture.md, "Invoices on a matter's Payments tab".
+- Admins and managers press **Upload invoice** in the Payments tab and choose a PDF (up to
+  10 MB). A matter can hold several; each is listed with its file name and upload date, and
+  can be **Replaced** (the new file takes its place) or **Deleted** (after a confirmation).
+  Each change is on the matter's activity log.
+- The matter's client sees an **Invoices** card on their Payments tab once one is uploaded,
+  and downloads each invoice. A client asking for another client's matter gets 404.
+- **Decision — team members:** the issue does not mention them. They are refused (no
+  Payments tab, API 403), because a team member must not see payment information (#148).
+  Opening invoices to them read-only is one line on two routes if the firm wants it.
+- Only PDFs: the type is checked on the request, pinned into the upload link, and the
+  file's first bytes are checked before it is accepted.
+- Not built: notifying or emailing the client when an invoice is added (not asked).
+- Tests: `backend/src/__tests__/invoices.test.js` (14), `Portal/e2e/invoices.spec.ts` (8).
+
+
+### Chat: received bubble, drafts kept, images shown at one size (2026-11-19, #297 follow-up, #319) 🔄 In review
+
+**#297 follow-up (2026-11-16 comment) — the firm meant the RECEIVED bubble.** It was
+near-white (`surface-soft`, #f8f9fa — 1.05:1 against the white thread). It is now
+`surface-strong` (#e5e7eb) with a visible edge; the sent bubble is unchanged. On the darker
+grey the name, shared/internal hint and time move to `ink-soft` (8.3:1), and "Read more"
+moves to `brand-700` (5.4:1), so all text stays WCAG AA.
+
+**#297 follow-up — drafts.** The Chat tab unmounts when someone opens another tab of the
+matter, so an unsent message was lost. The new-message box and an edit in progress are now
+kept with the step-comment draft store (`hooks/useCommentDraft.ts`, #83): localStorage,
+keyed per matter (and per message for an edit) AND per signed-in user, so a draft never
+shows on another matter or to another person on a shared computer. It survives tab
+switches and reloads, and goes when it is sent/saved, cancelled, or emptied. The hook used
+to DROP the last keystrokes (still in the 800 ms autosave delay) on unmount; it now writes
+them — step comments benefit too. The "Visible to client" tick is not kept: a restored
+draft is internal until ticked again (#115).
+
+**#319 — images in Chat did not display.** Root cause: `RichText` returned its content bare
+while it fitted and wrapped it in a new `<div>` once it overflowed the "Read more" fold.
+A tall image overflows only after it loads, so its load event flipped the fold, React
+remounted the content node from the stored HTML — where an image never has a src (bytes
+are fetched with the viewer's credentials) — and the hydrate effect did not re-run: a
+broken-image box with "Read more" under it. The wrapper is now always rendered. This also
+affected step comments with tall images.
+- **One display size:** every image in Chat (thread and composer) is shown in a 15rem ×
+  11.25rem box (240 × 180 px; narrower on a small phone), the whole picture fitted inside
+  (`object-fit: contain`). Click still opens the original full size.
+- **Dimension check before sending:** at least **20 × 20 px** and at most **8,000 px** on
+  either side. One copy in `shared/richText/limits.js`; the editor reads the image's size
+  in the browser before uploading and shows a clear error (nothing is uploaded or
+  inserted), and the upload endpoint enforces the same rule from the real bytes (sharp
+  header read) with 422 `IMAGE_DIMENSIONS`. Type (JPEG/PNG/WebP) and 5 MB checks unchanged.
+  20 px (not 50) so a cropped screenshot of one line of text is still accepted; 8,000 px
+  because a 5 MB PNG can claim enormous dimensions that every viewer's browser must decode.
+- Tests: `backend/src/__tests__/commentImages.test.js` (+5: limits, edges, messages, reading
+  PNG/JPEG/WebP sizes, unreadable bytes). Playwright: `discussion.spec.ts` (+5: received
+  bubble colour, draft across tab switch/reload/send, edit draft, fixed image box with
+  decoded images, too-small/too-large refused); `comment-images.spec.ts` (API 422 for
+  out-of-range sizes; a tall image in a step comment still decodes; fixtures are now real
+  64×48 PNGs from `e2e/png.ts`, since a 1×1 pixel is refused). Playwright not run by the
+  author (QA after merge). User-visible: yes.
+
+### Completion email: "Explore more services" block (2026-11-19, #310) — E-07 🔄 In review
+
+The firm asked that the thank-you email a client gets when a service is completed also
+promote the firm's other services, with one common text for every service, editable by
+Admin and Manager in Settings.
+- **The existing email:** the one completion email is the client's "Your service is
+  complete" notification, mirrored to email by `createNotification` from `transitionTask`
+  when the matter reaches `completed` (CC the matter's `ccEmails`, threaded with the
+  matter). It goes to the client already; its wording is unchanged.
+- **What was built:** a block appended below the message and its "View in Portal" button —
+  a heading and a text, seeded with the firm's example (services list, tagline,
+  https://legalterminus.com/). Settings → Email Templates → "Client — Service completed:
+  Explore more services". An on/off switch; auto-saves like the templates; Reset restores
+  the seed text. Bare web addresses become links, "- " lines become bullets.
+- **Off or empty → the email is exactly as before** (asserted byte-for-byte in the unit test).
+- **Who:** admin and manager (`GET/PUT /api/settings/completion-marketing`). A manager now
+  reaches Settings → Email Templates but sees only this block; the other templates stay
+  admin-only (their API still refuses a manager).
+- **No database write needed:** the seed text is a code default merged on read; nothing
+  was written to QA or live. Only the client's completion email carries it — not the
+  matter owner's "Matter completed" notice, not the in-app notification.
+- **Unchanged edge:** if the CLIENT performs the final step themselves, no completion
+  notice is sent at all (existing "don't notify the actor" rule), so no block either.
+- Tests: `backend/src/__tests__/completionMarketing.test.js` (6: default in the email,
+  off/empty unchanged, empty stays empty, no markup injection, schema, only the client's
+  notice); `email-templates.spec.ts` (+4: admin/manager allowed, team/client 403;
+  manager round-trip, tags stripped, 400s; manager UI edit + switch save; admin sees it).
+
+### Several assignees on one step — reopened again (2026-11-19, #192) — E10-S01 🔄 In review
+
+The firm wrote (18 Nov): Step settings do not let them add more than one assignee, and when a
+step has several assignees they cannot complete it. Both were real; the September fixes were
+right in the parts they touched but three other writers undid them.
+- **Cause 1 (both symptoms):** saving a Service from the workflow editor dropped every step's
+  assignee list — the save schema did not list `defaultAssigneeUids`. The step went back to one
+  person, so on new matters the others were not assignees and got no Complete button (and the
+  server refused them).
+- **Cause 2 (symptom 1):** after **Save step settings** on the Service page, the picker showed
+  only the first person (the save response left the list out), and the next change built on
+  that one.
+- **Cause 3 (both):** on a matter, **Step owner** was a single dropdown. It could hold one
+  person, and using it on a shared step removed everyone else — who then could not complete it.
+- **Fix:** the list is kept on save and returned after it; the workflow editor gains **Who does
+  this? → Specific people** (tick several); the matter's **Step owner** becomes a tick-list
+  (admin/manager; changes apply at once; each newly added person is notified). Any one owner
+  completes the step. One rule keeps the two stored fields consistent — see architecture.md.
+  The step-owner endpoint gains a role guard and a strict schema; owners must be staff.
+- **Existing data:** a Service saved in the editor since September has lost its lists — re-tick
+  the people (either screen) and save. Matters already open keep their steps as created; add
+  the missing person with **Step owner** on the matter.
+- Tests: `backend/src/__tests__/stepAssignees.test.js` (6); `step-multi-assignee.spec.ts` +6
+  (save response, editor save keeps the list, editor picker, Step Settings after save, step-owner
+  API incl. client 400 / team 403, add a second owner on the matter screen and that person
+  completes the step).
+
+
+### Quarterly GST matters are quarterly everywhere; the period is in every email subject (2026-11-19, #219 follow-up of 16 Nov) — E-07 🔄 In review
+
+The firm marked it "High – Critical": a GST Return Filing matter created as **Quarterly** still
+showed the monthly format in its Filing Month tag, in its email subject and content, and in the
+GST Return Filing sheet (row in Monthly, a month as Return Period). And only the first email to
+the client carried "<Company> - GST Return - <Month Year | Qn YYYY-YY>"; they asked for it on
+every email about the matter, client and staff alike. Design in architecture.md, "GST return
+reminders (#219)".
+- **Root cause:** the only Monthly / Quarterly a person picks when creating a matter is
+  **Repeats** (#167). The rule that decides a GST matter's frequency (`frequencyOf`) read the
+  sweep's period, the quarterly service key and the client's GST setting — never `recurrence`.
+  A matter on the GST Return Filing service for a client without the Quarterly setting fell
+  through to monthly, and the tag, the first email (template and period) and the sheet row all
+  come from that one rule. A copy of such a matter (one click from the recurring reminder) is
+  not itself recurring, so it would have been monthly even after reading `recurrence`.
+- **Fix:** `frequencyOf` reads, in order, the sweep's period, a frequency frozen on the matter at
+  creation (`gstFrequency`, new), `recurrence`, a quarterly service (key, or key/name saying
+  "quarter"), the client's setting. `createTask` stamps `gstFrequency` on every GST return matter
+  (server-side only; a copy inherits its source's through `duplicateMatterCore`), so changing
+  Repeats or the client's setting later, or the series ending, never turns a quarter back into a
+  month. The tag reads "Filing quarter" for a quarter.
+- **Every subject (decision: one place):** `sendTemplatedEmail` and `sendNotificationEmail` (the
+  two paths every matter email takes, with its matter id) ask `gstEmailSubjectForMatter` first:
+  for a GST return matter the subject is its first email's — the firm's GST template subject,
+  filled for the matter's frequency and period — for client and staff, replacing the usual
+  "[Legal Terminus] Org | Service (#id)". No template was edited, so no doubled period. The first
+  email (and the sweep's) keep their own subject as before.
+- **Existing matters (decision): no migration needed to show correctly.** The frequency is
+  computed on read, and their Repeats still says Quarterly, so tag and emails are right at once;
+  the sheet's rules version moved to 4, so the next opening of the sheet re-derives every GST
+  row — a quarterly matter's row moves to Quarterly with the quarter as Return Period (a value a
+  person typed over yields, last change wins). Optional `backend/scripts/backfill-gst-frequency.js`
+  (report by default, `--write` to apply, refuses the default database unless told) freezes
+  `gstFrequency` on older matters; NOT run on live. A matter whose series has already ended no
+  longer says it was quarterly and is not recovered by anything.
+- Tests: `backend/src/__tests__/gstQuarterlyEverywhere.test.js` (10); `gst-return-filing.spec.ts`
+  (+2: a "Repeats: Quarterly" matter — API frequency, period and subject, the tag on the page, its
+  row in Quarterly and not Monthly, its copy stays quarterly; the run's matter's subject; a
+  non-GST matter has no GST subject). Email delivery is off in E2E, so the subject is checked
+  through the matter's `gstEmailSubject`, the same function the email service calls.
+  User-visible: yes.

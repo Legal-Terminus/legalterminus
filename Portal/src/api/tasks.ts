@@ -226,6 +226,16 @@ export const assignStep = (taskId: string, stepNumber: number, assignedTo: strin
     body: JSON.stringify({ assignedTo }),
   });
 
+/**
+ * #192: set EVERY owner of a step at once (an empty list unassigns it). The
+ * first uid becomes the primary. Any one of them may complete the step.
+ */
+export const setStepAssignees = (taskId: string, stepNumber: number, assignedToUids: string[]) =>
+  apiFetch<void>(`/api/tasks/${taskId}/steps/${stepNumber}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ assignedToUids }),
+  });
+
 /** #116: reopen a completed step — ADMIN only. Rewinds the workflow to that step
  *  (later steps revert to pending). Returns the new current step. */
 export const reopenStep = (taskId: string, stepNumber: number, reason?: string) =>
@@ -242,10 +252,10 @@ export const postStepNote = (taskId: string, stepNumber: number, note: string) =
     { method: 'POST', body: JSON.stringify({ note }) },
   );
 
-/** #294: staff correct when a GSTR-1 / GSTR-3B return was filed (`null` = back
- *  to the day the task was completed). The server checks the range and who may. */
-export const correctFiledOn = (taskId: string, stepNumber: number, date: string | null) =>
-  apiFetch<{ stepNumber: number; form: string; date: string; previous?: string; changed: boolean }>(
+/** #294: staff save (or change) the date a GSTR-1 / GSTR-3B return was filed;
+ *  `null` removes it. The server checks the range and who may. */
+export const saveFilingDate = (taskId: string, stepNumber: number, date: string | null) =>
+  apiFetch<{ stepNumber: number; form: string; date: string | null; previous?: string | null; changed: boolean }>(
     `/api/tasks/${taskId}/steps/${stepNumber}/filed-on`,
     { method: 'PUT', body: JSON.stringify({ date }) },
   );

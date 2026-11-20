@@ -52,3 +52,24 @@ test('E29-S11: the first-sign-in name from Apple, else the fallback, else nothin
   assert.equal(appleFullName({}, null), null);
   assert.equal(appleFullName(undefined, ''), null);
 });
+
+import { entryScriptOf, shouldReloadForUpdate } from '../src/lib/nativeRules.ts';
+
+test('hosted app: the deployed entry script is read from index.html', () => {
+  const html = '<head><script type="module" crossorigin src="/portal/assets/index-AbC123.js"></script>'
+    + '<link rel="modulepreload" href="/portal/assets/x.js"></head>';
+  assert.equal(entryScriptOf(html), '/portal/assets/index-AbC123.js');
+  assert.equal(entryScriptOf('<html>no script</html>'), null);
+  assert.equal(entryScriptOf('<script src="/a.js"></script>'), null);
+});
+
+test('hosted app: reload only for a changed version, after a real absence, and never while busy', () => {
+  const ok = { hiddenMs: 120_000, minHiddenMs: 60_000, current: '/a.js', latest: '/b.js', busy: false, editing: false };
+  assert.equal(shouldReloadForUpdate(ok), true);
+  assert.equal(shouldReloadForUpdate({ ...ok, latest: '/a.js' }), false);        // same version
+  assert.equal(shouldReloadForUpdate({ ...ok, hiddenMs: 5_000 }), false);        // quick app switch
+  assert.equal(shouldReloadForUpdate({ ...ok, busy: true }), false);             // upload running
+  assert.equal(shouldReloadForUpdate({ ...ok, editing: true }), false);          // typing
+  assert.equal(shouldReloadForUpdate({ ...ok, latest: null }), false);           // unreadable response
+  assert.equal(shouldReloadForUpdate({ ...ok, current: null }), false);
+});

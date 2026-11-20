@@ -72,6 +72,7 @@ AndroidApp/android/app/google-services.json
 iOSApp/.app-env.json
 iOSAppProd/.app-env.json
 AndroidApp/.app-env.json
+AndroidApp/web/
 iOSApp/ios/App/Config/Environment.xcconfig
 iOSAppProd/ios/App/Config/Environment.xcconfig
 

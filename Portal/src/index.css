@@ -384,6 +384,20 @@ layer(base);
       min-width: 3rem; min-height: 3rem;
     }
     .rich-text img[data-lt-image] { @apply cursor-zoom-in; }
+    /* #319 — in Chat every image shows in the SAME box, whatever its own size or
+       shape: 15rem wide (or the bubble's width on a narrow phone) by 11.25rem
+       tall, the whole picture fitted inside (object-fit: contain), never cropped
+       or stretched. A tall screenshot and a tiny icon take the same space in the
+       thread; clicking opens the original full size. Applies to the thread and
+       to the composer, so what is typed looks like what will be sent. */
+    .lt-chat-images .rich-text img[data-lt-image],
+    .lt-chat-images .ProseMirror img[data-lt-image] {
+      width: 15rem;
+      max-width: 100%; /* a narrow phone bubble: shrink, still contained */
+      height: 11.25rem;
+      max-height: none;
+      object-fit: contain;
+    }
     .ProseMirror .ProseMirror-selectednode img[data-lt-image] { @apply ring-2 ring-brand-400; }
     /* A missing image or one this viewer may not see. Neutral — not an error
        colour: nothing is wrong with the comment itself. */

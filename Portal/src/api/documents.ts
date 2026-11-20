@@ -2,6 +2,7 @@ import { apiFetch } from './client';
 import { auth } from '../lib/firebase';
 import { getIdToken } from 'firebase/auth';
 import { openBlobNative, shareBlobNative } from '../lib/native';
+import { whileBusy } from '../lib/updateGuard';
 
 /**
  * Document Cycle API (E-05). Upload is a two-step signed-URL flow: ask the backend
@@ -93,7 +94,17 @@ interface SignedUploadResponse {
  * Full upload: request a signed URL, PUT the file to storage, then confirm.
  * Returns the confirmed document. Throws with a friendly message on failure.
  */
-export async function uploadDocument(
+export function uploadDocument(
+  taskId: string,
+  file: File,
+  stepNumber?: number,
+  docType?: string,
+): Promise<TaskDocument> {
+  // An upload in flight blocks the app's automatic new-version refresh (lib/updateGuard.ts).
+  return whileBusy(() => uploadDocumentNow(taskId, file, stepNumber, docType));
+}
+
+async function uploadDocumentNow(
   taskId: string,
   file: File,
   stepNumber?: number,

@@ -6,6 +6,14 @@ design decisions in `architecture.md` → "iOS app (E-29)"; the release procedur
 `docs/mobile-release.md`. This file is the *how*. Paths are LT's (`/portal/…`,
 `legalterminus.com`, `legal-terminus-qa.web.app`).
 
+> **2026-11-19 — read this first.** The app no longer bundles the Portal: it is ONE app,
+> `com.legalterminus.app`, that opens the **hosted** Portal (`server.url`), pointed at QA first
+> (E-29 D7, story E29-S13 — which also lists Akash's next steps). Everything below about
+> `vite build --mode mobile`, `Portal/dist-mobile`, `check-bundle.mjs`, `capacitor://localhost`,
+> `https://localhost`, `CORS_ORIGINS` and the `.qa` app is **superseded** and kept only as the
+> record. The sign-in, files, shell, links and deletion guidance (S04–S08, S11) still applies
+> unchanged: that code is in the Portal, which the app now loads from the site.
+
 ```
 Portal/src ──(vite build --mode mobile)──▶ Portal/dist-mobile ──(cap sync ios)──▶ iOSApp/ios/App/App/public
    └─ lib/native.ts, lib/googleSignIn.ts (native branch), lib/firebase.ts (persistence)   — isNativePlatform() guards
@@ -71,7 +79,7 @@ iOSApp/ios/**/GoogleService-Info*.plist
 key.properties
 ```
 
-## E29-S03 — the origin
+## E29-S03 — the origin (superseded 2026-11-19: no origin, no localhost anywhere)
 
 `backend/src/config/corsOrigins.js`:
 ```js
@@ -276,7 +284,7 @@ source of this feature per `docs/releases/SYNC.md`; port by content):
 - Existing admin delete completes it; its matters guard stays (close/reassign first).
 - Playwright `account-deletion.spec.ts` (client requests, admin sees badge, admin completes; admin → 403).
 
-## E29-S09 — the Android job and the guard
+## E29-S09 — the Android job and the guard (the guard is superseded 2026-11-19: no bundle)
 
 `MobileShared/scripts/check-bundle.mjs <qa|production> [dir]` — walks `Portal/dist-mobile`,
 fails on: production → `/qa-data/`, `/legal-terminus-qa/`, `/localhost:5001/`,

@@ -9,13 +9,14 @@ import {
   ChevronsLeft, ChevronsRight, MoreVertical, Users,
 } from 'lucide-react';
 import PageShell from '../../components/common/PageShell';
-import { GstMatterTags, FiledOnTag } from '../../components/tasks/GstFilingTags';
+import { GstMatterTags, FiledOnTag, FilingDateControl } from '../../components/tasks/GstFilingTags';
 import CollapsibleSection from '../../components/common/CollapsibleSection';
 import { useToast } from '../../components/common/toastContext';
 import DocumentsPanel from '../../components/documents/DocumentsPanel';
 import DiscussionPanel from '../../components/messages/DiscussionPanel';
 import SendReminderButton from '../../components/tasks/SendReminderButton';
 import SendInternalReminderButton from '../../components/tasks/SendInternalReminderButton';
+import PeoplePicker from '../../components/common/PeoplePicker';
 import RichTextEditor from '../../components/common/RichTextEditor';
 import RichText from '../../components/common/RichText';
 import { CommentImageTaskContext } from '../../components/common/commentImageContext';
@@ -23,8 +24,9 @@ import { getDocuments, openDocument, type TaskDocument } from '../../api/documen
 import { useAuthStore } from '../../store/authStore';
 import PayNowCard from '../../components/tasks/PayNowCard';
 import RefundHistory from '../../components/payments/RefundHistory';
+import InvoicesCard from '../../components/payments/InvoicesCard';
 import PaymentRequestsCard from '../../components/tasks/PaymentRequestsCard';
-import { getTask, advanceTask, assignStep, assignMatter, getTaskEvents, approveTask, rejectTask, stopTask, restartTask, archiveTask, updatePayment, setMatterProfessional, setMatterOrganisation, setMatterCcEmails, setTaskUrgent, setStepUrgent, reopenStep, updateTask, type WorkflowEventInput, type TaskEvent } from '../../api/tasks';
+import { getTask, advanceTask, setStepAssignees, assignMatter, getTaskEvents, approveTask, rejectTask, stopTask, restartTask, archiveTask, updatePayment, setMatterProfessional, setMatterOrganisation, setMatterCcEmails, setTaskUrgent, setStepUrgent, reopenStep, updateTask, type WorkflowEventInput, type TaskEvent } from '../../api/tasks';
 import { useConfirm } from '../../components/common/confirmContext';
 import { useCommentDraft, draftSavedLabel } from '../../hooks/useCommentDraft';
 import { useRail, type RailState } from '../../hooks/useResizablePanels';
@@ -132,13 +134,33 @@ export default function TaskDetailPage() {
   const professionals = assignableUsers;
 
   const assign = useMutation({
-    mutationFn: ({ stepNumber, assignedTo }: { stepNumber: number; assignedTo: string | null }) =>
-      assignStep(taskId!, stepNumber, assignedTo),
+    // #192: the whole owner list — a step may be shared by several people.
+    mutationFn: ({ stepNumber, assignedToUids }: { stepNumber: number; assignedToUids: string[] }) =>
+      setStepAssignees(taskId!, stepNumber, assignedToUids),
+    // Tick the box at once (the picker reads the step from the cache); the
+    // refetch on settle replaces this with the server's version, and a refusal
+    // rolls it back.
+    onMutate: async ({ stepNumber, assignedToUids }) => {
+      await queryClient.cancelQueries({ queryKey: ['task', taskId] });
+      const previous = queryClient.getQueryData<Task>(['task', taskId]);
+      if (previous?.steps) {
+        queryClient.setQueryData<Task>(['task', taskId], {
+          ...previous,
+          steps: previous.steps.map((s) => (s.stepNumber === stepNumber
+            ? { ...s, assignedToUids, assignedTo: assignedToUids[0] ?? null }
+            : s)),
+        });
+      }
+      return { previous };
+    },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['task', taskId] });
       queryClient.invalidateQueries({ queryKey: ['my-steps'] });
     },
-    onError: (err: Error) => toast.error(err.message || 'Could not assign this step.'),
+    onError: (err: Error, _vars, ctx) => {
+      if (ctx?.previous) queryClient.setQueryData(['task', taskId], ctx.previous);
+      toast.error(err.message || 'Could not assign this step.');
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ['task', taskId] }),
   });
 
   const assignOwner = useMutation({
@@ -422,7 +444,7 @@ export default function TaskDetailPage() {
             period={task.gstFilingPeriodLabel}
             filings={task.gstFilings}
             bounds={task.gstFilingDateBounds}
-            // #294: internal staff correct a filing date; the server also checks
+            // #294: internal staff add or change a filing date; the server also checks
             // that a team member works this matter.
             canCorrect={role === 'admin' || role === 'manager' || role === 'team_member'}
           />
@@ -640,7 +662,7 @@ export default function TaskDetailPage() {
           assignment={canAssign ? {
             staff,
             assigning: assign.isPending,
-            onAssign: (stepNumber, assignedTo) => assign.mutate({ stepNumber, assignedTo }),
+            onAssign: (stepNumber, assignedToUids) => assign.mutate({ stepNumber, assignedToUids }),
             onToggleUrgent: (stepNumber, next) => toggleStepUrgent.mutate({ stepNumber, next }),
             urgentPending: toggleStepUrgent.isPending,
           } : undefined}
@@ -653,7 +675,7 @@ export default function TaskDetailPage() {
         />
       )}
       {tab === 'documents' && <DocumentsPanel taskId={taskId!} isStaff={isStaff} workflowType={task.workflowType} />}
-      {tab === 'discussion' && <DiscussionPanel taskId={taskId!} isStaff={isStaff} />}
+      {tab === 'discussion' && <DiscussionPanel key={taskId} taskId={taskId!} isStaff={isStaff} /* key: a fresh composer (and its saved draft) per matter */ />}
       {tab === 'payments' && (role === 'team_member'
         ? <PaymentRequestsCard task={task} canSend canManage={false} isClient={false} />
         : <PaymentsTab task={task} canEdit={canAssign} isClient={isClient} />)}
@@ -1026,7 +1048,8 @@ function StopMatterBanner({
 interface StepAssignment {
   staff: PortalUser[];
   assigning: boolean;
-  onAssign: (stepNumber: number, assignedTo: string | null) => void;
+  /** #192: the step's full owner list (empty = unassigned); first = primary. */
+  onAssign: (stepNumber: number, assignedToUids: string[]) => void;
   // Urgent toggle for the current step (Issue 3).
   onToggleUrgent: (stepNumber: number, next: boolean) => void;
   urgentPending: boolean;
@@ -1249,6 +1272,7 @@ function StepsTab({
     />
   ) : null;
 
+  const currentFiling = task.gstFilings?.find((f) => f.stepNumber === task.currentStepNumber);
   const hero = !completed && isAdvanceable && currentDef ? (
     <StepHeroPanel
       taskId={task.id} step={currentDef} role={role} pending={pending} turn={currentTurn}
@@ -1262,6 +1286,11 @@ function StepsTab({
       description={descFor(task.currentStepNumber)}
       approvalNote={approvalNoteFor(task.currentStepNumber)}
       fallbackView={!!task.currentStepFallback}
+      // #294 (firm, 17 Nov): on the GSTR-1 / GSTR-3B filing task, staff save the
+      // actual filing date here ("Add Filing Date"), then complete the task.
+      filingSlot={currentFiling ? (
+        <FilingDateControl taskId={task.id} filing={currentFiling} bounds={task.gstFilingDateBounds} canEdit={role.isStaff} />
+      ) : undefined}
     />
   ) : completed ? (
     <div className="card p-5 flex items-center gap-2.5 bg-emerald-50 border-emerald-100">
@@ -1668,7 +1697,8 @@ const EVENT_VERB: Record<string, string> = {
   BRANCH_DECISION: 'made a decision',
   CLIENT_APPROVE: 'approved',
   STEP_NOTE: 'shared a note', // #105
-  FILED_ON_CORRECTED: 'corrected the filing date', // #294
+  FILED_ON_CORRECTED: 'corrected the filing date', // #294 (older history)
+  FILING_DATE_SET: 'saved the filing date', // #294
   CLIENT_REJECT: 'requested changes',
   GOVT_APPROVE: 'marked Govt approved',
   GOVT_REJECT: 'marked Govt rejected',
@@ -1818,8 +1848,10 @@ function initialsOf(name: string) {
 
 /** The HERO panel: action (left) + meta (right) merged into one elevated card. */
 function StepHeroPanel({
-  taskId, step, role, pending, onEvent, assignment, currentAssignee, currentAssigneeName, displayNumber, turn, stepUrgent, onAttach, statusLabel, description, approvalNote, fallbackView = false, clientOwned = false, currentAssignees = [], currentAssigneeNames = [],
+  taskId, step, role, pending, onEvent, assignment, currentAssignee, currentAssigneeName, displayNumber, turn, stepUrgent, onAttach, statusLabel, description, approvalNote, fallbackView = false, clientOwned = false, currentAssignees = [], currentAssigneeNames = [], filingSlot,
 }: {
+  /** #294: the GST filing date and its "Add Filing Date" control, on a filing task. */
+  filingSlot?: React.ReactNode;
   taskId: string;
   step: WorkflowStepDef;
   role: { isStaff: boolean; isClient: boolean; isExternalViewer?: boolean; canOverrideClient?: boolean; isAdmin?: boolean; uid?: string | null; isMatterOwner?: boolean };
@@ -1863,7 +1895,10 @@ function StepHeroPanel({
   const ownerName = assignment?.staff.find((u) => u.uid === currentAssignee);
   // Prefer the staff-list object's name (admins/managers), else the server-resolved
   // name (#48) so team members also see the real assignee. Empty when truly unassigned.
-  const assigneeLabel = ownerName ? displayName(ownerName) : (currentAssignee ? (currentAssigneeName ?? '') : '');
+  // #192: a shared step names everyone on it, not just the primary.
+  const assigneeLabel = currentAssigneeNames.length > 1
+    ? currentAssigneeNames.join(', ')
+    : ownerName ? displayName(ownerName) : (currentAssignee ? (currentAssigneeName ?? '') : '');
 
   // #49: completion is restricted to the step's assignee. A non-assignee staff
   // member can only reassign (admins/managers via the owner dropdown). ADMIN keeps
@@ -2141,15 +2176,17 @@ function StepHeroPanel({
               <span className="text-[10px] font-bold text-ink-muted">{initialsOf(assigneeLabel)}</span>
             </div>
             <div className="min-w-0">
-              <select
-                className="bg-transparent text-sm font-medium text-ink focus:outline-hidden cursor-pointer max-w-[150px]"
-                value={currentAssignee ?? ''}
+              {/* #192 (reopened): this was a single <select>, so a manager could
+                  give a step to only ONE person, and touching it on a shared
+                  step dropped everyone else — who then could not complete it. */}
+              <PeoplePicker
+                label="Step owners"
+                className="w-[170px] max-w-full"
+                selected={currentAssignees.length ? currentAssignees : (currentAssignee ? [currentAssignee] : [])}
+                people={assignment.staff.map((u) => ({ uid: u.uid, name: displayName(u) }))}
                 disabled={assignment.assigning}
-                onChange={(e) => assignment.onAssign(step.stepNumber, e.target.value || null)}
-              >
-                <option value="">Unassigned</option>
-                {assignment.staff.map((u) => <option key={u.uid} value={u.uid}>{displayName(u)}</option>)}
-              </select>
+                onChange={(next) => assignment.onAssign(step.stepNumber, next)}
+              />
               {step.assignedRole && <p className="text-[11px] text-ink-faint flex items-center gap-1"><Briefcase className="w-3 h-3" /> {step.assignedRole.replace(/_/g, ' ')}</p>}
             </div>
           </div>
@@ -2247,6 +2284,7 @@ function StepHeroPanel({
       <div className="grid grid-cols-1 md:grid-cols-[1fr_240px]">
         <div className="p-5">
           <p className="text-base font-semibold text-ink">{step.title}</p>
+          {filingSlot && <div className="mt-2 flex flex-wrap items-center gap-1.5" data-testid="gst-filing-slot">{filingSlot}</div>}
           {/* #81/#82: audience-tagged description (Step Settings' multiple
               descriptions + notes), falling back to the legacy single field. */}
           {(description ?? step.description) && (
@@ -2550,7 +2588,7 @@ function ExpandableStepRow({ step, displayNumber, stageName, description, status
               row layout, icon, or "Done" badge — the checklist cue the client asked
               for, applied lightly to preserve the design language. */}
           <p className={`text-sm ${isCurrent ? 'font-semibold text-ink' : 'text-ink-soft'} ${step.status === 'completed' ? 'line-through decoration-1 decoration-ink-faint/60' : ''}`}>{displayNumber}. {step.title}</p>
-          {/* #294: "Filed on" on a completed GSTR-1 / GSTR-3B filing task (server-derived). */}
+          {/* #294: "Filed on" on a GSTR-1 / GSTR-3B filing task — the date staff saved on it. */}
           {step.filedOn && <div className="mt-1"><FiledOnTag date={step.filedOn} /></div>}
           {statusLabel && <p className="text-[11px] text-ink-muted mt-0.5">{statusLabel}</p>}
           {description && !open && <p className="text-xs text-ink-muted mt-0.5 truncate">{description}</p>}
@@ -2774,6 +2812,10 @@ function PaymentsTab({ task, canEdit, isClient }: { task: Task; canEdit: boolean
     {/* #148: the payment LEDGER — clients pay in instalments, so every payment
         received is its own record rather than one overwritten latest figure. */}
     <PaymentHistory task={task} canEdit={canEdit} />
+
+    {/* #313: invoices — admin/manager upload, replace and delete PDFs; the
+        client downloads their own. Team never reaches the Payments tab (#148). */}
+    <InvoicesCard taskId={task.id} canManage={canEdit} />
 
     {/* #240: Refund History. Staff always see it (to record one); the client
         sees it, read-only, once a refund has been recorded on their matter. */}

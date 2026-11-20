@@ -3,11 +3,30 @@
 Adopted 2026-11-10 (E-29). The model is the BeatMyEMI apps: **Android is built and signed
 by the GitHub pipeline on a release; iOS is archived and uploaded from Xcode on the Mac.**
 There is no fastlane, by the owner's decision. The web release process is unchanged and is
-in `docs/delivery.md`; a production mobile build always starts from a production tag that has
-already deployed.
+in `docs/delivery.md`.
 
-**QA first (owner, 2026-11-11).** Both apps are pointed at QA until the owner says otherwise.
-Every build is QA unless it is asked for production in so many words (the switch below).
+**One app that opens the hosted Portal (owner, 2026-11-19).** The Android and iPhone apps are a
+native shell around the Portal **as it is hosted**: `https://legal-terminus-qa.web.app/portal/`
+on QA, `https://legalterminus.com/portal/` in production. Nothing of the Portal is bundled into
+the app. There is **one app**, `com.legalterminus.app`, "Legal Terminus", in both stores: it is
+pointed at QA first, and the same app is switched to production by building it for production.
+This replaces the bundled-Portal design of 2026-11-02 to 2026-11-18 (E29 D7).
+
+What that means:
+
+- **A Portal deploy reaches the apps at once.** Merging to `main` updates the QA app; a release
+  tag updates the production app. No store build is needed for a Portal change. A new store
+  build is needed only when the **native shell** changes (a Capacitor plugin, a permission, an
+  icon, the version number).
+- **No CORS for the apps.** The app's page *is* the site, so API calls are same-origin through
+  the Hosting rewrite and uploads use the site's own bucket entry. `localhost` and
+  `capacitor://localhost` are allowed nowhere — not on the API, not on either bucket.
+- **The shell and the Portal must agree.** The Portal calls native plugins only behind
+  `Capacitor.isNativePlatform()` and dynamic `import()` (`Portal/src/lib/native.ts`). A Portal
+  change that needs a **new** plugin must check the plugin is there
+  (`Capacitor.isPluginAvailable('X')`) and keep working without it, because phones run older
+  shells until they update. Keep the `@capacitor/*` versions in `Portal/package.json` and
+  `MobileApp/package.json` on the same major.
 
 ```
 tag vX.Y.Z-lt.N on main  ──(deploy-production.yml, approval)──▶ website + API live
@@ -43,27 +62,19 @@ anywhere else.
 
 | | QA (`LT_APP_ENV=qa`, default) | Production (`LT_APP_ENV=production`) |
 |---|---|---|
-| App name on the phone | **Legal Terminus QA** | Legal Terminus |
-| Android application id / iOS bundle id | **`com.legalterminus.app.qa`** | `com.legalterminus.app` |
-| Website, API and account deletion (`/api/auth/me/deletion-request`) | `https://legal-terminus-qa.web.app` | `https://legalterminus.com` |
-| Database / bucket in the Portal bundle | `qa-data` / `legal-terminus-web-qa` | `(default)` / `legal-terminus-web.firebasestorage.app` |
+| App name and id | Legal Terminus, `com.legalterminus.app` | the same |
+| The app opens | `https://legal-terminus-qa.web.app/portal/` | `https://legalterminus.com/portal/` |
+| Loads inside the app (`allowNavigation`) | `legal-terminus-qa.web.app` only | `legalterminus.com` only |
 | Emailed links open the app on | `legal-terminus-qa.web.app` | `legalterminus.com` (only after launch approval) |
-| Firebase files used | `~/lt-android-release/keys/qa/` | `~/lt-android-release/keys/production/` |
-| Bundle guard | must not contain `legalterminus.com/api` | must not contain `qa-data`, `legal-terminus-qa`, `localhost:5001`, a `.test` address or `EMAIL_DISABLED` |
-
-Because the QA app has its own id and name, it installs **next to** the production app and is
-never mistaken for it.
-
-How it works:
+| Who can sign in | `@legalterminus.test` accounts only (the QA guard) | real accounts; test accounts refused |
 
 ```
 LT_APP_ENV ─▶ MobileShared/scripts/app-env.mjs  (run first by every `npm run sync` in iOSApp/ and AndroidApp/)
                ├─ <app>/.app-env.json              the choice; Gradle and capacitor.config.ts read it
                ├─ Portal/.env.mobile.local             the Portal's values (outranks Portal/.env.local)
                ├─ ios/App/Config/Environment.xcconfig  bundle id, display name, link host, Google URL scheme
-               └─ copies the environment's google-services.json / GoogleService-Info.plist, and
-                  refuses one that belongs to the other app
-            ─▶ Portal: vite build --mode mobile ─▶ scripts/check-bundle.mjs (the guard) ─▶ cap sync
+               └─ copies google-services.json / GoogleService-Info.plist, and refuses one for another app
+            ─▶ cap sync  (writes capacitor.config.json with server.url into each platform)
 ```
 
 - `npm run sync:qa` in `iOSApp/` or `AndroidApp/` (or plain `npm run sync`) → a **QA** build.
@@ -99,12 +110,11 @@ LT_APP_ENV ─▶ MobileShared/scripts/app-env.mjs  (run first by every `npm run
 |---|---|---|
 | Android upload keystore + passwords | `~/lt-android-release/keys/` on the release Mac **and** the firm's password manager | `ANDROID_KEYSTORE_B64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD` |
 | Upload key SHA-1 (40 hex digits, no colons — public) | same | repository **variable** `ANDROID_UPLOAD_KEY_SHA1` |
-| `google-services.json`, per environment | `~/lt-android-release/keys/<qa\|production>/` | `GOOGLE_SERVICES_JSON_B64` (production) |
-| `GoogleService-Info.plist`, per environment | `~/lt-android-release/keys/<qa\|production>/` | — (iOS is built locally) |
+| `google-services.json` (one app, `com.legalterminus.app`) | `~/lt-android-release/keys/<qa\|production>/` (the same file in both) | `GOOGLE_SERVICES_JSON_B64` |
+| `GoogleService-Info.plist` (one app) | `~/lt-android-release/keys/<qa\|production>/` (the same file in both) | — (iOS is built locally) |
 | Apple distribution certificate (`.p12`) | same (exported from Keychain with a password) | — |
-| App Store Connect API key (`.p8`), Key ID, Issuer ID | same | — (only if uploads are ever scripted: `xcrun altool --upload-app --apiKey … --apiIssuer …`) |
+| App Store Connect API key (`.p8`), Key ID, Issuer ID | same | — (only if uploads are ever scripted) |
 | Sign in with Apple key (`.p8`) | same; its contents also pasted into Firebase → Authentication → Apple | — |
-| Portal values for `build:mobile` (API key, app id, sender id) | `~/lt-android-release/env/<qa\|production>.env` | written by the job from the existing `FIREBASE_QA_*` secrets the production Portal deploy already uses |
 | Store reviewer account password | `~/lt-android-release/keys/STORE_REVIEWER.txt` (mode 600) | — |
 
 `base64 -i <file> | pbcopy` to paste a file into a GitHub Secret. Losing the Android upload key
@@ -124,9 +134,10 @@ own API address. The patterns are in `environments.json` (`forbidInBundle`). `np
 
 ## Android — the pipeline (production)
 
-1. The tag has deployed and been checked on production (`docs/delivery.md`).
-2. GitHub → Actions → "Deploy to Production" → Run workflow: **Use workflow from = the tag**,
-   `build_android` = true, `android_format` = `both`, `version_name`, `build_number` (see above).
+Only when the native shell changed (above).
+
+1. GitHub → Actions → "Deploy to Production" → Run workflow: **Use workflow from = a release
+   tag**, `build_android` = true, `android_format` = `both`, `version_name`, `build_number`.
    The run waits for the `production` environment reviewer like any production deploy. With
    `build_android` on, the web deploy job is skipped.
 3. The job (`build-android`) writes the Portal values from secrets, runs
@@ -142,10 +153,7 @@ own API address. The patterns are in `environments.json` (`forbidInBundle`). `np
 5. Roll back: Play cannot re-publish an older build. Halt the staged rollout, fix, ship a higher
    build number.
 
-The release build now shrinks code (`minifyEnabled true`) so `mapping.txt` exists. Run the first
-pipeline-built APK on a real phone before uploading it (sign-in, View a document, Share a zip).
-
-## Android — a QA build (Mac)
+## Android — a QA-pointed build (Mac)
 
 ```
 cd AndroidApp && npm ci
@@ -153,9 +161,8 @@ npm run sync:qa                      # QA: Legal Terminus QA, com.legalterminus.
 cd android && ./gradlew assembleDebug     # or assembleRelease with key.properties present
 ```
 
-A QA build is a different app from the one in Play (`com.legalterminus.app`), so it does **not**
-go to the production app's Internal testing track. Install the APK directly (`adb install`), or
-give the QA app its own Play Console entry (owner checklist).
+The QA-pointed build is the **same app** as production, so it goes to the app's **Internal
+testing** track in Play Console with the next build number.
 
 ## iOS — Xcode on the Mac
 
@@ -175,30 +182,25 @@ give the QA app its own Play Console entry (owner checklist).
    **App Store Connect** → Upload (the settings of `iOSApp/ios/ExportOptions.plist`: method
    `app-store-connect`, symbols included). Also **Export** the `.ipa` to
    `~/lt-android-release/out/legalterminus-<version>-<build>.ipa` and attach it to the GitHub
-   Release by hand, so both platforms' binaries sit on one release.
-5. App Store Connect → TestFlight: the build appears after processing (10–30 min); add it to the
-   internal group; test on a real iPhone (the checklists in E29-S04 to S08).
-6. App Store → the version → select the build → Submit for Review, **phased release on**,
-   **manual release** after approval.
-7. Roll back: App Store cannot re-publish an older build either. Pause the phased release or
-   remove the app from sale, fix, ship a higher build.
+   Release by hand.
+4. App Store Connect → TestFlight: the build appears after processing (10–30 min); add it to the
+   testers; test on a real iPhone. QA-pointed builds stay on TestFlight.
+5. The production-pointed build → App Store → the version → select the build → Submit for Review,
+   **phased release on**, **manual release** after approval.
+6. Roll back: as Android — a Portal problem is fixed on the website, a shell problem by a higher build.
 
 A simulator build needs none of the Apple items:
 `xcodebuild -workspace App.xcworkspace -scheme App -sdk iphonesimulator -configuration Debug CODE_SIGNING_ALLOWED=NO build`
 (from `iOSApp/ios/App`, after `npm run sync:qa` in `iOSApp/`).
 
-## Before any production build (both platforms)
+## Before the first production-pointed build (both platforms)
 
-- API CORS for the app origins (`https://localhost`, `capacitor://localhost`) is live on
-  production. QA has both since E29-S03; production's `CORS_ORIGINS` in `deploy-production.yml`
-  gets `capacitor://localhost` with the first production iOS build — a security change the owner
-  approves (`curl -s -D - -o /dev/null -X OPTIONS -H "Origin: capacitor://localhost" -H
-  "Access-Control-Request-Method: GET" https://legalterminus.com/api/auth/me | grep -i
-  access-control-allow-origin`).
-- Production bucket CORS carries both origins (`storage-cors.json`, applied with approval).
+- The production Portal has every app fix the QA app was tested with: the Portal is deployed by a
+  release tag, so **tag first** (with the owner's approval, `docs/delivery.md`).
 - The store reviewer account signs in on production (`GET /api/auth/me` → 200).
 - `assetlinks.json` / `apple-app-site-association` on `legalterminus.com` only when launch is
   approved; until then, emailed links open the browser on purpose.
+- Nothing about CORS: the app's origin is the site.
 
 ## QA app links
 
@@ -215,61 +217,53 @@ After the first deploy with values, check that the repo's files win over Firebas
 
 ## Owner checklist — what only the firm's accounts can do
 
-Nothing below has been done; every value the code needs is a named placeholder.
-
 **Apple Developer account (E29-S01)**
 1. Enrol LEGAL TERMINUS PRIVATE LIMITED (organisation; D-U-N-S number). Note the **Team ID**.
 2. Put the Team ID in `iOSApp/ios/App/Config/Shared.xcconfig` (`DEVELOPMENT_TEAM = …`, now a
    comment), `iOSApp/ios/ExportOptions.plist` (`TEAMID`) and `MobileShared/environments.json` →
    `appLinks.appleTeamId`.
-3. Identifiers → **two** App IDs: `com.legalterminus.app` (production) and
-   `com.legalterminus.app.qa` (QA). On both: **Sign in with Apple** and **Associated Domains**.
-4. App Store Connect → two apps: "Legal Terminus" (`com.legalterminus.app`, SKU
-   `legalterminus-ios`) and, for TestFlight only, "Legal Terminus QA" (`com.legalterminus.app.qa`,
-   SKU `legalterminus-ios-qa`). The QA app is never submitted for review.
+3. Identifiers → **one** App ID: `com.legalterminus.app`, with **Sign in with Apple** and
+   **Associated Domains**.
+4. App Store Connect → **one** app: "Legal Terminus" (`com.legalterminus.app`, SKU
+   `legalterminus-ios`). QA-pointed builds go to its TestFlight; the production-pointed build to review.
+5. The earlier QA app "Legal Terminus QA" (`com.legalterminus.app.qa`, Apple ID 6835742436, builds
+   5–7) is retired: stop testing on it, remove its testers, and remove the app from App Store
+   Connect (allowed while no version has been approved). Its App ID can be deleted.
 
 **Sign in with Apple (E29-S11)**
-5. Identifiers → Services ID `com.legalterminus.app.web`; domains `legalterminus.com` and
+6. Identifiers → Services ID `com.legalterminus.app.web`; domains `legalterminus.com` and
    `legal-terminus-qa.web.app`; return URL = the "OAuth redirect URI" shown in Firebase →
    Authentication → Sign-in method → Apple.
-6. Keys → a Sign in with Apple key → download the `.p8` once, store it with the other keys →
-   Firebase → Authentication → Apple: Services ID, Team ID, Key ID, the key. Enable the provider.
-7. Then switch the website's button on: add `VITE_APPLE_SIGN_IN: 'true'` to the Portal build of
-   `deploy-qa.yml` (and, at release, `deploy-production.yml`). The iPhone app shows the button
-   always (App Store rule 4.8); Android never (D6).
+7. Keys → a Sign in with Apple key → download the `.p8` once → Firebase → Authentication → Apple:
+   Services ID, Team ID, Key ID, the key. Enable the provider.
+8. Switch the website's button on: `VITE_APPLE_SIGN_IN: 'true'` in the Portal build of
+   `deploy-qa.yml` (and, at release, `deploy-production.yml`). The iPhone app shows it always
+   (rule 4.8); Android never (D6).
 
 **Firebase (project `legal-terminus-web`)**
-8. Register the iOS apps `com.legalterminus.app` and `com.legalterminus.app.qa`; download each
-   `GoogleService-Info.plist` to `~/lt-android-release/keys/<production|qa>/`. Fill in the Team
-   ID (and the App Store ID once known) on each.
-9. Register the Android app `com.legalterminus.app.qa` and add the SHA-1 and SHA-256 of the key
-   that signs QA builds (the debug key for local builds, or the upload key). Download
-   `google-services.json` (it lists both apps) to `~/lt-android-release/keys/qa/` and
-   `~/lt-android-release/keys/production/`.
-10. Google sign-in on the QA apps needs nothing more: Firebase creates their OAuth clients when
-    they are registered.
-11. Note: Firebase generates `/.well-known/assetlinks.json` and `apple-app-site-association` for
-    the whole project and serves them on **every** site, `legalterminus.com` included. Filling the
-    Team ID in step 8 can therefore publish an AASA on the live site. Do step 8's Team ID for the
-    production app only when launch is approved; the QA site uses the repo's files (above).
+9. Register the iOS app `com.legalterminus.app`; download its `GoogleService-Info.plist` to
+   `~/lt-android-release/keys/qa/` and `~/lt-android-release/keys/production/`. Fill in the Team
+   ID (and the App Store ID once known) only when launch is approved: Firebase then publishes an
+   AASA on every site of the project, `legalterminus.com` included.
+10. The Android app `com.legalterminus.app` exists. Add the SHA-1 and SHA-256 of the key that signs
+    QA-pointed builds if it is not the upload key. Remove any `com.legalterminus.app.qa` apps.
 
 **Play Console**
-12. A QA build is now `com.legalterminus.app.qa`. Either create a second app "Legal Terminus QA"
-    for internal testing, or install QA APKs directly. QA builds no longer go to the production
-    app's Internal testing track.
+11. QA-pointed builds go to the app's Internal testing track. **Do not publish version code 3**
+    (above); replace it in the Production release with the first production-pointed build.
 
 **GitHub (code owner)**
-13. Secrets `ANDROID_KEYSTORE_B64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`,
+12. Secrets `ANDROID_KEYSTORE_B64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`,
     `ANDROID_KEY_PASSWORD`, `GOOGLE_SERVICES_JSON_B64` in the `production` environment, and the
     repository variable `ANDROID_UPLOAD_KEY_SHA1`.
-14. One dry run of `build-android` from the current tag (build 4); compare its signer and
-    contents with vc3 (`apksigner verify --print-certs`, `unzip -l`) and record it here.
 
-**Google Cloud (QA, then production at release)**
-15. `gcloud storage buckets update gs://legal-terminus-web-qa --cors-file=storage-cors.json`
-    (adds `capacitor://localhost`). Production bucket only at release, with approval.
-16. `environments.json` → `appLinks.androidSha256.qa`: the SHA-256 of the key that signs QA
-    builds, so the QA site's `assetlinks.json` is written.
+**Google Cloud — bucket CORS without localhost (2026-11-19)**
+13. Apply the two files (they list only the sites' own origins):
+    `gcloud storage buckets update gs://legal-terminus-web-qa --cors-file=storage-cors.qa.json`
+    and, for production with the owner's approval,
+    `gcloud storage buckets update gs://legal-terminus-web.firebasestorage.app --cors-file=storage-cors.json`.
+    Check with a preflight: `Origin: https://localhost` gets no `access-control-allow-origin`,
+    the site's own origin does.
 
 **App Store Connect listing (E29-S10)** — privacy labels, age rating, reviewer account,
 screenshots, review notes: see the epic.

@@ -198,6 +198,17 @@ export const taskListQuerySchema = z.object({
   cursor: z.string().trim().min(1).max(1500).optional(),
 }).strip();
 
+// PATCH /api/tasks/:taskId/steps/:stepId — admin/manager. Urgency and who owns
+// the step. #192 (reopened 2026-11-18): `assignedToUids` sets SEVERAL owners at
+// once (the matter screen's step-owner picker); `assignedTo` alone still means
+// "exactly this one person". Each uid is checked against the user record in the
+// controller (staff only).
+export const stepPatchSchema = z.object({
+  isUrgent: z.boolean().optional(),
+  assignedTo: z.string().trim().max(200).nullable().optional(),
+  assignedToUids: z.array(z.string().trim().min(1).max(200)).max(20).optional(),
+}).strict();
+
 // #105: staff "Note to client" on a step — comment-only, no transition.
 export const stepNoteSchema = z.object({
   // #194: sized for the RAW rich text of a 1,000-word note. It was 8,000, which
@@ -227,9 +238,9 @@ export const messageUpdateSchema = z.object({
   body: z.string().max(MESSAGE_MAX_INPUT_CHARS),
 }).strict();
 
-// PUT /api/tasks/:taskId/steps/:stepNumber/filed-on — #294: staff correct the
-// date a GSTR-1 / GSTR-3B return was filed. A real calendar date, or null to go
-// back to the day the task was completed. The matter decides the allowed range
+// PUT /api/tasks/:taskId/steps/:stepNumber/filed-on — #294: staff save the
+// date a GSTR-1 / GSTR-3B return was filed. A real calendar date, or null to
+// remove the saved date. The matter decides the allowed range
 // (not before its period ended, not in the future) — checked in the handler.
 export const filedOnCorrectionSchema = z.object({
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Enter the date as YYYY-MM-DD.")

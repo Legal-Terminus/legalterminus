@@ -2,17 +2,14 @@
   "name": "legal-terminus-android",
   "private": true,
   "version": "0.1.0",
-  "description": "Legal Terminus Android app: a Capacitor shell around the Portal (Portal/dist-mobile). QA and production builds come from one switch, LT_APP_ENV.",
+  "description": "Legal Terminus Android app: a Capacitor shell that opens the hosted Portal (https://<host>/portal/). QA and production builds come from one switch, LT_APP_ENV.",
   "scripts": {
-    "app-env": "node ../MobileShared/scripts/app-env.mjs",
-    "build:web": "node ../MobileShared/scripts/app-env.mjs && cd ../Portal && npm run build:mobile && cd ../AndroidApp && node ../MobileShared/scripts/check-bundle.mjs",
-    "sync": "npm run build:web && cap sync android",
+    "app-env": "node scripts/write-web-env.mjs",
+    "sync": "node scripts/write-web-env.mjs && cap sync android",
     "sync:qa": "LT_APP_ENV=qa npm run sync",
     "sync:production": "LT_APP_ENV=production npm run sync",
     "open": "cap open android",
-    "run:app": "npm run sync && cap run android",
-    "check:bundle": "node ../MobileShared/scripts/check-bundle.mjs",
-    "test": "node --test ../MobileShared/scripts/__tests__/mobile-scripts.test.mjs"
+    "run:app": "npm run sync && cap run android"
   },
   "dependencies": {
     "@capacitor-community/file-opener": "^8.0.1",

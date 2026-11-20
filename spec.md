@@ -55,6 +55,7 @@ Workflows are modelled as **XState state machines**. Each workflow service (Comp
 | Mark step urgent | ✅ | ✅ | ❌ | ❌ |
 | Reassign task steps | ✅ Any | ✅ Any | ✅ To other members | ❌ |
 | Configure email templates | ✅ | ❌ | ❌ | ❌ |
+| Edit the "Explore more services" block on the completion email (#310) | ✅ | ✅ | ❌ | ❌ |
 | Send broadcast notifications | ✅ | ❌ | ❌ | ❌ |
 | Create, edit, switch on/off coupon codes; read the Coupon & Discount report (#256) | ✅ | ✅ | ❌ | ❌ (applies a code at checkout) |
 
@@ -262,9 +263,13 @@ Every meaningful workflow event triggers an in-app notification and an email to 
 8. **Given** a user writes a step comment or a note to the client of up to 1,000 words, or a Chat message of up to 5,000 words (#194, #295), **Then** it is saved in full and shown folded behind "Read more" when long; **Given** it exceeds its limit, **Then** it is refused with the actual word count and nothing is saved.
 7a. **Given** someone edits their own Chat message (#297), **Then** it is announced exactly like a new one — a staff edit of a message the client can see emails the client, a client's edit emails the matter's owner and the people on its current step — saying the message was edited and giving the new text, once per person; editing an internal staff message tells only colleagues newly @mentioned. **Given** a staff member views a message someone else wrote (a client's included), **Then** there is no Edit option, and the API refuses the edit; an admin may still delete any message.
 8a. **Given** a user types a long Chat message on a phone, in the browser or the mobile app (#295), **Then** the text box stops growing and scrolls inside itself, the bottom navigation steps aside while they type, and the Send button stays on screen.
+8b. **Given** a user has typed a Chat message, or started editing their own message, and not sent or saved it (#297), **When** they open another tab of the matter, or reload the page, and come back, **Then** the unsent text is still there; it is kept per matter and per signed-in user in that browser, and goes only when it is sent or saved, cancelled, or emptied by the user. A restored message is internal until "Visible to client" is ticked again.
+8c. **Given** a user views a matter's Chat (#297), **Then** messages they received sit on a grey bubble clearly darker than the white thread, with all text meeting WCAG AA contrast; their own messages stay green.
+8d. **Given** an image is pasted, dropped or uploaded into Chat (#319), **Then** after sending it displays (not a broken image), and every Chat image is shown in the same box (240 × 180 px, smaller on a narrow phone) with the whole picture fitted inside, whatever its own size or shape; clicking it opens it full size. **Given** the image is smaller than 20 × 20 pixels or larger than 8,000 pixels on either side, **Then** it is not uploaded or inserted, and the user is told its size and the allowed range before anything is sent; the server refuses such an image too. The existing JPEG/PNG/WebP and 5 MB rules still apply. The same size rule applies to images in step comments.
 9. **Given** a user opens a matter from a report, the dashboard, a client's page or search and presses Back (#208), **Then** they return to that page; a report's filters are part of its address and are still applied.
 10. **Given** an admin or manager creates a matter from the Matters page or a client's page (#211), **Then** the new matter opens, and Back returns them to the page they created it from.
 11. **Given** a step becomes someone's to work — when a matter is created already paid, when an admin approves a matter created with no payment (every automatic GST return matter), or when the matter moves on to that step (#293), **Then** every team member assigned to the step receives one notification and one email; if nobody is assigned, the matter's owner does.
+12. **Given** a matter's workflow is completed (#310), **Then** the client's "Your service is complete" email (CC the matter's additional addresses) ends with the firm's "Explore more services" block — one common heading and text for every service, edited by Admin or Manager in Settings → Email Templates, with an on/off switch; **Given** the block is switched off or empty, **Then** the email is sent exactly as before. Stored in `settings/completionMarketing` `{ enabled, heading, body }`; the firm's seed text applies until someone edits it.
 
 ---
 
@@ -387,6 +392,22 @@ Staff ask a matter's client for an additional payment — typically government f
 
 ---
 
+### User Story 15c — Invoices on a Matter's Payments Tab (Priority: P2) — #313
+
+Admins and managers upload a matter's invoices as PDF files in its Payments tab; the matter's client downloads them.
+
+**Acceptance Scenarios**:
+
+1. **Given** an admin or manager is on a matter's Payments tab, **When** they press Upload invoice and choose a PDF (up to 10 MB), **Then** the invoice is listed with its file name and upload date. A matter can hold several invoices, newest first.
+2. **Given** a file that is not a PDF — by its declared type or by its bytes (a PDF starts `%PDF-`) — or is over 10 MB, **Then** it is refused and nothing is kept.
+3. **Given** an admin or manager presses Replace on an invoice and chooses a PDF, **Then** the new file takes its place (with the new upload date) and the old file is removed. Delete removes an invoice after a confirmation. Each upload, replacement and deletion is on the matter's activity log.
+4. **Given** the matter's client (or an additional client login or matter contact who can see the matter) opens its Payments tab, **Then** they see the invoices with their upload dates and can download each one; they cannot upload, replace or delete, and are not shown which member of staff uploaded it. A client with no invoices sees no Invoices card.
+5. **Given** a client asks for the invoices of a matter that is not theirs, **Then** the answer is 404 — the same as a matter that does not exist.
+6. **Given** a team member or a professional, **Then** they never see invoices: they have no Payments tab and the API refuses them (403), as for every other payment record (#148).
+7. The download streams through the backend after the access check; the browser is never given a storage link.
+
+---
+
 ### User Story 16 — Admin Broadcast Notifications (Priority: P3)
 
 Admin can push a notification (offer, news, alert) to all clients or a filtered group. The notification appears in-app on next open and is optionally sent as email.
@@ -442,6 +463,7 @@ The firm's Excel registers live in the portal: five **Trademark Reports** (TM Ma
 7. **Given** a sheet linked to services, **Then** a record can link to a matter of one of those services and shows a link to it.
 8. **Given** the TDS Sheet (#280), **Then** its columns are the firm's Excel file's, in its order and spelling: Sl. No., Company Name, Assigned to, Checker, Client, TAN NO, USER ID, Traces Password, IT Password, TDS Data Received, Excel Prepared, Final Excel Mail to Client, Challan paid by client, SALARY (Form 138) FILING DATE, NON-SALARY (form 140) FILING DATE, SALARY (Form 138) PR NO, NON-SALARY (form 140) PR NO, STATEMENT STATUS 26Q (Form 140), STATEMENT STATUS 24Q (Form 138). Sl. No. is the row number (shown and downloaded, skipped on upload); an upload matches rows by TAN NO.
 9. **Given** a dropdown column (the yellow columns of the firm's files), **When** an admin, manager or team member adds, renames, re-orders or removes its choices under **Edit dropdowns**, **Then** the new list is offered at once when adding or editing a record, and an upload matches the new spelling. Records keep the value they hold: a renamed or removed choice stays on the rows that use it.
+10. **Given** the TDS Sheet's **Assigned to** or **Checker** (#280, firm 11 Nov), **Then** the choices are the portal's active staff (admin, manager, team member) by name — never clients or professionals — and are not edited under Edit dropdowns; the row records the person picked and the grid, search, filters and Download Excel show their name. A colleague who is deactivated still shows by name on their rows but is not offered for new rows. A name typed before this change shows as written until someone picks the person. **When** an Excel file is uploaded, **Then** each cell is matched to a staff member by name (any case) or email; a cell that matches no one, or two people of the same name, is kept as written and listed in the preview's warnings.
 
 ---
 
@@ -451,7 +473,7 @@ The firm's GST return register at `/reports/gst-returns` (a tile on the Reports 
 
 **Acceptance Scenarios**:
 
-1. **Given** a matter of a linked GST service (by default GST Return Filing monthly and quarterly), **When** the sheet is opened, **Then** the matter has a row in Monthly or Quarterly (the matter's GST period, else the service, else the client's GST return setting) with the client's name, constitution, GSTIN, email and mobile, the period, the current task as Current Status, its assignee as Assign Person, a link to the matter, and — for each column whose task the workflow has (matched by the task's name) — Yes or the completion date once that task is completed; Completion Check is Done when the matter is completed.
+1. **Given** a matter of a linked GST service (by default GST Return Filing monthly and quarterly), **When** the sheet is opened, **Then** the matter has a row in Monthly or Quarterly (the matter's GST period, else the frequency it was created with — Repeats, else the service, else the client's GST return setting) with the client's name, constitution, GSTIN, email and mobile, the period, the current task as Current Status, its assignee as Assign Person, a link to the matter, and — for each column whose task the workflow has (matched by the task's name) — Yes or the completion date once that task is completed; Completion Check is Done when the matter is completed.
 2. **Given** a later change in the matter (a task completed, approval, a stop), **When** the sheet is opened again, **Then** the row shows it. A cell a person typed keeps the typed value until the workflow changes that same cell; then the workflow's value shows (last change wins). GST User ID, GST Pswd and Remarks are never filled from the workflow.
 3. **Given** Monthly and Quarterly, **Then** they show different records: a record is in one of them only, an upload to one never updates the other, and a record of one is not reachable through the other.
 4. **Given** a row typed or uploaded for the same GSTIN and period before the matter existed, **Then** the matter's row is that row (it is linked, not duplicated).
@@ -469,10 +491,13 @@ A GST return matter says which return it is for, and when each return was filed,
 **Acceptance Scenarios**:
 
 1. **Given** a GST return matter (opened by the GST reminders, or a matter of a service linked to the GST Return Filing sheet), **Then** its header and its row in the matters list (All Matters for staff, My Services for the client) show its **Filing Month** as a tag — "September 2026", or "Q2 2026-27" for a quarterly return — the same period as the sheet's Return Period. Staff and the client both see it. A matter of any other service has no such tag.
-2. **Given** a GST return matter whose GSTR-1 filing task is completed, **Then** that task shows "Filed on: 11 November 2026" next to its name, with the date the task was completed (India); the same for the GSTR-3B filing task, each with its own date. The matter's header also shows "GSTR-1 filed on: …" / "GSTR-3B filed on: …", because completed tasks are folded away in the step list. The two tasks are the ones the sheet's "Date of GSTR-1 Filing" / "Date of GSTR-3B Filing" columns read (matched by the task's name, e.g. "GSTR-1 Filed", "Proceed Towards GSTR-3B Filing"; never the "… filed mail" tasks).
-3. **Given** a filing task that was ticked after the return was actually filed, **When** an admin, manager or a team member working the matter (its owner, or the holder of one of its tasks) corrects the date with the pencil beside "GSTR-1 filed on" / "GSTR-3B filed on" in the matter's header, **Then** the matter, its client and the GST Return Filing sheet's date column all show the corrected date, the completion time is kept, and the matter's history records who changed which date from what to what (staff only). The date must be a real date, not in the future, and not before the 1st of the month after the return's period ended (from 1 October for September or for Q2). "Use completion date" undoes a correction. Clients and professionals cannot correct a date.
-4. **Given** a matter-fed row of the GST Return Filing sheet, **Then** its Date of GSTR-1 / GSTR-3B Filing cell is not typed over (refused, "correct it on the matter") and an Excel upload leaves it as it is; a row with no matter, or whose matter has no such task, keeps the cell typable.
-5. **Given** a filing task that is reopened, **Then** its date (and any correction) is no longer shown; when it is completed again, the new completion date shows.
+2. **Given** a GST return matter that has reached its GSTR-1 filing task ("GSTR-1 Filed") or its GSTR-3B filing task ("Proceed Towards GSTR-3B Filing"), **When** staff (an admin, manager, or a team member working the matter — its owner, or the holder of one of its tasks) press **Add Filing Date** beside that task (on the current task, or in the matter's header), pick the date the return was actually filed and save, **Then** that task shows "Filed on: 11 November 2026" next to its name and the header shows "GSTR-1 filed on: …" / "GSTR-3B filed on: …", for staff and the client. Staff then complete the task. The two tasks are the ones the sheet's "Date of GSTR-1 Filing" / "Date of GSTR-3B Filing" columns read (matched by the task's name; never the "… filed mail" tasks). (#294, firm 17 Nov 2026.)
+3. **Given** a filing task completed without a saved date, **Then** it shows no date (completing a task never sets one) and staff can still add one from the header. The date must be a real date, not in the future, and not before the 1st of the month after the return's period ended (from 1 October for September or for Q2). A saved date can be changed (pencil) or removed; every save is recorded in the matter's history — who, which return, from what to what (staff only). Clients and professionals cannot save a date.
+4. **Given** a filing task completed BEFORE manual filing dates went live, with no saved date, **Then** it keeps the date it showed until then (its completion day, or the correction made to it); saving a date replaces it.
+5. **Given** a saved filing date, **Then** the GST Return Filing sheet's Date of GSTR-1 / GSTR-3B Filing cell of that matter's row shows it, and follows every change, on the sheet's next opening — matter to sheet only: that cell is not typed over (refused, "change it on the matter") and an Excel upload leaves it as it is; nothing typed in the sheet is written back to a matter. A row with no matter, or whose matter has no date for it, keeps the cell typable.
+6. **Given** a GST return matter, **Then** it only ever updates its own row — the row for its client and return period, in the Monthly or the Quarterly sheet by its frequency. A row's Matter cell can only be set to a matter of that row's client and period, of that sheet's kind, that has no row yet (otherwise refused with the reason); a row already wrongly tied to a matter (another client's or period's, or a second row for the same matter) is released by the next sync, keeps what it shows, and is never written to again. A typed or uploaded row is taken over by a matter only when its GSTIN, period and client name match. (#294.)
+7. **Given** a GST return matter created with **Repeats: Quarterly** (or on a quarterly GST service, or for a client whose GST return filing is Quarterly — in that order after Repeats), **Then** it is quarterly everywhere: its tag shows the quarter and financial year ("Q2 2026-27", titled "Filing quarter"), its first email is the quarterly GST email naming the quarter, and its sheet row is in Quarterly with the quarter as Return Period — never the month. The frequency is kept from creation: changing Repeats or the client's setting later, or the series ending, does not change it; a copy keeps its source's. Repeats: Monthly makes it monthly. (#219, firm 16 Nov 2026.)
+8. **Given** any email about a GST return matter — to the client (first email, reminders and follow-ups, chat replies) or to staff (task assignment, chat messages, internal reminders, approval and every other notification) — **Then** its subject is the first email's: "<Company Name> - GST Return - <Month Year>" (e.g. "ABC PRIVATE LIMITED - GST Return - September 2026") or "<Company Name> - GST Return - <Qn YYYY-YY>" (e.g. "ABC PRIVATE LIMITED - GST Return - Q1 2026-27"), the same for client and staff, following the firm's GST template subject under Settings → Email templates. Emails of other matters keep "[Legal Terminus] Organisation | Service (#id)". (#219, firm 16 Nov 2026.)
 
 ---
 
@@ -646,13 +671,15 @@ parallelGroup?,      // step group ID if this step runs in parallel with others
 branches?,           // branch conditions defined in machine topology
 ```
 
-### `tasks/{taskId}/steps/{n}.filedOnCorrection` — #294 corrected filing date
+### `tasks/{taskId}/steps/{n}.filingDate` — #294 the saved GSTR-1 / GSTR-3B filing date
 ```
-date,            // 'YYYY-MM-DD' — the corrected GSTR-1 / GSTR-3B filing date
-forCompletedAt,  // the step's completedAt it corrects; a re-completion makes it stale (ignored)
-previous,        // the date shown before
+date,            // 'YYYY-MM-DD', or null once staff removed it — once this field exists it is the only date
+previous,        // the date shown before this save (null if none)
 byUid, byRole, at
 ```
+`filedOnCorrection` (`date, forCompletedAt, previous, byUid, byRole, at`) is the pre-17-Nov
+correction of a completion-day date; still read for tasks completed before manual dates went live
+(`system/gstFilingDates.manualFrom`), never written now.
 
 ### `tasks/{taskId}` — workflow instances per client
 ```
@@ -680,12 +707,31 @@ statusHistory[{ status, at, by, byName }]
 //   { count, activeTotal, creditedTotal, latest{ status, refundAmount, reason, initiatedAt, transactionId } }
 ```
 
+### `tasks/{taskId}/invoices/{invoiceId}` — invoices (#313)
+```
+taskId, fileName, contentType ('application/pdf'), objectPath (bucket: tasks/{taskId}/invoices/{invoiceId}/{fileName}),
+status (awaiting_upload|uploaded), size?, replaces (invoiceId)|null,
+uploadedBy, uploadedByName, createdAt, uploadedAt?
+// Backend-only (firestore.rules: read, write false). Deleting the matter deletes them.
+```
+
 ### `taskSteps/{taskId}/steps/{stepId}`
 ```
-stepNumber, title, assignedTo, status (pending|active|completed|blocked|skipped),
+stepNumber, title, assignedTo, assignedToUids[], status (pending|active|completed|blocked|skipped),
 paymentGated, paymentOverride, isUrgent, startedAt?, completedAt?,
 deadline, delayReason?, completedBy?, auditLog[{action, by, at, note}]
 ```
+
+**Several assignees on one step (#192, reopened and fixed 2026-11-19).** `assignedToUids`
+lists everyone who owns the step; `assignedTo` is its first entry (the primary). Any one of
+them may complete the step, and whoever finishes first moves the matter on. They are set:
+- for new matters, per step of the Service — on the Service page (**Step Settings →
+  Assignee**, tick several people) or in the workflow editor (**Who does this? → Specific
+  people**). Stored on the definition step as `defaultAssigneeUids` + `defaultAssigneeUid`
+  (= first). The list counts only while its first entry equals `defaultAssigneeUid`; a screen
+  that changes only the single field replaces the list.
+- on an existing matter, by an admin or manager: **Step owner** on the current step (tick or
+  untick people; changes apply at once). Only staff (admin, manager, team member) can be owners.
 
 ### `documents/{taskId}/files/{docId}`
 ```
@@ -825,10 +871,10 @@ updatedAt, updatedBy
     the admins are emailed, the Users page marks the person "Deletion requested", and an Admin
     completes it with the normal delete within 30 days. Records the firm must keep (matters,
     invoices, payments, filed documents) are kept.
-  - **Environments** (D7, 2026-11-11): both apps are built for **QA by default**; a production build is
-    chosen explicitly at build time. A QA build is a separate app named "Legal Terminus QA"
-    (`com.legalterminus.app.qa`) that installs next to the production app and accepts only the QA
-    test accounts.
+  - **Environments** (D7, 2026-11-11, revised 2026-11-19): there is **one app**, "Legal Terminus"
+    (`com.legalterminus.app`), which opens the hosted Portal. It is pointed at QA
+    (`legal-terminus-qa.web.app/portal/`, QA test accounts only) until the owner switches it to
+    production (`legalterminus.com/portal/`) with a new store build.
 - **Phase 1 workflow scope**: Company Incorporation only. All other services (Trademark, GST, UDYAM) follow in Phase 2 as XState config files.
 
 ### Workflow Engine (XState v5)
@@ -861,7 +907,7 @@ updatedAt, updatedBy
 - `Portal/` web build → Firebase Hosting (same project as public website)
 - `backend/` → Cloud Run (`asia-south2`, service `legal-terminus-qa`, 0–5 instances, 512Mi)
 - CI/CD via `.github/workflows/firebase-preview-qa.yml`
-- **CORS** (Phase 2): the allowlist is exact, in `backend/src/config/corsOrigins.js`. A native app's origin is added per deployment through `CORS_ORIGINS`: QA has `https://localhost` (Capacitor on Android), `capacitor://localhost` (Capacitor on iOS — accepted as that one exact string, E29-S03) and `http://localhost:5173`; production gets the apps' origins when a release build is ready.
+- **CORS** (Phase 2): the allowlist is exact, in `backend/src/config/corsOrigins.js`: the firm's own sites only. **No `localhost` origin in any environment** (2026-11-19), and `CORS_ORIGINS` cannot add one. The mobile apps open the hosted Portal, so their origin is the site; local development uses the Vite `/api` proxy.
 
 ## Website redesign in Theme C (#209, E-25)
 

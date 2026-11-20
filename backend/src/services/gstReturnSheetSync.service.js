@@ -16,20 +16,26 @@
  * of the rows already linked to those matters. Never a scan of `tasks` or of
  * the sheet. Changing the linked services restarts the watermark.
  *
- * ROWS. A matter's row is found by `sourceMatterId`; failing that, a row typed
- * or uploaded by staff for the same GSTIN and period (and not linked to another
- * matter) is ADOPTED instead of adding a duplicate; failing that, a row is
- * created in Monthly or Quarterly. Cells are written one by one
- * (`values.<field>`), so a person editing another cell of the same row at the
- * same moment is not overwritten.
+ * ROWS. A matter's row is found by `sourceMatterId` — but only a linked row
+ * that is for the matter's own client and return period counts (#294,
+ * `pickMatterRow`): a row linked by mistake to another client's or period's
+ * matter, or a second row linked to the same matter, has its link RELEASED
+ * (its cells are left as they are) instead of being written over. Failing a
+ * linked row, a row typed or uploaded by staff for the same GSTIN and period —
+ * and client name — (not linked to another matter) is ADOPTED instead of adding
+ * a duplicate; failing that, a row is created in Monthly or Quarterly. Cells
+ * are written one by one (`values.<field>`), so a person editing another cell
+ * of the same row at the same moment is not overwritten. Matter → sheet only:
+ * nothing here writes to a matter.
  */
 import { FieldPath, FieldValue } from 'firebase-admin/firestore';
 import { getDb } from '../config/firebase.js';
 import { logger } from '../config/logger.js';
 import { BOOKS, SHEETS } from '../config/worksheetDefinitions.js';
 import { resolveSheet, sheetRecordKey } from './worksheetEngine.service.js';
-import { deriveRow, mergeDerived, withAuthoredOrder } from './gstReturnSheet.service.js';
+import { deriveRow, mergeDerived, withAuthoredOrder, pickMatterRow, rowFitsMatter } from './gstReturnSheet.service.js';
 import { getCompiledById } from './workflowDefinitions.service.js';
+import { manualFilingDatesFrom } from './gstMatterTags.service.js';
 
 const RECORDS = 'worksheetRecords';
 const PAGE = 200;
@@ -37,7 +43,10 @@ const MAX_PAGES = 3;
 const LOCK_MS = 2 * 60 * 1000;
 const RECENCY_MS = 15 * 1000;
 const ACTOR = 'system:gst-return-sheet';
-const RULES_VERSION = 2;
+// 3 (#294, 2026-11-19): filing dates are the saved ones, and wrong matter links are released.
+// 4 (#219, 2026-11-19): a matter created with "Repeats: Quarterly" is quarterly — its
+// row moves from Monthly to Quarterly and its Return Period becomes the quarter.
+const RULES_VERSION = 4;
 
 const chunks = (list, n) => {
   const out = [];
@@ -62,6 +71,9 @@ export async function syncSheetFromMatters({ bookKey, config = {}, force = false
   // matter's row is re-derived, so rows synced under the old rules correct themselves.
   const servicesKey = `${linked.join(',')}#r${RULES_VERSION}`;
 
+  // #294: read before the run is claimed — if it cannot be read, nothing runs
+  // (and the watermark is untouched) rather than blanking older filing dates.
+  const manualFrom = await manualFilingDatesFrom();
   const stateRef = db.collection('system').doc(`worksheetSync_${bookKey}`);
   const claim = await db.runTransaction(async (tx) => {
     const snap = await tx.get(stateRef);
@@ -91,12 +103,12 @@ export async function syncSheetFromMatters({ bookKey, config = {}, force = false
         if (err?.code !== 9 && !/index/i.test(err?.message ?? '')) throw err;
         logger.warn({ book: bookKey }, '#279 tasks (serviceKey, updatedAt) index missing — syncing the newest matters only');
         const recent = await db.collection('tasks').where('serviceKey', 'in', linked).orderBy('createdAt', 'desc').limit(PAGE).get();
-        const r = await syncPage(db, bookKey, book, sheetFor, recent.docs);
+        const r = await syncPage(db, bookKey, book, sheetFor, recent.docs, manualFrom);
         totals.scanned += recent.size; totals.created += r.created; totals.updated += r.updated;
         break;
       }
       if (snap.empty) break;
-      const r = await syncPage(db, bookKey, book, sheetFor, snap.docs);
+      const r = await syncPage(db, bookKey, book, sheetFor, snap.docs, manualFrom);
       totals.scanned += snap.size;
       totals.created += r.created;
       totals.updated += r.updated;
@@ -143,7 +155,7 @@ async function recordsWhereIn(db, bookKey, field, values) {
   return out;
 }
 
-async function syncPage(db, bookKey, book, sheetFor, docs) {
+async function syncPage(db, bookKey, book, sheetFor, docs, manualFrom) {
   const tasks = docs.map((d) => ({ id: d.id, ...d.data() }));
   const clients = await readUsers(db, tasks.map((t) => t.clientUid));
   const steps = await readSteps(db, tasks.map((t) => t.id));
@@ -157,20 +169,32 @@ async function syncPage(db, bookKey, book, sheetFor, docs) {
   await Promise.all([...new Set(tasks.map((t) => t.workflowDefinitionId).filter(Boolean))].map(async (id) => {
     try { defSteps.set(id, (await getCompiledById(id))?.definition?.steps ?? null); } catch { /* step-number order */ }
   }));
+  // #294 — the wrong-record fix. This used to take `linkedRows.get(id)[0]`:
+  // whichever row Firestore listed first among the rows linked to the matter,
+  // including a row a person had linked to it by picking the matter in the
+  // Matter cell — another client's or another period's row — whose every cell
+  // the first sync then overwrote. Now only a linked row that is for the
+  // matter's own client and period is written to; every other link to the
+  // matter is released (see `pickMatterRow` / `rowFitsMatter`).
+  const releases = [];
   const plans = tasks.map((task) => {
     const ordered = withAuthoredOrder(steps.get(task.id) ?? [], defSteps.get(task.workflowDefinitionId));
-    const { frequency, values } = deriveRow({ task, client: clients.get(task.clientUid) ?? null, steps: ordered, names });
+    const { frequency, values } = deriveRow({ task, client: clients.get(task.clientUid) ?? null, steps: ordered, names, manualFrom });
     const sheet = sheetFor(frequency);
-    return { task, sheet, next: values, row: linkedRows.get(task.id)?.[0] ?? null };
+    const linked = (linkedRows.get(task.id) ?? []).map((doc) => ({ id: doc.id, data: doc.data(), doc }));
+    const { keep, release } = pickMatterRow(linked, values);
+    for (const r of release) releases.push({ doc: r.doc, taskId: task.id });
+    return { task, sheet, next: values, row: keep?.doc ?? null };
   });
 
-  // A row typed or uploaded for the same GSTIN + period is adopted, not duplicated.
+  // A row typed or uploaded for the same GSTIN + period (and, #294, the same
+  // client name when it has one) is adopted, not duplicated.
   const unlinked = plans.filter((p) => !p.row);
   const byKey = await recordsWhereIn(db, bookKey, 'recordKey', unlinked.map((p) => sheetRecordKey(p.sheet, p.next)));
   const adopted = new Set();
   for (const p of unlinked) {
     const key = sheetRecordKey(p.sheet, p.next);
-    const free = (byKey.get(key) ?? []).find((d) => !d.data().sourceMatterId && !adopted.has(d.id));
+    const free = (byKey.get(key) ?? []).find((d) => !d.data().sourceMatterId && !adopted.has(d.id) && rowFitsMatter(d.data(), p.next));
     if (free) { p.row = free; adopted.add(free.id); }
   }
 
@@ -193,6 +217,19 @@ async function syncPage(db, bookKey, book, sheetFor, docs) {
   let ops = 0;
   let created = 0;
   let updated = 0;
+  // #294: a released row keeps what it shows; it is just no longer the matter's
+  // (its Matter cell is cleared when it pointed at that matter), so the sync
+  // never writes to it again and a person can link it to the right matter.
+  for (const { doc, taskId } of releases) {
+    const d = doc.data();
+    const update = { sourceMatterId: FieldValue.delete(), derived: FieldValue.delete(), updatedAt: nowIso, updatedBy: ACTOR };
+    if (d.values?.matter === taskId) update['values.matter'] = FieldValue.delete();
+    batch.update(doc.ref, update);
+    logger.warn({ book: bookKey, recordId: doc.id, taskId }, '#294 released a sheet row wrongly linked to a GST matter');
+    updated += 1;
+    ops += 1;
+    if (ops >= 400) { await batch.commit(); batch = db.batch(); ops = 0; }
+  }
   for (const p of plans) {
     if (!p.row) {
       const values = Object.fromEntries(Object.entries(p.merge.values).filter(([, v]) => v != null));

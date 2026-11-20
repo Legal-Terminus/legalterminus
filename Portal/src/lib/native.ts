@@ -1,17 +1,67 @@
 import { Capacitor } from '@capacitor/core';
-import { accountLinkPath } from './nativeRules';
+import { accountLinkPath, entryScriptOf, shouldReloadForUpdate } from './nativeRules';
+import { isBusy } from './updateGuard';
 
 /** True inside the iPhone app. */
 export const isIosApp = (): boolean => Capacitor.getPlatform() === 'ios';
 
 /**
- * The website's address. In a browser that is this page's origin; inside the app the
- * page runs at https://localhost (Android) or capacitor://localhost (iOS), so a link to
- * a website page must name the environment's host instead (the build's API base URL —
- * the API is served from the site's own host).
+ * True when the page is the app's own bundled copy (origin https://localhost on Android,
+ * capacitor://localhost on iPhone) rather than the hosted website.
+ */
+const isBundledApp = (): boolean => Capacitor.isNativePlatform() && window.location.hostname === 'localhost';
+
+/**
+ * The website's address. In a browser, and in an app that opens the hosted Portal (the
+ * Android app), that is this page's own origin. An app that still bundles the Portal runs at
+ * https://localhost or capacitor://localhost, so a link to a website page must name the
+ * environment's host instead (the build's API base URL — the API is served from the site's own host).
  */
 export const siteOrigin = (): string =>
-  Capacitor.isNativePlatform() ? (import.meta.env.VITE_API_BASE_URL ?? '') : window.location.origin;
+  isBundledApp() ? (import.meta.env.VITE_API_BASE_URL ?? '') : window.location.origin;
+
+/** Back in the foreground after at least this long: check whether the website was redeployed. */
+const UPDATE_CHECK_AFTER_MS = 60_000;
+
+/** The entry script this page was loaded from (e.g. /portal/assets/index-AbC123.js). */
+const currentEntryScript = (): string | null => {
+  const el = document.querySelector<HTMLScriptElement>('script[type="module"][src*="/assets/index-"]');
+  return el ? new URL(el.src, window.location.href).pathname : null;
+};
+
+/** True while the person is typing in a field: a reload would lose what they entered. */
+const isEditing = (): boolean => {
+  const el = document.activeElement as HTMLElement | null;
+  return !!el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.tagName === 'SELECT' || el.isContentEditable);
+};
+
+/**
+ * Hosted app only: when the app returns from the background, fetch the Portal's index.html
+ * (the hosting sends no-store, so it is always current) and reload ONLY if the deployed entry
+ * script changed, nobody is typing and no upload is running. Sessions are untouched: the
+ * Firebase sign-in lives in this origin's storage, which a reload does not clear. Any error
+ * (offline, hosting restarting) is ignored and the current page keeps working.
+ */
+function watchForNewWebsiteVersion(App: typeof import('@capacitor/app').App): void {
+  if (isBundledApp()) return;
+  let hiddenAt: number | null = null;
+  void App.addListener('appStateChange', async ({ isActive }) => {
+    if (!isActive) { hiddenAt = Date.now(); return; }
+    if (hiddenAt === null) return;
+    const hiddenMs = Date.now() - hiddenAt;
+    hiddenAt = null;
+    if (hiddenMs < UPDATE_CHECK_AFTER_MS) return;
+    try {
+      const res = await fetch(`${window.location.origin}/portal/`, { cache: 'no-store', credentials: 'omit' });
+      if (!res.ok) return;
+      const latest = entryScriptOf(await res.text());
+      if (shouldReloadForUpdate({
+        hiddenMs, minHiddenMs: UPDATE_CHECK_AFTER_MS, current: currentEntryScript(), latest,
+        busy: isBusy(), editing: isEditing(),
+      })) window.location.reload();
+    } catch { /* offline or hosting restarting: keep the page we have */ }
+  });
+}
 
 /**
  * Behaviour that only exists inside the Android and iPhone apps. A no-op in the browser,
@@ -22,12 +72,20 @@ export async function initNative(): Promise<void> {
   // E29-S06: CSS hooks for the app only (safe areas, overscroll) — `html[data-native]`.
   // The web build never has the attribute, so the website's layout cannot change.
   document.documentElement.dataset.native = Capacitor.getPlatform();
+  // The hosted Portal's own viewport tag has no viewport-fit=cover (only the bundled mobile
+  // build adds it). Inside the app only, draw under the status bar and home indicator; index.css
+  // pads with the safe-area insets. Idempotent, so the bundled build is unaffected.
+  const viewport = document.querySelector('meta[name="viewport"]');
+  if (viewport && !/viewport-fit=cover/.test(viewport.getAttribute('content') ?? '')) {
+    viewport.setAttribute('content', `${viewport.getAttribute('content')}, viewport-fit=cover`);
+  }
   if (isIosApp()) {
     // Dark text on the white top bar.
     const { StatusBar, Style } = await import('@capacitor/status-bar');
     await StatusBar.setStyle({ style: Style.Light }).catch(() => undefined);
   }
   const { App } = await import('@capacitor/app');
+  watchForNewWebsiteVersion(App);
   // Android's back button: go back through the app's history, and leave the app
   // only from the first screen. (iOS has none; every screen has its own Back control.)
   await App.addListener('backButton', ({ canGoBack }) => {
