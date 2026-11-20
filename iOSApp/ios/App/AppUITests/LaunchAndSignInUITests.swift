@@ -22,6 +22,29 @@ func maximizeOnIPad(_ app: XCUIApplication) {
     if zoom.waitForExistence(timeout: 5) { zoom.tap(); sleep(3) }
 }
 
+/// XCUITest sometimes drops or doubles keystrokes when the keyboard is still animating in. Type, read the field
+/// back and retry, so a test never goes on with a half-typed email or password. A secure field shows only dots,
+/// so only its length can be compared.
+@discardableResult
+func typeReliably(_ field: XCUIElement, _ text: String, secure: Bool = false, attempts: Int = 4) -> Bool {
+    for _ in 0..<attempts {
+        field.tap()
+        _ = XCUIApplication().keyboards.firstMatch.waitForExistence(timeout: 5)
+        usleep(400_000)
+        if let current = field.value as? String, !current.isEmpty, current != field.placeholderValue {
+            field.press(forDuration: 1.0)
+            let selectAll = XCUIApplication().menuItems["Select All"]
+            if selectAll.waitForExistence(timeout: 2) { selectAll.tap() }
+            XCUIApplication().keys["delete"].firstMatch.tap()
+        }
+        field.typeText(text)
+        usleep(300_000)
+        let shown = (field.value as? String) ?? ""
+        if secure ? shown.count == text.count : shown == text { return true }
+    }
+    return false
+}
+
 final class LaunchAndSignInUITests: XCTestCase {
     var app: XCUIApplication!
 
@@ -309,9 +332,9 @@ final class SignedInUITests: XCTestCase {
             sessionRestored = true
             return
         }
-        field.tap(); field.typeText(email)
+        XCTAssertTrue(typeReliably(field, email), "The email was not typed correctly into the sign-in form")
         let pw = web.secureTextFields.firstMatch
-        pw.tap(); pw.typeText(password)
+        XCTAssertTrue(typeReliably(pw, password, secure: true), "The password was not typed correctly into the sign-in form")
         web.buttons["Sign in"].firstMatch.tap()
         // Signed in = the password field is gone.
         let gone = NSPredicate(format: "exists == false")
@@ -406,7 +429,7 @@ final class SignedInUITests: XCTestCase {
         XCTAssertTrue(l.contains("Status") && l.contains("Payment"), "Status and Payment filters are missing on the phone list")
         let search = web.textFields.firstMatch
         XCTAssertTrue(search.waitForExistence(timeout: 10), "Matters search box missing")
-        search.tap(); search.typeText("E2E Client")
+        XCTAssertTrue(typeReliably(search, "E2E Client"), "Search text was not typed correctly")
         sleep(2)
         attach("admin-matters-search")
         XCTAssertTrue(labels().contains { $0.contains("E2E Client") }, "Search for a known client found nothing")
