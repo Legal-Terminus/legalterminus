@@ -92,8 +92,21 @@ builds; the first production-pointed build is the one that goes to review.
   follow the website's release tag: the Portal inside the app is always the hosted one.
 - **Used so far.** Android: 1 and 2 (QA, bundled), 3 (production 1.0.0, bundled, in Play review
   since 2026-11-03 — **must not be published**, see below). iOS: builds 5–7 of the separate QA app
-  `com.legalterminus.app.qa` (bundled; that app is retired). **The next build of either platform
-  is 8.**
+  `com.legalterminus.app.qa` (bundled; that app is retired). **Build 8** (Android 1.0.0,
+  production-pointed) was built by the pipeline on 2026-11-21 from `v1.6.0-lt.26` and is attached
+  to that tag's Release "1.0.0 (Build 8)". **The next build of either platform is 9.**
+- **Build 4 (1.0.1) is in Production on Play** (found 2026-11-21 in Play Console: Active, staged,
+  about 15 installs). It was built and uploaded from Akash's branch (`versionCode 4`,
+  `versionName "1.0.1"` in `AndroidApp/android/app/build.gradle`) outside this process, most likely
+  with the bundled Portal, which production refuses since 2026-11-19. Its pending "Start full
+  rollout" was discarded on 2026-11-21; its users keep it until build 8 replaces it. Play keeps every
+  upload, so version codes 1–4 can never be used again.
+- **The upload key was replaced on 2026-11-21.** The key that signed version code 3 (SHA-1
+  `003b92…`) could not be found, so a new one was made (SHA-1 `b2:64:14:3f:…:0a:49`, RSA 4096, alias
+  `upload`, valid to 2054) and a Play **upload key reset** was requested with its certificate. Play
+  refuses uploads signed with the new key until Google approves the reset. The key is in
+  `~/lt-android-release/keys/` on the release Mac, in the firm's password manager, and (base64) in
+  the `production` environment's secrets.
 
 **Android version code 3 must not be published.** It is the bundled design: it runs at
 `https://localhost`, which the production API and bucket no longer allow, so every screen that
@@ -114,7 +127,7 @@ presses Publish.
 | Sign in with Apple key (`.p8`) | same; its contents also pasted into Firebase → Authentication → Apple | — |
 | Store reviewer account password | `~/lt-android-release/keys/STORE_REVIEWER.txt` (mode 600) | — |
 
-`base64 -i <file> | pbcopy` to paste a file into a GitHub Secret. The ignore rules (`.gitignore`)
+`/usr/bin/base64 -i <file> | gh secret set <NAME> --env production` puts a file into a GitHub Secret. Use the **full path**: a Homebrew `base64` earlier on the `PATH` has no `-i` and silently sends an empty secret (2026-11-21: the first Android pipeline build failed with an empty `google-services.json`). The ignore rules (`.gitignore`)
 refuse `*.p8`, `*.p12`, `*.mobileprovision`, `*.jks`, `*.keystore`, `key.properties`, both
 Firebase files and every generated file of the switch.
 
