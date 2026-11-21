@@ -75,7 +75,7 @@ export default function ClientCockpit() {
           testId="stat-amount-due"
           label="Amount due"
           value={amountDue === undefined ? undefined : inr(amountDue)}
-          to="/reports/my-services"
+          to="/tasks"
           tone="warning"
         />
         <CockpitStat testId="stat-completed" label="Completed" value={completed} to="/tasks?status=completed" />

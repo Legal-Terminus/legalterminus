@@ -32,7 +32,8 @@ test('team member is blocked from Users + Reports', async ({ teamPage }) => {
 });
 
 test('client is blocked from staff areas (Users, Reports, Services, My Tasks)', async ({ clientPage }) => {
-  for (const route of ['users', 'reports', 'services', 'my-tasks', 'settings/coupons']) {
+  // reports/my-services: clients have no Reports at all (owner, 2026-11-21, #268).
+  for (const route of ['users', 'reports', 'reports/my-services', 'services', 'my-tasks', 'settings/coupons']) {
     await clientPage.goto(route);
     await expect(clientPage, `client must not reach /${route}`).not.toHaveURL(new RegExp(`/${route}(\\?|$)`));
   }

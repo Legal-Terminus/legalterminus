@@ -43,7 +43,6 @@ import TeamPerformanceReport from '../pages/reports/TeamPerformanceReport';
 import StorageReportPage from '../pages/reports/StorageReport';
 import ClientGroupFeeReport from '../pages/reports/ClientGroupFeeReport';
 import ClientDatabasePage from '../pages/reports/ClientDatabasePage';
-import MyServicesReport from '../pages/reports/MyServicesReport';
 import ContactLeadsReport from '../pages/reports/ContactLeadsReport';
 import MarketingReportsPage from '../pages/reports/MarketingReportsPage';
 import TrademarkReportsPage from '../pages/reports/TrademarkReportsPage';
@@ -135,7 +134,7 @@ export const APP_ROUTES: AppRoute[] = [
   // #206: the firm's income by client and group — admin only, as is its API.
   { path: '/reports/client-group-fees', element: <ClientGroupFeeReport />, roles: ['admin'] },
   // #84 client-facing report — clients see only their own services/payments.
-  { path: '/reports/my-services',  element: <MyServicesReport />,     roles: ['client'], nav: { label: 'Reports', icon: BarChart2, mobile: true } },
+  // Clients have no Reports (owner, 2026-11-21, #268): their matters and payments are under My Services (/tasks).
   { path: '/users/new/:type',      element: <UserFormPage />,         roles: ['admin', 'manager'] },
   { path: '/users/edit/:type/:uid',element: <UserFormPage />,         roles: ['admin', 'manager'] },
 
