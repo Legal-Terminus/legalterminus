@@ -1,26 +1,79 @@
 import { useEffect, useRef, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Send, Loader2, MessageSquare, Eye, EyeOff } from 'lucide-react';
-import { getMessages, postMessage, getMentionable, type MatterMessage } from '../../api/messages';
+import { Send, Loader2, MessageSquare, Eye, EyeOff, Pencil, Trash2 } from 'lucide-react';
+import {
+  getMessages, postMessage, editMessage, deleteMessage, getMentionable, type MatterMessage,
+} from '../../api/messages';
 import { useToast } from '../common/toastContext';
+import { useConfirm } from '../common/confirmContext';
 import RichTextEditor from '../common/RichTextEditor';
 import RichText from '../common/RichText';
+import { MESSAGE_WORD_LIMIT } from '@shared/richText/limits.js';
+import { useCommentDraft } from '../../hooks/useCommentDraft';
+import { useAuthStore } from '../../store/authStore';
+
+// #295: the composer's text area grows to this and then scrolls inside itself,
+// so the Send button below it never leaves a phone screen however long the
+// message is. Shared by the new-message and edit editors.
+const COMPOSER_MAX_HEIGHT = 'min(35dvh, 18rem)';
 
 /**
- * #123 — the matter's discussion thread. One conversation per matter; staff tick
+ * #123 — the matter's chat (the "Chat" tab; it was called Discussion). One conversation per matter; staff tick
  * "Visible to client" per message (default OFF so internal notes are never leaked
  * by accident, matching #115). Clients only ever receive client-visible messages,
  * and staff authors are masked as "Our team".
  *
  * Delivery is polling (10s) — the app's existing live-data pattern; no realtime
  * listener layer, so the browser never talks to Firestore directly.
+ *
+ * #297 follow-up — DRAFTS. The tab unmounts whenever someone opens another tab
+ * of the matter, which used to throw away an unsent message. The new-message
+ * box and an edit in progress are now kept in localStorage — the same store and
+ * key scheme as step-comment drafts (#83, useCommentDraft): per matter, per
+ * message, per signed-in user, so a draft never shows on another matter or to
+ * another person on a shared computer. A draft lasts until it is sent/saved,
+ * cancelled, or emptied by the person — across tab switches and page reloads.
+ * The "Visible to client" tick is deliberately NOT kept: a restored draft is
+ * internal until someone ticks it again (#115's default-off rule).
  */
 export default function DiscussionPanel({ taskId, isStaff }: { taskId: string; isStaff: boolean }) {
   const toast = useToast();
+  const confirm = useConfirm();
   const queryClient = useQueryClient();
-  const [body, setBody] = useState('');
+  const uid = useAuthStore((s) => s.user?.uid ?? null);
+  const draft = useCommentDraft(taskId, 'chat', uid);
+  // Restored on the first render (the hook reads storage synchronously), so the
+  // editor opens with the draft rather than filling in a moment later.
+  const [body, setBody] = useState(draft.initial);
   const [visible, setVisible] = useState(false); // staff: share with client? default OFF
   const endRef = useRef<HTMLDivElement>(null);
+  // #295: the Send row. While someone types, it is kept on screen (the phone's
+  // keyboard and a long message used to push it out of reach).
+  const sendRowRef = useRef<HTMLDivElement>(null);
+  const composerRef = useRef<HTMLDivElement>(null);
+  const keepSendInView = (delay = 0) => {
+    window.setTimeout(() => {
+      if (composerRef.current?.contains(document.activeElement)) {
+        sendRowRef.current?.scrollIntoView({ block: 'nearest' });
+      }
+    }, delay);
+  };
+
+  // iOS opens the keyboard AFTER the 300ms nudge above, so the page was resized too late and Send
+  // stayed behind the keyboard. Nudge again whenever the keyboard or visual viewport really changes.
+  useEffect(() => {
+    const nudge = () => keepSendInView(50);
+    const vv = window.visualViewport;
+    vv?.addEventListener('resize', nudge);
+    window.addEventListener('keyboardDidShow', nudge);
+    window.addEventListener('resize', nudge);
+    return () => {
+      vv?.removeEventListener('resize', nudge);
+      window.removeEventListener('keyboardDidShow', nudge);
+      window.removeEventListener('resize', nudge);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // #200: staff get suggestions when they type "@". Never fetched for a client.
   const { data: mentionable = [] } = useQuery({
@@ -41,6 +94,7 @@ export default function DiscussionPanel({ taskId, isStaff }: { taskId: string; i
     mutationFn: () => postMessage(taskId, body.trim(), isStaff ? visible : true),
     onSuccess: () => {
       setBody('');
+      draft.clear(); // #297: sent — the draft has done its job
       queryClient.invalidateQueries({ queryKey: ['messages', taskId] });
     },
     onError: (e: Error) => toast.error(e.message || 'Could not send the message.'),
@@ -49,23 +103,47 @@ export default function DiscussionPanel({ taskId, isStaff }: { taskId: string; i
   // Keep the newest message in view as the thread grows.
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' }); }, [messages.length]);
 
-  const submit = () => {
+  const submit = async () => {
     if (!body.trim() || send.isPending) return;
+    // A message shared with the client is emailed to them at once and cannot be
+    // recalled. Staff see exactly what will go out before it does — a stray
+    // line pasted into a shared message once reached a client this way.
+    if (isStaff && visible) {
+      const ok = await confirm({
+        title: 'Send this to the client?',
+        message: (
+          <div className="space-y-2">
+            <div className="max-h-60 overflow-y-auto rounded-lg border border-hairline bg-surface-soft px-3 py-2 text-ink">
+              <RichText html={body} className="text-sm" taskId={taskId} />
+            </div>
+            <p>The client will see this in the portal and get it by email, as will anyone copied on this matter. An email cannot be recalled once sent.</p>
+          </div>
+        ),
+        confirmLabel: 'Send to client',
+        cancelLabel: 'Keep editing',
+      });
+      if (!ok) return;
+    }
     send.mutate();
   };
 
   return (
-    <div className="card flex flex-col" style={{ maxHeight: '70vh' }}>
+    // #295: the THREAD has the height cap, not the card. With the cap on the card,
+    // a long message made the composer taller than the card and the Send button
+    // spilled out underneath — on a phone, under the bottom navigation.
+    // lt-chat-images (#319): every image in the thread and composer is shown in
+    // the same fixed box — see index.css.
+    <div className="card flex flex-col lt-chat-images">
       <div className="px-5 py-3 border-b border-hairline flex items-center gap-2">
         <MessageSquare className="w-4 h-4 text-ink-muted" />
-        <p className="text-sm font-semibold text-ink">Discussion</p>
+        <p className="text-sm font-semibold text-ink">Chat</p>
         <span className="text-xs text-ink-faint ml-auto">
           {isStaff ? 'Messages are internal unless you share them' : 'Messages with our team'}
         </span>
       </div>
 
       {/* Thread */}
-      <div className="flex-1 overflow-y-auto px-5 py-4 space-y-3">
+      <div className="flex-1 min-h-0 overflow-y-auto px-5 py-4 space-y-3" style={{ maxHeight: '55dvh' }}>
         {isLoading ? (
           <div className="flex justify-center py-8 text-ink-faint"><Loader2 className="w-5 h-5 animate-spin" /></div>
         ) : error ? (
@@ -87,17 +165,20 @@ export default function DiscussionPanel({ taskId, isStaff }: { taskId: string; i
       </div>
 
       {/* Composer */}
-      <div className="border-t border-hairline p-3 space-y-2">
+      <div ref={composerRef} data-chat-composer className="shrink-0 border-t border-hairline p-3 space-y-2"
+        onFocus={() => keepSendInView(300) /* after the keyboard has opened */}>
         {/* #122: rich text — paste tables/formatting from Word, Excel or email,
             and (follow-up) paste or upload images. */}
         <RichTextEditor
           value={body}
-          onChange={setBody}
+          onChange={(v) => { setBody(v); draft.save(v); keepSendInView(); }}
           placeholder="Write a message…"
           ariaLabel="Message"
           rows={2}
           mentions={isStaff ? mentionable : undefined}
           imageTaskId={taskId}
+          wordLimit={MESSAGE_WORD_LIMIT}
+          maxHeight={COMPOSER_MAX_HEIGHT}
         />
         {/* #200: staff can notify a colleague by typing @ and their email. */}
         {isStaff && (
@@ -105,7 +186,7 @@ export default function DiscussionPanel({ taskId, isStaff }: { taskId: string; i
             Type @ and pick a colleague to notify them by email.
           </p>
         )}
-        <div className="flex items-center justify-between gap-3">
+        <div ref={sendRowRef} className="flex items-center justify-between gap-3 scroll-mb-[calc(4.5rem+env(safe-area-inset-bottom,0px))] md:scroll-mb-0">
           {isStaff ? (
             <label className="inline-flex items-center gap-2 text-xs text-ink-muted cursor-pointer">
               <input
@@ -123,7 +204,7 @@ export default function DiscussionPanel({ taskId, isStaff }: { taskId: string; i
           <button
             onClick={submit}
             disabled={!body.trim() || send.isPending}
-            className="btn-primary inline-flex items-center gap-1.5 disabled:opacity-50"
+            className="btn-primary shrink-0 min-h-11 inline-flex items-center gap-1.5 disabled:opacity-50"
           >
             {send.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />} Send
           </button>
@@ -135,25 +216,85 @@ export default function DiscussionPanel({ taskId, isStaff }: { taskId: string; i
 
 function MessageBubble({ m, isStaff, taskId }: { m: MatterMessage; isStaff: boolean; taskId: string }) {
   const mine = m.isMine;
+  const toast = useToast();
+  const confirm = useConfirm();
+  const queryClient = useQueryClient();
+  const uid = useAuthStore((s) => s.user?.uid ?? null);
+  // #297: an edit in progress survives a tab switch too. Only for a message this
+  // person may edit (a null uid turns the store off for every other bubble).
+  const editDraft = useCommentDraft(taskId, `chat-edit-${m.id}`, m.canEdit && !m.deleted ? uid : null);
+  const [editing, setEditing] = useState(() => !!editDraft.initial);
+  // The editor can report one last change while it closes (Cancel / Save). That
+  // must not write the draft back after it was cleared, or the edit reopens on
+  // the next visit to Chat. Changes count only while editing.
+  const editingRef = useRef(editing);
+  const [draft, setDraft] = useState(() => editDraft.initial || m.body);
+  const refresh = () => queryClient.invalidateQueries({ queryKey: ['messages', taskId] });
+
+  const save = useMutation({
+    mutationFn: () => editMessage(taskId, m.id, draft.trim()),
+    onSuccess: () => { editingRef.current = false; setEditing(false); editDraft.clear(); refresh(); toast.success('Message updated.'); },
+    onError: (e: Error) => toast.error(e.message || 'Could not edit the message.'),
+  });
+  const remove = useMutation({
+    mutationFn: () => deleteMessage(taskId, m.id),
+    onSuccess: () => { refresh(); toast.success('Message deleted.'); },
+    onError: (e: Error) => toast.error(e.message || 'Could not delete the message.'),
+  });
+
+  const askDelete = async () => {
+    const ok = await confirm({
+      title: 'Delete this message?',
+      message: m.clientVisible
+        ? 'It will be removed for everyone, including the client. Any email already sent about it cannot be recalled.'
+        : 'It will be removed for everyone on the team.',
+      confirmLabel: 'Delete',
+      tone: 'danger',
+    });
+    if (ok) remove.mutate();
+  };
+
+  const startEdit = () => { editingRef.current = true; setDraft(m.body); setEditing(true); };
+  const cancelEdit = () => { editingRef.current = false; setEditing(false); editDraft.clear(); };
+  const changeDraft = (v: string) => {
+    if (!editingRef.current) return;
+    setDraft(v);
+    // An unchanged message is not a draft worth restoring.
+    if (v === m.body) editDraft.clear(); else editDraft.save(v);
+  };
+  // #297: who an edit reaches, said before Save — the same people a new message does.
+  const editNotice = !isStaff
+    ? 'Our team will be emailed that you edited this message, with the new text.'
+    : m.clientVisible
+      ? 'The client will be emailed that this message was edited, with the new text. The email already sent stays as it was.'
+      : null;
   // #193: own messages were white-on-brand-blue, which made the text hard to
   // read. They now use a WhatsApp-style LIGHT GREEN bubble with dark ink. Because
   // the bubble went from a dark to a light background, every dependent colour has
   // to change with it — the author line, the shared/internal hint, the timestamp
   // and the rich-text link/table overrides were all tuned for white-on-dark and
   // would be invisible on light green if left behind.
+  // #297: one step darker (emerald-100, a visible emerald-300 edge) — emerald-50
+  // was barely distinguishable from the white chat background. Text stays dark
+  // ink; the author line, hint and time move to darker greens to keep contrast.
+  // #297 follow-up: the firm meant the RECEIVED bubble — near-white surface-soft
+  // (#f8f9fa) all but vanished on the white thread. It is now surface-strong
+  // (#e5e7eb) with a visible edge. On that grey, ink-muted/ink-faint fall below
+  // WCAG AA (3.9:1 and less), so the author line, hint and time use ink-soft
+  // (8.3:1); the text itself is ink (15:1).
   return (
     <div className={`flex ${mine ? 'justify-end' : 'justify-start'}`}>
       <div className={`max-w-[80%] rounded-2xl px-3.5 py-2.5 ${
-        mine ? 'bg-emerald-50 text-ink border border-emerald-100' : 'bg-surface-soft text-ink'
-      }`}>
+        mine ? 'bg-emerald-100 text-ink border border-emerald-300' : 'bg-surface-strong text-ink border border-ink-faint/50'
+      }`} data-testid={mine ? 'chat-bubble-mine' : 'chat-bubble'}>
         <div className="flex items-center gap-2 mb-0.5">
-          <span className={`text-[11px] font-semibold ${mine ? 'text-emerald-800' : 'text-ink-muted'}`}>
+          <span className={`text-[11px] font-semibold ${mine ? 'text-emerald-900' : 'text-ink-soft'}`}>
             {m.authorName}
           </span>
           {/* Staff can see at a glance whether the client can read this. */}
           {isStaff && (
             <span className={`text-[10px] inline-flex items-center gap-0.5 ${
-              mine ? 'text-emerald-700/80' : 'text-ink-faint'
+              mine ? 'text-emerald-800' : 'text-ink-soft'
             }`}>
               {m.clientVisible
                 ? <><Eye className="w-3 h-3" /> shared</>
@@ -161,11 +302,51 @@ function MessageBubble({ m, isStaff, taskId }: { m: MatterMessage; isStaff: bool
             </span>
           )}
         </div>
-        <RichText html={m.body} className="text-sm" taskId={taskId} />
-        {m.createdAt && (
-          <p className={`text-[10px] mt-1 ${mine ? 'text-emerald-700/70' : 'text-ink-faint'}`}>
-            {new Date(m.createdAt).toLocaleString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
-          </p>
+        {m.deleted ? (
+          <p className="text-sm italic text-ink-soft">This message was deleted</p>
+        ) : editing ? (
+          <div className="space-y-2 min-w-[min(28rem,70vw)]">
+            <RichTextEditor value={draft} onChange={changeDraft} ariaLabel="Edit message" rows={2} imageTaskId={taskId}
+              wordLimit={MESSAGE_WORD_LIMIT} maxHeight={COMPOSER_MAX_HEIGHT} />
+            {/* #297: an edit is announced like a new message. */}
+            {editNotice && <p className="text-[11px] text-ink-muted">{editNotice}</p>}
+            <div className="flex justify-end gap-2">
+              <button type="button" className="btn-ghost" onClick={cancelEdit} disabled={save.isPending}>Cancel</button>
+              <button type="button" className="btn-primary inline-flex items-center gap-1.5 disabled:opacity-50"
+                onClick={() => save.mutate()} disabled={!draft.trim() || save.isPending}>
+                {save.isPending && <Loader2 className="w-4 h-4 animate-spin" />} Save
+              </button>
+            </div>
+          </div>
+        ) : (
+          <RichText html={m.body} className="text-sm" taskId={taskId} />
+        )}
+        {m.createdAt && !editing && (
+          <div className={`flex items-center gap-1 mt-1 text-[10px] ${mine ? 'text-emerald-800' : 'text-ink-soft'}`}>
+            <span>
+              {new Date(m.createdAt).toLocaleString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
+              {m.editedAt && ' · edited'}
+            </span>
+            {/* #297: Edit only on your OWN message (the API refuses anything
+                else); an admin may still delete any message. */}
+            {(m.canEdit || m.canDelete) && (
+              <span className="ml-auto inline-flex items-center">
+                {m.canEdit && (
+                  <button type="button" onClick={startEdit} aria-label="Edit message" title="Edit"
+                    className="p-2 -my-1 rounded-md hover:bg-black/5 hover:text-ink">
+                    <Pencil className="w-3.5 h-3.5" />
+                  </button>
+                )}
+                {m.canDelete && (
+                  <button type="button" onClick={askDelete} aria-label="Delete message" title="Delete"
+                    disabled={remove.isPending}
+                    className="p-2 -my-1 rounded-md hover:bg-black/5 hover:text-red-700 disabled:opacity-50">
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </span>
+            )}
+          </div>
         )}
       </div>
     </div>

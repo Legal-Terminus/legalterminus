@@ -4,8 +4,18 @@
  *   createOrder({ amount, receipt })      → { gatewayOrderId }
  *   verifyPaymentSignature({ gatewayOrderId, gatewayPaymentId, signature })
  *   verifyWebhookSignature(rawBody, signature)
- *   fetchOrder(gatewayOrderId)            → { paid, gatewayPaymentId, amount, method } | null
- *   fetchPayment(gatewayOrderId, id)      → { ok, amount, method } | null   (one specific payment)
+ *   fetchOrder(gatewayOrderId)            → { paid, gatewayPaymentId, amount, method, fee, tax } | null
+ *   fetchPayment(gatewayOrderId, id)      → { ok, status, amount, method, fee, tax } | null   (one specific payment)
+ *
+ * #276 — CUSTOMER FEE BEARER. `fee` and `tax` are the payment entity's own
+ * (rupees here, paise at Razorpay): "fee (including GST) charged by Razorpay"
+ * and "GST charged for the payment" (razorpay.com/docs/api/payments/entity).
+ * When the account is a Customer Fee Bearer account the CLIENT pays that fee
+ * on top of the order: the payment's `amount` is the order amount + `fee`.
+ * On an ordinary account the fee is taken from the merchant and `amount`
+ * equals the order amount. Which of the two happened is decided by
+ * orders.service (`decideSettlement`), never here. Both are only ever read
+ * from a verified source: the gateway's API, or a signed webhook.
  *   checkout(...)                         → what the browser needs to open the payment screen
  *
  * TWO IMPLEMENTATIONS.
@@ -64,6 +74,8 @@ export function parseWebhookEvent(body) {
     gatewayPaymentId: payment.id ?? null,
     amount: Number.isFinite(payment.amount) ? payment.amount / 100 : null, // paise → rupees
     method: payment.method ?? null,
+    // #276: Razorpay's fee for THIS payment (incl. GST) and the GST in it. Paise → rupees; null when absent.
+    ...feeOf(payment),
   };
   switch (body.event) {
     case 'payment.captured':
@@ -79,11 +91,23 @@ export function parseWebhookEvent(body) {
   }
 }
 
+/**
+ * #276: the payment entity's `fee` and `tax`, in rupees, or null when absent
+ * or not a non-negative whole number of paise. Whether the fee is one the
+ * client paid is decided by `decideSettlement`.
+ */
+export function feeOf(entity) {
+  const rupeesOf = (v) => (Number.isInteger(v) && v >= 0 ? v / 100 : null);
+  return { fee: rupeesOf(entity?.fee), tax: rupeesOf(entity?.tax) };
+}
+
 /* ───────────────────────────── simulated ───────────────────────────── */
 
 // Not a secret worth protecting: the simulator only exists where no money moves.
 const SIM_SECRET = 'simulated-gateway-secret';
 const SIM_COLLECTION = 'paymentSimulator';
+/** #276: the simulator's stored fee, as the API reports it (rupees, or null). */
+const simFee = (d) => ({ fee: Number.isFinite(d.fee) ? d.fee : null, tax: Number.isFinite(d.tax) ? d.tax : null });
 
 const simulated = {
   name: 'simulated',
@@ -103,33 +127,39 @@ const simulated = {
     const snap = await getDb().collection(SIM_COLLECTION).doc(gatewayOrderId).get();
     if (!snap.exists) return null;
     const d = snap.data();
-    return { paid: d.paid === true, gatewayPaymentId: d.paymentId ?? null, amount: d.paidAmount ?? d.amount, method: d.method ?? null };
+    return { paid: d.paid === true, gatewayPaymentId: d.paymentId ?? null, amount: d.paidAmount ?? d.amount, method: d.method ?? null, ...simFee(d) };
   },
   async fetchPayment(gatewayOrderId, gatewayPaymentId) {
     const snap = await getDb().collection(SIM_COLLECTION).doc(gatewayOrderId).get();
     const d = snap.exists ? snap.data() : null;
     if (!d || d.paymentId !== gatewayPaymentId) return null;
-    return { ok: d.paid === true, amount: d.paidAmount ?? d.amount, method: d.method ?? null };
+    return { ok: d.paid === true, status: d.paid === true ? 'captured' : 'created', amount: d.paidAmount ?? d.amount, method: d.method ?? null, ...simFee(d) };
   },
   checkout: ({ gatewayOrderId }) => ({ gateway: 'simulated', gatewayOrderId }),
 
   /* The simulator's own controls — what "the customer did at the gateway". */
   /** Record a payment at the pretend gateway. Returns what Razorpay's checkout would hand the browser. */
-  async pay(gatewayOrderId, { amount, method = 'upi' } = {}) {
+  /**
+   * #276: `fee` (and its `tax`) plays a Customer Fee Bearer account: the
+   * customer pays `amount` + fee, and the gateway reports the fee.
+   */
+  async pay(gatewayOrderId, { amount, method = 'upi', fee = null, tax = null } = {}) {
     const ref = getDb().collection(SIM_COLLECTION).doc(gatewayOrderId);
     const snap = await ref.get();
     if (!snap.exists) throw new Error('Unknown simulated order');
     const gatewayPaymentId = snap.data().paymentId ?? `sim_pay_${crypto.randomBytes(9).toString('hex')}`;
-    const paidAmount = amount ?? snap.data().amount;
-    await ref.set({ paid: true, paymentId: gatewayPaymentId, paidAmount, method, paidAt: new Date().toISOString() }, { merge: true });
-    return { gatewayPaymentId, signature: paymentSignature(SIM_SECRET, gatewayOrderId, gatewayPaymentId), amount: paidAmount, method };
+    const paidAmount = Math.round(((amount ?? snap.data().amount) + (fee ?? 0)) * 100) / 100;
+    await ref.set({ paid: true, paymentId: gatewayPaymentId, paidAmount, method, fee, tax, paidAt: new Date().toISOString() }, { merge: true });
+    return { gatewayPaymentId, signature: paymentSignature(SIM_SECRET, gatewayOrderId, gatewayPaymentId), amount: paidAmount, method, fee, tax };
   },
   /** A signed webhook exactly as Razorpay would send it: { rawBody, signature }. */
-  webhook(event, { gatewayOrderId, gatewayPaymentId, amount, method = 'upi', reason }) {
+  webhook(event, { gatewayOrderId, gatewayPaymentId, amount, method = 'upi', reason, fee = null, tax = null }) {
     const rawBody = JSON.stringify({
       event,
       payload: { payment: { entity: {
         id: gatewayPaymentId, order_id: gatewayOrderId, amount: Math.round(amount * 100), method,
+        // #276: as Razorpay's entity carries them — paise.
+        ...(fee != null ? { fee: Math.round(fee * 100) } : {}), ...(tax != null ? { tax: Math.round(tax * 100) } : {}),
         ...(reason ? { error_description: reason } : {}),
       } } },
     });
@@ -166,6 +196,7 @@ const razorpay = {
       gatewayPaymentId: captured?.id ?? null,
       amount: captured ? captured.amount / 100 : order.amount_paid / 100,
       method: captured?.method ?? null,
+      ...(captured ? feeOf(captured) : { fee: null, tax: null }), // #276
     };
   },
   /**
@@ -177,7 +208,10 @@ const razorpay = {
   async fetchPayment(gatewayOrderId, gatewayPaymentId) {
     const p = await (await this.client()).payments.fetch(gatewayPaymentId);
     if (!p || p.order_id !== gatewayOrderId) return null;
-    return { ok: p.status === 'captured' || p.status === 'authorized', amount: p.amount / 100, method: p.method ?? null };
+    return {
+      ok: p.status === 'captured' || p.status === 'authorized', status: p.status,
+      amount: p.amount / 100, method: p.method ?? null, ...feeOf(p), // #276
+    };
   },
   // The key id is public — it is what Razorpay's checkout script is opened with.
   checkout: ({ gatewayOrderId }) => ({ gateway: 'razorpay', gatewayOrderId, keyId: process.env.RAZORPAY_KEY_ID }),

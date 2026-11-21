@@ -14,7 +14,32 @@ Dashboard: **10 of 11 setup tasks complete. Nothing has been sent for review and
 | App category and contact details | Done and published: Business, `sales21@legalterminus.com`, `https://legalterminus.com` |
 | Store listing (default, en-IN) | Done: name, short and full description, icon, feature graphic, 3 phone screenshots; AI-asset declaration "Don't label assets" |
 | Data safety | Done, saved (imported from Play's own CSV, then read back): collected not shared, 9 data types, encrypted in transit, deletion on request |
-| **Content rating** | **NOT done: the IARC questionnaire needs a person to accept IARC's Terms of Use** (email `sales21@legalterminus.com`, category "All other app types") |
+| Content rating | Done 2026-11-03: the user accepted IARC's Terms; answers below; result All ages / Everyone / PEGI 3 / USK all ages / IARC 3+, descriptor "Users interact" |
+
+**Content rating answers (category "All other app types"; every one is a judgement the firm should confirm):**
+downloaded ratings-relevant content No; users can interact or exchange content **Yes** (messages and documents inside a service);
+user-generated content is the primary content No; public nudity No; public graphic violence No; block users No; report users No;
+chat moderation No; interactions limited to invited people only **Yes** (private to the people on a service); content not in the
+download (catalogue-style) No; promotes age-restricted products No; shares precise location No; digital goods purchases No; cash
+rewards / NFTs No; web browser or search engine No; primarily news or education No. The "block", "report" and "moderation" answers
+are No because the app has none of those features; if the firm adds them, update the questionnaire.
+
+**SUBMITTED FOR REVIEW 2026-11-03 (at the user's explicit instruction).** 10 changes sent from the Publishing overview: the Production
+release 1.0.0 (version code 3, India), store listing, category, target audience, privacy policy URL, ads, Data safety, health, content
+rating and sign-in details. Google says reviews are typically done within seven days. **Managed publishing is ON**, so an approved
+release is not published automatically. Known risk accepted at submission: the Data safety form says users can request deletion and
+links to the privacy policy, which does not mention deletion until pull request #223 is merged and released; Google may query this.
+
+**Production release (done later on 2026-11-03, in Play Console):** a draft release **1.0.0 on the Production track** exists with
+bundle **version code 3 (1.0.0)** only (the QA bundle, version code 1, was deliberately NOT added), release notes in en-IN,
+and **India only**. It is saved; **nothing is sent**. Version code 3 is also on Internal testing. The Publishing overview lists 9
+changes and says "Submit 9 changes for review", disabled because Play's quick check finds exactly one issue: **incomplete
+content ratings declaration**, now resolved: the Publishing overview shows "Submit 10 changes for review" enabled (not pressed).
+
+**Rollout size: Managed publishing is now ON (turned on 2026-11-03 at the user's request, verified after a reload).** The first Production
+release shows no staged-rollout control and is described as "Start full rollout" (100%). With managed publishing on, an approved release
+is NOT published automatically: it waits in "Changes ready to publish" until a person publishes it. Decide the rollout size at that point.
+To undo: Publishing overview, Managed publishing dropdown, "Managed publishing off".
 
 **Gate before "Send for review":** Data safety's deletion answer and both deletion links point to the privacy policy,
 which does **not yet** mention deletion. Publish the additions in `docs/privacy-policy-app-addendum.md` (needs a release tag and
@@ -107,8 +132,9 @@ Questions: sales21@legalterminus.com
 ## What this draft does not fix
 
 - A **production reviewer account** and the **deletion answer (D2)** are decisions and production changes for the firm.
-- The server side the app needs on production (API CORS for `https://localhost`, bucket CORS) is **not done**
-  and is not part of this file; see `docs/android-release-plan.md`. A build published to the Production track
-  before that is live would show real users errors on every screen that loads data.
+- **Version code 3 must not be published** (2026-11-19). It bundles the Portal and runs at `https://localhost`,
+  which production no longer allows (no localhost anywhere), so every screen that loads data would fail. The app
+  now opens the hosted Portal (`docs/mobile-release.md`); replace version code 3 in the Production release with the
+  first production-pointed build before anyone presses Publish.
 - The team-member Home screen shows a blank gap where other roles have a heading (seen on the emulator,
   2026-11-03); it may be intended. Look at it before screenshots are chosen.

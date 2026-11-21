@@ -3,10 +3,21 @@
     "public": "Frontend/dist",
     "ignore": [
       "firebase.json",
-      "**/.*",
+      "**/.DS_Store",
+      "**/.git/**",
+      "**/.env*",
       "**/node_modules/**"
     ],
     "headers": [
+      {
+        "source": "/.well-known/apple-app-site-association",
+        "headers": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ]
+      },
       {
         "source": "**",
         "headers": [
@@ -18,6 +29,15 @@
       },
       {
         "source": "/assets/**",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "public, max-age=31536000, immutable"
+          }
+        ]
+      },
+      {
+        "source": "/portal/assets/**",
         "headers": [
           {
             "key": "Cache-Control",
@@ -82,6 +102,8 @@
         "source": "/payment/result/**",
         "destination": "/index.html"
       },
+      { "source": "/cart", "destination": "/index.html" },
+      { "source": "/cart/**", "destination": "/index.html" },
       {
         "source": "/signup",
         "destination": "/index.html"
@@ -1073,16 +1095,6 @@
       },
       {
         "source": "/shop/",
-        "destination": "/",
-        "type": 301
-      },
-      {
-        "source": "/cart",
-        "destination": "/",
-        "type": 301
-      },
-      {
-        "source": "/cart/",
         "destination": "/",
         "type": 301
       },

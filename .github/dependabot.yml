@@ -1,0 +1,39 @@
+# Dependency updates, adapted from Ambyflow's config (security audit 2026-10-04).
+#
+# Unlike Ambyflow, this repo is not one npm workspace: the root, backend, Portal,
+# website (Frontend) and Android app (MobileApp) each have their own lockfile, so
+# the npm entry lists every folder. Grouping keeps it to one minor/patch PR per
+# folder per week instead of dozens.
+#
+# Every Dependabot PR targets main, so merging one deploys to QA only. Production
+# still needs a release tag and the owner's approval.
+#
+# NOTE: Dependabot alerts and security updates are a repository setting, not a
+# file. Enable them under Settings → Code security. This file only schedules
+# version updates.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directories:
+      - /
+      - /backend
+      - /Portal
+      - /Frontend
+      - /MobileApp
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      minor-and-patch:
+        update-types: [minor, patch]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+
+  # Dockerfile (backend) and Portal.Dockerfile at the repo root.
+  - package-ecosystem: docker
+    directory: /
+    schedule:
+      interval: weekly

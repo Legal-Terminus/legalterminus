@@ -1,3 +1,11 @@
+> **History.** This was the plan for the first Android release (builds 1–3, which bundled the
+> Portal and ran at `https://localhost`). The current design and procedure for both apps is
+> `docs/mobile-release.md`: ONE app, `com.legalterminus.app`, that opens the hosted Portal, pointed
+> at QA first (E-29 D7, 2026-11-19); Android is built by the `build-android` job, iOS from Xcode.
+> `localhost` is allowed nowhere since 2026-11-19, so **version code 3 must never be published**:
+> replace it in the Play Production release with the first production-pointed hosted build.
+> The rest of this file is kept as the record.
+
 # Android app: release plan (Google Play)
 
 Status 2026-11-03: **nothing on production has been changed.** Builds so far:
@@ -47,7 +55,7 @@ order, who does it, and which steps touch production.
 ## Phase 1: Prepare (no production changes)
 
 1. 👤 Decide D1, D2, D4 (D3 can wait).
-2. 👤 Give the **GitHub issue number** for the Android app; replace `#TBD` in `epics.md` (E-26).
+2. ✅ The Android app is tracked on #267 (E-26 in `epics.md`); iOS on #268.
 3. Commit in separate pieces (Conventional Commits, issue in the subject, `Co-Authored-By` line):
    Portal shared fixes, then `MobileApp/`, then docs. Everything is uncommitted today. Never commit
    `google-services.json`, keystores or `.env*` (all ignored). Update `epics.md`, `architecture.md`
@@ -78,7 +86,10 @@ order, who does it, and which steps touch production.
    `capacitor://localhost` and look-alike hosts stay refused. Note: that origin is shared by every
    Capacitor app that uses the default `https://localhost`, so it is protected only by the bearer token
    (the API sends no cookies to it), the same as on QA.
-9. ✅ **assetlinks.json is already live on production** (found 2026-11-03; someone published it outside
+9. ❌ **REMOVED from the website 2026-11-03 (`v1.6.0-lt.11`), at the user's instruction:** the app is still in
+   development and nothing on the live site may point to it. Without this file, emailed account links open
+   the browser, not the app, on every phone. Restore it (the two keys below) only when the user approves
+   the app's launch. History: **assetlinks.json was live on production** (found 2026-11-03; someone published it outside
    the repo). `https://legalterminus.com/.well-known/assetlinks.json` returns 200 with no redirect, and
    Google's Digital Asset Links service reads it without errors. It lists three SHA-256 fingerprints: the
    Play **app-signing** key (the one phones see), the **upload** key, and a **debug** key. The repo file
@@ -87,7 +98,7 @@ order, who does it, and which steps touch production.
    replaces the live file when the release deploys the website. Whoever published the live file should
    know the repo now owns it. Checked: Vite copies it to `dist/.well-known/`, and Firebase CLI 15.34.2
    (what CI installs) deploys it despite the `**/.*` ignore rule, so `firebase.json` is unchanged.
-10. ✅ **Bucket CORS applied 2026-11-03** (with the user's explicit approval). The production bucket
+10. ✅ (Not user-visible, kept.) **Bucket CORS applied 2026-11-03** (with the user's explicit approval). The production bucket
     `legal-terminus-web.firebasestorage.app` went from 8 to 9 allowed origins: `https://localhost` was **added**
     to the existing entry, which was re-read first, and nothing else changed (methods, headers and max-age
     verified identical). Done in code with the project's service account, not `gcloud`, so it matches

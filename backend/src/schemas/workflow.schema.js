@@ -1,4 +1,8 @@
 import { z } from 'zod';
+import { DUE_ANCHORS } from '../../../shared/workflows/dueRules.js';
+import { CONDITION_FIELD_NAMES, CONDITION_OPERATORS } from '../../../shared/workflows/conditions.js';
+import { FIELD_TYPES, MAPPABLE_PROFILE_FIELDS, MAX_FIELDS_PER_FORM } from '../../../shared/workflows/forms.js';
+import { ACTION_MOMENTS } from '../../../shared/workflows/actions.js';
 
 /**
  * Workflow config schemas. Per-phase default assignees (E11-S02): a map of
@@ -86,6 +90,93 @@ const gateSchema = z.object({
 // a full server definition, so legacy/server-managed fields (e.g. timestamps on a
 // step, or future additive fields) are silently STRIPPED rather than 400-ing. The
 // shared `validateDefinition` in the controller is the authoritative semantic gate.
+/**
+ * Story 35.1 date-anchored due rule ("GSTR-1 by the 11th"). The Portal's step
+ * editor has offered it since the Ambyflow port, but this schema did not list
+ * it, so a saved rule was silently STRIPPED and every step fell back to its
+ * typical duration. Found while building #219 (2026-11-05); ported from
+ * Ambyflow's schema. The statutory key is checked against the calendar when
+ * the date is resolved: an unknown key resolves to no date, i.e. the duration.
+ */
+const stepDueRuleSchema = z.object({
+  anchor: z.enum(DUE_ANCHORS),
+  offsetDays: z.number().int().min(-3650).max(3650).optional(),
+  statutoryKey: z.string().trim().max(60).optional(),
+}).strict();
+
+// Step conditions, forms and actions: the Service editor has offered them since
+// the Ambyflow port and the engine runs them, but this schema did not list them,
+// so a saved one was silently STRIPPED (found with the due rule, #219). Ported
+// verbatim from Ambyflow's schema, 2026-11-05.
+/**
+ * Story 32.1 — one entry per type in `shared/workflows/actions.js`. Adding a
+ * type means adding it there AND here; the registry is the catalog, this is its
+ * validation. `.strict()` so a typo'd param is a loud error, not a silent drop.
+ */
+const actionBase = {
+  id: z.string().trim().min(1).max(80).optional(),
+  on: z.enum(ACTION_MOMENTS).optional(),
+  legacy: z.string().trim().max(60).optional(),
+};
+
+/**
+ * E01-S34-2: a step's condition on the client profile. Shape only — whether the
+ * OPERATOR suits the FIELD is checked by validateCondition in
+ * validateDefinition, where the error can name both.
+ */
+const stepConditionSchema = z.object({
+  field: z.enum(CONDITION_FIELD_NAMES),
+  op: z.enum(CONDITION_OPERATORS),
+  value: z.union([z.string().trim().max(80), z.array(z.string().trim().max(80)).max(20)]).optional(),
+}).strict();
+
+/**
+ * E01-S34-3: a form on a step. Shape only — cross-field rules (a dropdown needs
+ * options, keys must be unique) live in validateForm, where the error can name
+ * the offending field.
+ */
+const formFieldSchema = z.object({
+  key: z.string().trim().regex(/^[a-z0-9_]{1,40}$/i),
+  label: z.string().trim().min(1).max(200),
+  type: z.enum(FIELD_TYPES),
+  required: z.boolean().optional(),
+  help: z.string().trim().max(500).optional(),
+  options: z.array(z.string().trim().max(120)).max(50).optional(),
+  mapsTo: z.enum(MAPPABLE_PROFILE_FIELDS).optional(),
+  /** Staff-only guidance; stripped from the client view by formForClient. */
+  internalNote: z.string().trim().max(500).optional(),
+}).strict();
+
+const stepFormSchema = z.object({
+  title: z.string().trim().max(200).optional(),
+  description: z.string().trim().max(2000).optional(),
+  fields: z.array(formFieldSchema).min(1).max(MAX_FIELDS_PER_FORM),
+}).strict();
+
+const stepActionSchema = z.discriminatedUnion('type', [
+  z.object({
+    ...actionBase,
+    type: z.literal('notify'),
+    to: z.enum(['client', 'assignee', 'admins']),
+    title: z.string().trim().min(1).max(200),
+    message: z.string().trim().max(2000).optional(),
+    onlyWhenPayment: z.enum(['not_paid', 'part_paid', 'fully_paid']).optional(),
+  }).strict(),
+  // E01-S32-2. `template` is validated as a non-empty key here; whether it
+  // NAMES a real template is resolved at run time against the workspace's own
+  // set, which the schema cannot see.
+  z.object({
+    ...actionBase,
+    type: z.literal('send_email'),
+    template: z.string().trim().min(1).max(80),
+    to: z.enum(['client', 'assignee', 'admins']),
+  }).strict(),
+  z.object({
+    ...actionBase,
+    type: z.literal('legacy_send_email_noop'),
+  }).strict(),
+]);
+
 const stepSchema = z.object({
   stepNumber: z.number().int().min(1),
   title: z.string().trim().min(1).max(160),
@@ -98,7 +189,18 @@ const stepSchema = z.object({
   type: z.enum(['step', 'payment_gate', 'branch', 'final']),
   assignedRole: z.string().trim().max(60).optional(),
   defaultAssigneeUid: z.string().trim().max(200).optional(),
+  // #192 (reopened 2026-11-18): the step's FULL default-assignee list. Step
+  // objects are not strict, so leaving this out meant every Service save from the
+  // workflow editor silently stripped it — the step fell back to one assignee
+  // (`defaultAssigneeUid`) and new matters gave the others no access at all. Same
+  // bug class as condition/form/actions (2026-11-05). The controller normalises
+  // it: deduped, and `defaultAssigneeUid` = its first entry.
+  defaultAssigneeUids: z.array(z.string().trim().min(1).max(200)).max(20).optional(),
   effects: z.array(z.string().trim().min(1).max(60)).max(20).optional(),
+  dueRule: stepDueRuleSchema.optional(),
+  actions: z.array(stepActionSchema).max(20).optional(),
+  condition: stepConditionSchema.optional(),
+  form: stepFormSchema.optional(),
   phaseId: z.string().trim().max(100).optional(),
   typicalDurationDays: z.number().min(0).max(3650).optional(),
   clientVisible: z.boolean().optional(),

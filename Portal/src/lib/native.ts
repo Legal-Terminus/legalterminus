@@ -1,27 +1,100 @@
 import { Capacitor } from '@capacitor/core';
+import { accountLinkPath, entryScriptOf, shouldReloadForUpdate } from './nativeRules';
+import { isBusy } from './updateGuard';
+
+/** True inside the iPhone app. */
+export const isIosApp = (): boolean => Capacitor.getPlatform() === 'ios';
 
 /**
- * Behaviour that only exists inside the Android app. A no-op in the browser, so the
- * web build is unaffected.
+ * The website's address. The apps open the hosted Portal, so in a browser and in the apps
+ * alike that is this page's own origin.
+ */
+export const siteOrigin = (): string => window.location.origin;
+
+/** Back in the foreground after at least this long: check whether the website was redeployed. */
+const UPDATE_CHECK_AFTER_MS = 60_000;
+
+/** The entry script this page was loaded from (e.g. /portal/assets/index-AbC123.js). */
+const currentEntryScript = (): string | null => {
+  const el = document.querySelector<HTMLScriptElement>('script[type="module"][src*="/assets/index-"]');
+  return el ? new URL(el.src, window.location.href).pathname : null;
+};
+
+/** True while the person is typing in a field: a reload would lose what they entered. */
+const isEditing = (): boolean => {
+  const el = document.activeElement as HTMLElement | null;
+  return !!el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.tagName === 'SELECT' || el.isContentEditable);
+};
+
+/**
+ * The apps open the hosted Portal and stay open for days, so without this an installed app
+ * runs the website version it was opened on until it is closed (and a lazily-loaded screen
+ * from that old version can 404 after a deploy). When the app returns from the background,
+ * fetch the Portal's index.html (served no-store, so always current) and reload ONLY if the
+ * deployed entry script changed, nobody is typing and no upload is running. The sign-in lives
+ * in this origin's storage, which a reload keeps. Any error (offline, hosting restarting) is
+ * ignored and the current page keeps working.
+ *
+ * From Akash's work on feat/ios-android-app-split (#268), without its bundled-app branches.
+ */
+function watchForNewWebsiteVersion(App: typeof import('@capacitor/app').App): void {
+  let hiddenAt: number | null = null;
+  void App.addListener('appStateChange', async ({ isActive }) => {
+    if (!isActive) { hiddenAt = Date.now(); return; }
+    if (hiddenAt === null) return;
+    const hiddenMs = Date.now() - hiddenAt;
+    hiddenAt = null;
+    if (hiddenMs < UPDATE_CHECK_AFTER_MS) return;
+    try {
+      const res = await fetch(`${window.location.origin}/portal/`, { cache: 'no-store', credentials: 'omit' });
+      if (!res.ok) return;
+      const latest = entryScriptOf(await res.text());
+      if (shouldReloadForUpdate({
+        hiddenMs, minHiddenMs: UPDATE_CHECK_AFTER_MS, current: currentEntryScript(), latest,
+        busy: isBusy(), editing: isEditing(),
+      })) window.location.reload();
+    } catch { /* offline or hosting restarting: keep the page we have */ }
+  });
+}
+
+/**
+ * Behaviour that only exists inside the Android and iPhone apps. A no-op in the browser,
+ * so the web build is unaffected.
  */
 export async function initNative(): Promise<void> {
   if (!Capacitor.isNativePlatform()) return;
+  // E29-S06: CSS hooks for the app only (safe areas, overscroll) — `html[data-native]`.
+  // The web build never has the attribute, so the website's layout cannot change.
+  document.documentElement.dataset.native = Capacitor.getPlatform();
+  // The app opens the hosted Portal, so the page's own viewport tag is the website's. Inside the
+  // app only, draw under the status bar and home indicator; index.css pads with the safe-area
+  // insets (which are zero without viewport-fit=cover).
+  const viewport = document.querySelector('meta[name="viewport"]');
+  if (viewport && !/viewport-fit=cover/.test(viewport.getAttribute('content') ?? '')) {
+    viewport.setAttribute('content', `${viewport.getAttribute('content')}, viewport-fit=cover`);
+  }
+  if (isIosApp()) {
+    // Dark text on the white top bar.
+    const { StatusBar, Style } = await import('@capacitor/status-bar');
+    await StatusBar.setStyle({ style: Style.Light }).catch(() => undefined);
+  }
   const { App } = await import('@capacitor/app');
+  watchForNewWebsiteVersion(App);
   // Android's back button: go back through the app's history, and leave the app
-  // only from the first screen.
+  // only from the first screen. (iOS has none; every screen has its own Back control.)
   await App.addListener('backButton', ({ canGoBack }) => {
     if (canGoBack) window.history.back();
     else void App.exitApp();
   });
 
-  // Emailed account links (sign-in, password setup/reset) open the app, not the browser.
+  // Emailed account links (sign-in, password setup/reset) open the app, not the browser:
+  // Android App Links and iOS Universal Links both arrive as `appUrlOpen`.
   // Only that one path is routed; any other link the system hands over is ignored.
   const openAccountLink = async (raw: string) => {
-    let url: URL;
-    try { url = new URL(raw); } catch { return; }
-    if (!url.pathname.startsWith('/portal/account/action')) return;
+    const to = accountLinkPath(raw);
+    if (!to) return;
     const { router } = await import('../routes');
-    await router.navigate(url.pathname.replace(/^\/portal/, '') + url.search, { replace: true });
+    await router.navigate(to, { replace: true });
   };
   await App.addListener('appUrlOpen', ({ url }) => { void openAccountLink(url); });
   const launch = await App.getLaunchUrl();
@@ -43,6 +116,8 @@ const EXTENSIONS: Record<string, string> = {
   'image/png': 'png',
   'application/zip': 'zip',
   'text/csv': 'csv',
+  'application/json': 'json', // #219
+  'text/plain': 'txt',        // #219
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'docx',
   'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'xlsx',
   'application/vnd.ms-excel': 'xls',

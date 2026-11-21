@@ -42,6 +42,11 @@ const ALLOWED_CONTENT_TYPES = new Set([
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // .docx
   'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',       // .xlsx (#77)
   'application/vnd.ms-excel',                                                // .xls (#77)
+  // #219: data files clients send for GST and accounts work.
+  'text/csv',          // .csv
+  'application/json',  // .json
+  'text/plain',        // .txt
+  'application/zip',   // .zip
 ]);
 
 const toISO = (ts) => {
@@ -165,7 +170,7 @@ export async function createSignedUploadUrl(req, res) {
     if (!task) return;
 
     if (!ALLOWED_CONTENT_TYPES.has(contentType)) {
-      return res.status(400).json({ message: 'Unsupported file type. Allowed: PDF, JPG, PNG, DOCX.' });
+      return res.status(400).json({ message: 'Unsupported file type. Allowed: PDF, JPG, PNG, DOCX, XLSX, XLS, CSV, JSON, TXT, ZIP.' });
     }
 
     const docId = randomUUID();

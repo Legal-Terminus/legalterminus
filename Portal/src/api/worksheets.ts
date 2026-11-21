@@ -4,9 +4,12 @@ import { apiFetch } from './client';
 
 /* #210 Trademark Reports / #217 Worksheets — one engine, one API. */
 
-export type ModuleKey = 'trademark' | 'company';
-export type FieldType = 'text' | 'longtext' | 'date' | 'number' | 'select' | 'computed' | 'image' | 'matter';
+export type ModuleKey = 'trademark' | 'company' | 'gst_return';
+export type FieldType = 'text' | 'longtext' | 'date' | 'number' | 'select' | 'staff' | 'computed' | 'image' | 'matter';
 export type CellValue = string | number | null;
+
+/** #280: one person a staff column (Assigned to, Checker) can hold. `value` is the uid stored on the row. */
+export interface StaffChoice { value: string; label: string; active: boolean }
 
 export interface WsColumn {
   key: string;
@@ -16,6 +19,10 @@ export interface WsColumn {
   hidden: boolean;
   builtIn: boolean;
   aliases: string[];
+  /** #279: a secret cell (GST Pswd) — never in a list response; revealed on demand. */
+  secret?: boolean;
+  /** #280: a staff column's people — the portal's staff, not a typed list. */
+  choices?: StaffChoice[];
 }
 
 export interface WsSheet {
@@ -29,6 +36,12 @@ export interface WsSheet {
   linkedServices: string[];
   memberships: { key: string; label: string }[];
   reminder: { field: string; milestones: number[] } | null;
+  /** #280 / #279: the sheet starts with the firm's "Sl. No." (the row number). */
+  serial: boolean;
+  /** #279: rows also come from matters (the GST Return Filing sheet). */
+  source: { kind: string } | null;
+  /** #279: 'monthly' | 'quarterly' on the GST Return Filing sheets — drives the Return Period filter. */
+  frequency?: 'monthly' | 'quarterly' | null;
 }
 
 export interface WsModule {
@@ -44,6 +57,8 @@ export interface WsRecord {
   sheets: string[];
   values: Record<string, CellValue>;
   images: Record<string, { v: string }>;
+  /** #279: which secret cells hold a value (never the value itself). */
+  secretsSet?: Record<string, boolean>;
   createdAt: string | null;
   updatedAt: string | null;
 }
@@ -76,6 +91,10 @@ export const deleteWorksheetRecord = (sheet: string, id: string) =>
 export interface ColumnEdit { key?: string; label: string; type?: FieldType; options?: string[]; hidden?: boolean }
 export const putWorksheetColumns = (sheet: string, columns: ColumnEdit[], linkedServices?: string[]) =>
   apiFetch<WsSheet>(`${sheetPath(sheet)}/columns`, { method: 'PUT', body: JSON.stringify({ columns, ...(linkedServices ? { linkedServices } : {}) }) });
+
+/** #280 / #279: replace one dropdown column's options (admin, manager, team member). */
+export const putWorksheetOptions = (sheet: string, field: string, options: string[]) =>
+  apiFetch<WsSheet>(`${sheetPath(sheet)}/options/${encodeURIComponent(field)}`, { method: 'PUT', body: JSON.stringify({ options }) });
 
 export interface ImportColumn { index: number; header: string; key: string | null; label?: string; status: string; notShown?: boolean }
 export interface ImportReport {
@@ -117,3 +136,11 @@ export async function uploadWorksheetImage(sheet: string, id: string, field: str
 
 export const deleteWorksheetImage = (sheet: string, id: string, field: string) =>
   apiFetch<{ deleted: true }>(imagePath(sheet, id, field), { method: 'DELETE' });
+
+/** #279: one row's secret (GST portal password), for staff only. */
+export const revealWorksheetSecret = (sheet: string, id: string, field: string) =>
+  apiFetch<{ value: string; userId: string | null; loginUrl: string }>(
+    `${sheetPath(sheet)}/records/${encodeURIComponent(id)}/secrets/${encodeURIComponent(field)}/reveal`,
+    { method: 'POST' },
+  );
+

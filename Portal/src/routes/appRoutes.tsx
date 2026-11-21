@@ -1,10 +1,10 @@
 import type { ReactElement } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import {
-  LayoutDashboard, CheckSquare, Users, BarChart2, Layers, User, Inbox, Settings, Contact, KeyRound, Webhook, CalendarDays, ShieldCheck, IndianRupee, ShoppingBag, Sheet,
+  LayoutDashboard, CheckSquare, Users, BarChart2, Layers, User, Inbox, Settings, Contact, KeyRound, Webhook, CalendarDays, ShieldCheck, IndianRupee, ShoppingBag, Sheet, TicketPercent,
 } from 'lucide-react';
 import type { Role } from '../store/authStore';
-import { ALL_ROLE_KEYS } from '../lib/roles';
+import { ALL_ROLE_KEYS, COUPON_MANAGER_ROLES, ACCOUNT_DELETION_ROLES } from '../lib/roles';
 
 // Pages are organised by FEATURE, never by role (role-neutral architecture).
 import DashboardPage from '../pages/dashboard/DashboardPage';
@@ -22,6 +22,7 @@ import Services from '../pages/services/ServicesPage';
 import ServiceDetail from '../pages/services/ServiceDetailPage';
 import WorkflowEditorPage from '../pages/workflow/WorkflowEditorPage';
 import ProfilePage from '../pages/profile/ProfilePage';
+import DeleteAccountPage from '../pages/account/DeleteAccountPage';
 import OrdersPage from '../pages/orders/OrdersPage';
 import EmailTemplatesPage from '../pages/settings/EmailTemplatesPage';
 import StatutoryCalendarPage from '../pages/settings/StatutoryCalendarPage';
@@ -42,14 +43,17 @@ import TeamPerformanceReport from '../pages/reports/TeamPerformanceReport';
 import StorageReportPage from '../pages/reports/StorageReport';
 import ClientGroupFeeReport from '../pages/reports/ClientGroupFeeReport';
 import ClientDatabasePage from '../pages/reports/ClientDatabasePage';
-import MyServicesReport from '../pages/reports/MyServicesReport';
 import ContactLeadsReport from '../pages/reports/ContactLeadsReport';
 import MarketingReportsPage from '../pages/reports/MarketingReportsPage';
 import TrademarkReportsPage from '../pages/reports/TrademarkReportsPage';
+import GstReturnFilingPage from '../pages/reports/GstReturnFilingPage';
 import WorksheetsPage from '../pages/worksheets/WorksheetsPage';
 import ReportingAccessPage from '../pages/settings/ReportingAccessPage';
 import WebsitePricesPage from '../pages/settings/WebsitePricesPage';
 import WebsiteOrdersPage from '../pages/website-orders/WebsiteOrdersPage';
+import CouponsPage from '../pages/coupons/CouponsPage';
+import CouponFormPage from '../pages/coupons/CouponFormPage';
+import CouponReport from '../pages/reports/CouponReport';
 
 /**
  * SINGLE SOURCE OF TRUTH for every authenticated route, who can access it, and
@@ -130,7 +134,7 @@ export const APP_ROUTES: AppRoute[] = [
   // #206: the firm's income by client and group — admin only, as is its API.
   { path: '/reports/client-group-fees', element: <ClientGroupFeeReport />, roles: ['admin'] },
   // #84 client-facing report — clients see only their own services/payments.
-  { path: '/reports/my-services',  element: <MyServicesReport />,     roles: ['client'], nav: { label: 'Reports', icon: BarChart2, mobile: true } },
+  // Clients have no Reports (owner, 2026-11-21, #268): their matters and payments are under My Services (/tasks).
   { path: '/users/new/:type',      element: <UserFormPage />,         roles: ['admin', 'manager'] },
   { path: '/users/edit/:type/:uid',element: <UserFormPage />,         roles: ['admin', 'manager'] },
 
@@ -146,12 +150,17 @@ export const APP_ROUTES: AppRoute[] = [
 
   // ── Self-service (all roles) — own profile + order history (migrated from the
   //    marketing site's /my-profile, which is now a redirect into the portal) ──
-  // #107/#108/#109: admin-only Settings — Email Templates.
-  { path: '/settings/email-templates', element: <EmailTemplatesPage />, roles: ['admin'], nav: { label: 'Settings', icon: Settings, order: 9 } },
+  // #107/#108/#109: Settings — Email Templates (the templates are admin-only).
+  // #310: managers reach the page too, to edit the completion email's "Explore
+  // more services" block; the page shows them only that block.
+  { path: '/settings/email-templates', element: <EmailTemplatesPage />, roles: ['admin', 'manager'], nav: { label: 'Settings', icon: Settings, order: 9 } },
   { path: '/profile', element: <ProfilePage />, roles: ALL_ROLE_KEYS, nav: { label: 'My Profile', icon: User, order: 10 } },
   // "My Orders" removed from the sidebar for now (all roles) — the route stays
   // reachable by URL so nothing 404s, but it no longer shows as a nav item.
   { path: '/orders',  element: <OrdersPage />,  roles: ALL_ROLE_KEYS },
+  // E29-S08: ask for your own account to be deleted. No nav entry (account menu and
+  // My Profile link to it); every role but admin.
+  { path: '/account/delete', element: <DeleteAccountPage />, roles: ACCOUNT_DELETION_ROLES },
   // Full notifications list (E07-S01) — reached from the topbar bell; no sidebar entry.
   { path: '/notifications', element: <NotificationsPage />, roles: ALL_ROLE_KEYS },
 
@@ -165,6 +174,9 @@ export const APP_ROUTES: AppRoute[] = [
   // there is no per-person grant: the role list IS the access rule. Team members
   // reach it from a dashboard tile (they have no Reports hub).
   { path: '/reports/trademark', element: <TrademarkReportsPage />, roles: ['admin', 'manager', 'team_member'] },
+  // #279: GST Return Filing, Monthly / Quarterly — under Reports as the firm
+  // asked, same access rule as #210 (admin, manager, team member view and edit).
+  { path: '/reports/gst-returns', element: <GstReturnFilingPage />, roles: ['admin', 'manager', 'team_member'] },
   // #217: the company worksheets — a day-to-day working tool, so a sidebar entry
   // rather than a tile buried under Reports. Same access rule as #210.
   { path: '/worksheets', element: <WorksheetsPage />, roles: ['admin', 'manager', 'team_member'], nav: { label: 'Worksheets', icon: Sheet, order: 1 } },
@@ -176,5 +188,12 @@ export const APP_ROUTES: AppRoute[] = [
   // E24: orders paid for on the website, and whether each became a matter.
   // #212: a paid order is approved before its matter opens, and the firm asked
   // that a team member can approve — so team members see this screen too.
+  // #256/#257/#260: coupon codes for the website checkout — the same people
+  // who set its prices (#241). Forms are full pages, for phones.
+  { path: '/settings/coupons', element: <CouponsPage />, roles: COUPON_MANAGER_ROLES, nav: { label: 'Coupons', icon: TicketPercent, order: 14.5 } },
+  { path: '/settings/coupons/new', element: <CouponFormPage />, roles: COUPON_MANAGER_ROLES },
+  { path: '/settings/coupons/edit/:code', element: <CouponFormPage />, roles: COUPON_MANAGER_ROLES },
+  // #256: the Coupon & Discount report, reached from the Reports hub.
+  { path: '/reports/coupons', element: <CouponReport />, roles: COUPON_MANAGER_ROLES },
   { path: '/website-orders', element: <WebsiteOrdersPage />, roles: ['admin', 'manager', 'team_member'], nav: { label: 'Website Orders', icon: ShoppingBag, order: 15 } },
 ];

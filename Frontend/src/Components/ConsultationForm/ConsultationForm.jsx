@@ -52,6 +52,10 @@ const EMPTY = {
  *   locationField {'state'|'city'} - 'state' (default) shows the state dropdown; 'city' shows a
  *                  plain city text input instead, for pages already scoped to one state
  *   fixedState   {string}  - state value submitted when locationField is 'city' (defaults to "Odisha")
+ *   request      {string}  - optional: what the visitor is asking for, when it is not a plain
+ *                  consultation (e.g. "Portfolio request"). Leads the subject and the message,
+ *                  so staff see it in the lead without opening the source page (#243).
+ *   submitLabel  {string}  - optional, the button text (defaults to "Book Free Consultation")
  */
 const ConsultationForm = ({
   source = 'unknown',
@@ -59,6 +63,8 @@ const ConsultationForm = ({
   title = 'Get Expert Assistance',
   locationField = 'state',
   fixedState = 'Odisha',
+  request = '',
+  submitLabel = 'Book Free Consultation',
 }) => {
   const [form, setForm] = useState(EMPTY);
   const [loading, setLoading] = useState(false);
@@ -126,10 +132,10 @@ const ConsultationForm = ({
           phone: normalizeIndianMobile(form.phone),
           state: locationField === 'city' ? fixedState : form.state,
           preferredCallTime: form.preferredCallTime,
-          subject: `Consultation request – ${source}`,
-          message: locationField === 'city' && form.city
+          subject: `${request || 'Consultation request'} – ${source}`,
+          message: (request ? `${request}. ` : '') + (locationField === 'city' && form.city
             ? `Lead from service page: ${source} (City: ${form.city.trim()})`
-            : `Lead from service page: ${source}`,
+            : `Lead from service page: ${source}`),
           source,
           sourceLabel: getServiceDisplayName(source),
           whatsapp: form.whatsapp,
@@ -259,7 +265,7 @@ const ConsultationForm = ({
             )}
 
             <button className="cf-submit" type="submit" disabled={loading}>
-              {loading ? 'Submitting…' : 'Book Free Consultation'}
+              {loading ? 'Submitting…' : submitLabel}
             </button>
           </form>
         )}

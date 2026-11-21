@@ -35,6 +35,10 @@ export const RULE_KINDS = ['day_of_month', 'fixed_date', 'anchor_offset'];
 export const DEFAULT_CALENDAR = {
   gstr1: { label: 'GSTR-1 (monthly)', kind: 'day_of_month', day: 11 },
   gstr3b: { label: 'GSTR-3B (monthly)', kind: 'day_of_month', day: 20 },
+  // #219: quarterly filers. Resolved against the quarter's LAST month, so Q2
+  // (Jul–Sep) gives 13 and 24 October. The dates the firm gave on the issue.
+  gstr1_qtr: { label: 'GSTR-1 (quarterly)', kind: 'day_of_month', day: 13 },
+  gstr3b_qtr: { label: 'GSTR-3B (quarterly)', kind: 'day_of_month', day: 24 },
   tds_payment: { label: 'TDS payment', kind: 'day_of_month', day: 7 },
   pf_payment: { label: 'PF contribution', kind: 'day_of_month', day: 15 },
   esi_payment: { label: 'ESI contribution', kind: 'day_of_month', day: 15 },

@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Legal Terminus</title>
+<!-- The app opens the hosted Portal (capacitor.config.ts server.url). This local page is shown
+     instead (server.errorPath) when the Portal cannot be loaded — no connection — and, on
+     Android, when the phone's WebView is older than android.minWebViewVersion. Plain HTML and
+     old-safe CSS so it renders on the very WebViews it warns about; the one script only makes
+     "Try again" go back to this build's Portal (web/app-env.js, written by scripts/app-env.mjs). -->
+<style>
+  body { margin: 0; padding: 48px 24px 32px; font-family: -apple-system, sans-serif; color: #111111; background: #ffffff; }
+  h1 { font-size: 22px; margin: 0 0 12px 0; }
+  h2 { font-size: 17px; margin: 28px 0 8px 0; }
+  p { font-size: 16px; line-height: 1.5; margin: 0 0 12px 0; color: #444444; }
+  .bar { width: 48px; height: 6px; background: #27B811; margin: 0 0 24px 0; }
+  a.button { display: inline-block; margin: 8px 0 0 0; padding: 14px 24px; min-height: 20px; border-radius: 8px;
+             background: #111111; color: #ffffff; font-size: 16px; font-weight: 600; text-decoration: none; }
+</style>
+<script src="app-env.js"></script>
+</head>
+<body>
+  <div class="bar"></div>
+  <h1>Legal Terminus could not be opened</h1>
+  <p>Check that the phone is connected to the internet, then try again.</p>
+  <a class="button" id="retry" href="#">Try again</a>
+
+  <h2>Still not opening on Android?</h2>
+  <p>The app needs an up-to-date <b>Android System WebView</b>. Open the <b>Play Store</b>, search for
+     <b>Android System WebView</b> (and <b>Google Chrome</b>), tap <b>Update</b>, then open the app again.
+     If there is no update, this phone may be too old for the app: please use the website in a browser.</p>
+<script>
+  document.getElementById('retry').onclick = function (e) {
+    e.preventDefault();
+    if (window.LT_PORTAL_URL) window.location.replace(window.LT_PORTAL_URL);
+    else window.location.reload();
+  };
+</script>
+</body>
+</html>

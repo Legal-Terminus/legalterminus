@@ -2,6 +2,7 @@ import React from "react";
 import "../CompanyRegHero/CompanyRegHero.css";
 import ConsultationForm from '../ConsultationForm/ConsultationForm';
 import LOGO_ASSET from "../../assets/Legal-Terminus-LOGO-GIF_300-x-150.gif";
+import { useStartingPrice, inr } from "../../utils/pricing";
 
 const FEATURES = [
   {
@@ -19,6 +20,8 @@ const FEATURES = [
 ];
 
 const CroBreadcrum = () => {
+  // #241: the cheapest company plan on sale on this page, not a typed figure.
+  const from = useStartingPrice("private-limited-odisha", 5999);
   return (
     <section className="crh-hero">
       <div className="crh-blob crh-blob-1" aria-hidden="true" />
@@ -50,7 +53,7 @@ const CroBreadcrum = () => {
           <div className="crh-price">
             <div className="crh-price-icon">🏢</div>
             <div className="crh-price-text">
-              <strong>Company registration starting from ₹4,999</strong>
+              <strong>Company registration starting from {inr(from)}</strong>
               <span>excluding government fees</span>
             </div>
           </div>

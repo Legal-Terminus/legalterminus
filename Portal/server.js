@@ -1,4 +1,5 @@
 import express from 'express';
+import compression from 'compression';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 
@@ -6,6 +7,13 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const app = express();
 const PORT = process.env.PORT || 8080;
+
+// Compress responses (gzip). The Portal is one large JavaScript bundle (~2.4 MB),
+// and Firebase Hosting does not compress what a Cloud Run rewrite returns, so the
+// apps and browsers were downloading it raw on every start (2026-11-21). Hashed
+// /portal/assets/** files are cached for a year by the Hosting header rule in
+// firebase.json; index.html stays no-store so a deploy is picked up at once.
+app.use(compression());
 
 // Serve static files from dist
 // Firebase Hosting forwards /portal/** to this service, preserving the full path
@@ -27,10 +35,20 @@ app.get('/health', (req, res) => {
 
 // SPA fallback: route all requests to index.html for client-side routing
 // This handles all routes that don't match static files
+//
+// This server only serves the built bundle: no API, no user data, and the same
+// index.html for every unknown path. CodeQL's js/missing-rate-limiting fires on
+// the sendFile below, but a limiter here would only throttle people who share
+// an IP (an office NAT) without protecting anything — Firebase Hosting's CDN
+// sits in front, Cloud Run caps the instances, and the API that does hold data
+// is rate-limited in backend/src/server.js.
+// The requested path is attacker-controlled: log it as one JSON line with CR/LF
+// removed so it cannot forge a second log entry (CodeQL js/log-injection).
+const oneLine = (v) => String(v).replace(/[\r\n]+/g, ' ').slice(0, 300);
 app.use((req, res) => {
   res.sendFile(join(__dirname, 'dist', 'index.html'), (err) => {
     if (err) {
-      console.error('Error sending index.html for', req.path, ':', err);
+      console.error(JSON.stringify({ severity: 'ERROR', message: 'Error sending index.html', path: oneLine(req.path), err: oneLine(err.message) }));
       res.status(500).send('Error loading page');
     }
   });

@@ -6,9 +6,10 @@ import PageShell from '../../components/common/PageShell';
 import { SkeletonCards } from '../../components/common/Skeleton';
 import { useToast } from '../../components/common/toastContext';
 import { useAuthStore } from '../../store/authStore';
+import RefundHistory from '../../components/payments/RefundHistory';
 import {
   approveOrder, getWebsiteOrders, reconcileOrder, retryOrderMatter, WEBSITE_ORDERS_KEY,
-  type OrderStatus, type WebsiteOrder,
+  type OrderStatus, type WebsiteOrder, type WebsiteOrderItem,
 } from '../../api/websiteOrders';
 
 /**
@@ -40,14 +41,118 @@ const STATUS: Record<OrderStatus, { label: string; cls: string }> = {
 function matterLine(o: WebsiteOrder): { text: string; warn: boolean } {
   if (o.status === 'review') return { text: o.reviewReason ?? 'The amount paid does not match. Check before opening a matter.', warn: true };
   if (o.status !== 'paid') return { text: '—', warn: false };
+  // #240: a refund recorded before approval — the service was cancelled.
+  if (o.kind !== 'matter_balance' && o.matter.state !== 'created' && (o.refundSummary?.activeTotal ?? 0) > 0) {
+    return { text: `Refund of ${inr(o.refundSummary!.activeTotal)} recorded. No matter will be opened.`, warn: false };
+  }
+  // #220: a client's Pay Now payment goes into an existing matter's payment history.
+  // #222: so does a client's payment of an additional payment request.
+  if (o.kind === 'matter_balance' || o.kind === 'payment_request') {
+    switch (o.matter.state) {
+      case 'credited': return { text: "Added to the matter's payment history", warn: false };
+      case 'credit_failed': return { text: `Paid, but not added to the matter: ${o.matter.error ?? 'unknown reason'}`, warn: true };
+      default: return { text: 'Adding to the matter…', warn: false };
+    }
+  }
   switch (o.matter.state) {
     // #212: payment alone opens nothing — someone approves the order first.
     case 'awaiting_approval': return { text: 'Waiting for approval. Approve the order to open its matter.', warn: true };
-    case 'created': return { text: o.matter.deleted ? 'Matter opened, then deleted' : 'Matter opened', warn: false };
+    case 'created':
+      // #244: a cart opens one matter per service — see the lines for each.
+      if (o.items?.length) {
+        const n = o.items.filter((it) => it.matter.state === 'created').length;
+        const byHand = o.items.length - n;
+        return { text: `${n} matter${n === 1 ? '' : 's'} opened${byHand ? `; ${byHand} to open by hand` : ''}`, warn: byHand > 0 };
+      }
+      return { text: o.matter.deleted ? 'Matter opened, then deleted' : 'Matter opened', warn: false };
     case 'failed': return { text: `Could not open the matter: ${o.matter.error ?? 'unknown reason'}`, warn: true };
     case 'not_applicable': return { text: `No matter opened. ${o.matter.reason ?? ''} Open one by hand.`, warn: true };
     default: return { text: 'Opening the matter…', warn: false };
   }
+}
+
+/** #244: what became of one service of a cart order. */
+function lineMatter(it: WebsiteOrderItem, paid: boolean): { text: string; warn: boolean } {
+  if (!paid) return { text: '', warn: false };
+  switch (it.matter.state) {
+    case 'awaiting_approval': return { text: 'Waiting for approval', warn: false };
+    case 'created': return { text: it.matter.deleted ? 'Matter opened, then deleted' : 'Matter opened', warn: false };
+    case 'failed': return { text: `Could not open: ${it.matter.error ?? 'unknown reason'}`, warn: true };
+    case 'not_applicable': return { text: `Open by hand. ${it.matter.reason ?? ''}`, warn: true };
+    default: return { text: '', warn: false };
+  }
+}
+
+/**
+ * #244: the units of a cart order put back into the lines the customer chose
+ * — one per service, with its quantity and the line's total. An order holds a
+ * service once, so its units share a productKey; an item with no quantity
+ * (every order made before quantities) is a line of one.
+ */
+interface OrderLine { first: WebsiteOrderItem; units: WebsiteOrderItem[]; amount: number }
+function orderLines(items: WebsiteOrderItem[]): OrderLine[] {
+  const lines: OrderLine[] = [];
+  const at = new Map<string, OrderLine>();
+  items.forEach((it, i) => {
+    const key = it.productKey ?? `#${i}`;
+    let line = at.get(key);
+    if (!line) { line = { first: it, units: [], amount: 0 }; at.set(key, line); lines.push(line); }
+    line.units.push(it);
+    line.amount = Math.round((line.amount + it.amount) * 100) / 100;
+  });
+  return lines;
+}
+
+/** What one unit's matter is doing, with a link to it once opened. */
+function UnitMatter({ it, paid, name }: { it: WebsiteOrderItem; paid: boolean; name: string }) {
+  const m = lineMatter(it, paid);
+  return (
+    <>
+      {m.text && <span className={m.warn ? 'text-amber-800' : 'text-ink-muted'}>{m.text}</span>}
+      {it.matter.state === 'created' && it.matter.taskId && !it.matter.deleted && (
+        <> · <Link to={`/tasks/${it.matter.taskId}`} className="inline-flex items-center min-h-11 md:min-h-0 text-brand-700 underline"
+          aria-label={`Open the matter for ${name}`}>Open matter</Link></>
+      )}
+    </>
+  );
+}
+
+/**
+ * #244: the services of a cart order, one per line, each with its quantity,
+ * its total and the matter each unit opened. Wraps on a phone; no sideways scroll.
+ */
+function OrderItems({ o }: { o: WebsiteOrder }) {
+  if (!o.items?.length) return null;
+  const paid = o.status === 'paid';
+  return (
+    <ul className="mt-1 space-y-1.5" aria-label={`Services in order ${o.orderId}`}>
+      {orderLines(o.items).map(({ first: it, units, amount }, i) => {
+        const q = units.length;
+        const discount = units.reduce((s, u) => s + (u.discount ?? 0), 0);
+        const listPrice = units.reduce((s, u) => s + (u.listPrice ?? u.price), 0);
+        return (
+          <li key={`${it.productKey}-${i}`} className="text-xs">
+            <span className="text-ink">{it.label} — {it.planName}</span>
+            {q > 1 && <span className="text-ink font-semibold"> × {q}</span>}
+            {!!it.surcharge && <span className="text-ink-muted"> (incl. {inr(it.surcharge)}{q > 1 ? ' each' : ''} for {it.optionName})</span>}
+            <span className="text-ink-muted"> · {inr(amount)}</span>
+            {q > 1 && units.every((u) => u.amount === it.amount) && <span className="text-ink-muted"> ({inr(it.amount)} each)</span>}
+            {!!discount && <span className="text-ink-muted"> (after {inr(Math.round(discount * 100) / 100)} off {inr(Math.round(listPrice * 100) / 100)})</span>}
+            {q === 1 ? (
+              paid && lineMatter(it, paid).text && <> · <UnitMatter it={it} paid={paid} name={it.label} /></>
+            ) : paid && (
+              // One matter per unit: say what became of each.
+              <ol className="mt-1 ml-4 space-y-1 list-decimal" aria-label={`Matters for ${it.label}`}>
+                {units.map((u, n) => (
+                  <li key={n}><UnitMatter it={u} paid={paid} name={`${it.label}, ${n + 1} of ${q}`} /></li>
+                ))}
+              </ol>
+            )}
+          </li>
+        );
+      })}
+    </ul>
+  );
 }
 
 const METHOD: Record<string, string> = {
@@ -64,15 +169,32 @@ const LEARNED: Record<string, string> = {
  * what someone needs when a customer rings to ask "did my payment go through?"
  * — the references to quote, how it was paid, and whether the money matched.
  */
-function OrderDetails({ o }: { o: WebsiteOrder }) {
+/** #240: an order refunded before its matter existed keeps its refunds itself. */
+const refundableHere = (o: WebsiteOrder) => o.kind !== 'matter_balance'
+  && ['paid', 'review', 'refunded'].includes(o.status) && o.matter.state !== 'created' && o.matter.state !== 'pending';
+
+function OrderDetails({ o, canManage, onChanged }: { o: WebsiteOrder; canManage: boolean; onChanged: () => void }) {
   const paidSomething = ['paid', 'review', 'refunded'].includes(o.status);
   const matches = o.amountPaid === o.amount;
   const rows: [string, string | undefined | null][] = [
     ['Order reference', o.orderId],
-    ['Service', `${o.label} — ${o.planName}`],
+    ['Service', o.items?.length ? `${o.items.length} services` : `${o.label} — ${o.planName}`],
     ['Product code', o.productCode],
+    // #221: the answer the customer gave above the plans, and what it added.
+    ...(o.optionName ? ([
+      [o.optionLabel || 'Option', o.optionName],
+      ...(o.surcharge ? ([
+        ['Plan price', inr(o.basePrice ?? 0)],
+        [`Extra for ${o.optionName}`, inr(o.surcharge)],
+      ] as [string, string][]) : []),
+    ] as [string, string][]) : []),
     ['Customer', [o.customer?.name, o.customer?.email, o.customer?.phone].filter(Boolean).join(' · ')],
     ['Ordered', when(o.createdAt)],
+    // #256: a coupon came off the price before GST.
+    ...(o.couponCode ? ([
+      ['Price before discount', inr(o.subtotalBeforeDiscount ?? 0)],
+      [`Coupon ${o.couponCode}${o.coupon ? ` (${o.coupon.discountType === 'percent' ? `${o.coupon.discountValue}%` : inr(o.coupon.discountValue)} off)` : ''}`, `−${inr(o.discount ?? 0)}`],
+    ] as [string, string][]) : []),
     // #212: prices are exclusive of GST. An order made before that has no GST.
     ...(o.gst ? ([
       ['Price', inr(o.price ?? o.amount)],
@@ -84,6 +206,11 @@ function OrderDetails({ o }: { o: WebsiteOrder }) {
     ] as [string, string][]) : []),
     ...(paidSomething ? ([
       ['Amount received', o.amountPaid != null ? inr(o.amountPaid) : '—'],
+      // #276: Razorpay's convenience fee, paid by the client on top — never on their receipt.
+      ...(o.convenienceFee ? ([
+        ['Convenience fee (paid by client)', `${inr(o.convenienceFee)}${o.convenienceFeeTax ? ` (incl. ${inr(o.convenienceFeeTax)} GST)` : ''}`],
+        ['Client paid in all', inr(o.gatewayAmount ?? (o.amountPaid ?? o.amount) + o.convenienceFee)],
+      ] as [string, string][]) : []),
       ['Paid', when(o.paidAt)],
       ['Paid by', o.method ? (METHOD[o.method] ?? o.method) : '—'],
       ['Payment reference', o.gatewayPaymentId],
@@ -111,6 +238,13 @@ function OrderDetails({ o }: { o: WebsiteOrder }) {
           </div>
         ))}
       </dl>
+      {/* #240: refunds before approval — admins and managers record them here. */}
+      {canManage && refundableHere(o) && (
+        <div>
+          <p className="text-sm font-semibold text-ink mb-2">Refund history</p>
+          <RefundHistory target={{ kind: 'order', id: o.orderId }} canEdit compact onChanged={onChanged} />
+        </div>
+      )}
     </div>
   );
 }
@@ -137,7 +271,8 @@ export default function WebsiteOrdersPage() {
     mutationFn: retryOrderMatter,
     onSuccess: (o) => {
       refresh();
-      if (o.matter.state === 'created') toast.success('Matter opened.');
+      if (o.matter.state === 'credited') toast.success("Added to the matter's payment history.");
+      else if (o.matter.state === 'created') toast.success('Matter opened.');
       // Its service has a workflow now: the order joins the ones waiting for approval.
       else if (o.matter.state === 'awaiting_approval') toast.info('A matter can now be opened for this order. Approve it to open the matter.');
       else toast.error(o.matter.error || o.matter.reason || 'The matter could not be opened.');
@@ -158,7 +293,7 @@ export default function WebsiteOrdersPage() {
     mutationFn: approveOrder,
     onSuccess: (o) => {
       refresh();
-      if (o.matter.state === 'created') toast.success('Order approved. The matter is open.');
+      if (o.matter.state === 'created') toast.success(o.items?.length ? 'Order approved. Its matters are open.' : 'Order approved. The matter is open.');
       else toast.error(o.matter.error || 'The order is approved, but the matter could not be opened.');
     },
     // Someone else may have approved it a moment ago; show what is true now.
@@ -168,7 +303,7 @@ export default function WebsiteOrdersPage() {
 
   const Actions = ({ o }: { o: WebsiteOrder }) => (
     <div className="flex flex-wrap gap-2">
-      {o.status === 'paid' && o.matter.state === 'awaiting_approval' && (
+      {o.status === 'paid' && o.matter.state === 'awaiting_approval' && !((o.refundSummary?.activeTotal ?? 0) > 0) && (
         <button type="button" className="btn-primary min-h-11 disabled:opacity-50" disabled={busy}
           aria-label={`Approve order ${o.orderId} and open its matter`} onClick={() => approve.mutate(o.orderId)}>
           Approve and open matter
@@ -179,12 +314,13 @@ export default function WebsiteOrdersPage() {
         onClick={() => setOpen(open === o.orderId ? null : o.orderId)}>
         {open === o.orderId ? 'Hide details' : 'Details'}
       </button>
-      {o.matter.state === 'created' && o.matter.taskId && !o.matter.deleted && (
+      {(o.matter.state === 'created' || o.kind === 'matter_balance' || o.kind === 'payment_request') && o.matter.taskId && !o.matter.deleted && (
         <Link to={`/tasks/${o.matter.taskId}`} className="btn-secondary min-h-11">Open matter</Link>
       )}
-      {canManage && o.status === 'paid' && (o.matter.state === 'failed' || o.matter.state === 'not_applicable') && (
+      {canManage && o.status === 'paid' && (o.matter.state === 'failed' || o.matter.state === 'not_applicable' || o.matter.state === 'credit_failed') && (
         <button type="button" className="btn-secondary min-h-11 disabled:opacity-50" disabled={busy}
-          aria-label={`Try to open the matter for order ${o.orderId}`} onClick={() => retry.mutate(o.orderId)}>
+          aria-label={o.kind === 'matter_balance' || o.kind === 'payment_request' ? `Try again to add order ${o.orderId} to its matter` : `Try to open the matter for order ${o.orderId}`}
+          onClick={() => retry.mutate(o.orderId)}>
           Try again
         </button>
       )}
@@ -238,16 +374,21 @@ export default function WebsiteOrdersPage() {
                       </td>
                       <td className="p-3">
                         <p className="text-ink">{o.label}</p>
-                        <p className="text-xs text-ink-muted">{[o.productCode, o.planName].filter(Boolean).join(' · ')}</p>
+                        {o.items?.length ? <OrderItems o={o} /> : (
+                          <p className="text-xs text-ink-muted">{[o.productCode, o.planName].filter(Boolean).join(' · ')}</p>
+                        )}
                       </td>
-                      <td className="p-3 text-right whitespace-nowrap">{inr(o.amount)}</td>
+                      <td className="p-3 text-right whitespace-nowrap">
+                        {inr(o.amount)}
+                        {o.couponCode && <p className="text-xs text-ink-muted">Coupon {o.couponCode}: −{inr(o.discount ?? 0)}</p>}
+                      </td>
                       <td className="p-3"><span className={STATUS[o.status].cls}>{STATUS[o.status].label}</span></td>
                       <td className={`p-3 max-w-xs ${m.warn ? 'text-amber-800' : 'text-ink-muted'}`}>{m.text}</td>
                       <td className="p-3"><Actions o={o} /></td>
                     </tr>,
                     open === o.orderId && (
                       <tr key={`${o.orderId}-details`} className="border-b border-hairline bg-surface-soft">
-                        <td colSpan={7} className="p-4"><OrderDetails o={o} /></td>
+                        <td colSpan={7} className="p-4"><OrderDetails o={o} canManage={canManage} onChanged={refresh} /></td>
                       </tr>
                     ),
                   ];
@@ -263,15 +404,17 @@ export default function WebsiteOrdersPage() {
                 <li key={o.orderId} className="card p-4">
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
-                      <p className="text-sm font-semibold text-ink">{o.label} — {o.planName}</p>
+                      <p className="text-sm font-semibold text-ink">{o.items?.length ? o.label : `${o.label} — ${o.planName}`}</p>
+                      <OrderItems o={o} />
                       <p className="text-xs text-ink-muted">{[o.productCode, o.customer?.name || o.customer?.email || '—'].filter(Boolean).join(' · ')}</p>
                     </div>
                     <span className={`${STATUS[o.status].cls} shrink-0`}>{STATUS[o.status].label}</span>
                   </div>
                   <p className="mt-2 text-sm text-ink">{inr(o.amount)} <span className="text-xs text-ink-muted">· {o.orderId} · {when(o.createdAt)}</span></p>
+                  {o.couponCode && <p className="text-xs text-ink-muted">Coupon {o.couponCode}: −{inr(o.discount ?? 0)} before GST</p>}
                   <p className={`mt-1 text-sm ${m.warn ? 'text-amber-800' : 'text-ink-muted'}`}>{m.text}</p>
                   <div className="mt-3"><Actions o={o} /></div>
-                  {open === o.orderId && <div className="mt-3 pt-3 border-t border-hairline"><OrderDetails o={o} /></div>}
+                  {open === o.orderId && <div className="mt-3 pt-3 border-t border-hairline"><OrderDetails o={o} canManage={canManage} onChanged={refresh} /></div>}
                 </li>
               );
             })}

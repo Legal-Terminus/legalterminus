@@ -3,11 +3,12 @@ import { test, expect } from './fixtures';
 import type { Page } from '@playwright/test';
 import {
   apiAs, createWorksheetRecord, deleteWorksheetRecordsMatching, getWorksheetSheet, listWorksheet, restoreWorksheetColumns,
-  type WsSheetLite,
+  restoreWorksheetOptions, type WsSheetLite,
 } from './api';
 
 /**
- * #217 — the thirteen company worksheets on the shared worksheet engine.
+ * #217 — the company worksheets on the shared worksheet engine, and the TDS
+ * Sheet with staff-editable dropdowns and staff-filled Assigned to / Checker (#280).
  *
  * Runs against QA's data: records carry a per-run marker and are deleted
  * afterwards; the one sheet whose columns this spec edits (Startup Odisha) is
@@ -18,11 +19,20 @@ test.describe.configure({ mode: 'serial' });
 const RUN = `E2E${Date.now().toString(36).toUpperCase()}`;
 const UDYAM_1 = `UDYAM-${RUN}-01`;
 const UDYAM_2 = `UDYAM-${RUN}-02`;
+const TAN = `TAN${RUN}`;
 let odishaSnapshot: WsSheetLite;
+let tdsSnapshot: WsSheetLite;
 
-test.beforeAll(async () => { odishaSnapshot = await getWorksheetSheet('company', 'startup_odisha'); });
+test.beforeAll(async () => {
+  odishaSnapshot = await getWorksheetSheet('company', 'startup_odisha');
+  tdsSnapshot = await getWorksheetSheet('company', 'tds');
+});
 test.afterAll(async () => {
   if (odishaSnapshot) await restoreWorksheetColumns(odishaSnapshot);
+  // #280: the TDS dropdown this spec edits goes back exactly as it was.
+  const clientCol = tdsSnapshot?.columns.find((c) => c.key === 'client');
+  if (clientCol) await restoreWorksheetOptions('tds', 'client', clientCol.options ?? []);
+  await deleteWorksheetRecordsMatching('tds', 'tan', RUN);
   await deleteWorksheetRecordsMatching('udyam', 'udyam_no', RUN);
   await deleteWorksheetRecordsMatching('kyc', 'din', RUN);
   await deleteWorksheetRecordsMatching('startup_odisha', 'registration_no', RUN);
@@ -36,17 +46,17 @@ async function openSheet(page: Page, label: string) {
 }
 const row = (page: Page, text: string) => page.locator('tr', { hasText: text });
 
-test('the dropdown lists all thirteen worksheets and team members see Worksheets in the menu', async ({ teamPage }) => {
+test('the dropdown lists all fourteen worksheets and team members see Worksheets in the menu', async ({ teamPage }) => {
   await teamPage.goto('dashboard');
   await expect(teamPage.getByRole('link', { name: 'Worksheets' }).first()).toBeVisible();
   await teamPage.goto('worksheets');
   // The options come from the API: wait for them before reading.
   const select = teamPage.getByLabel('Worksheet', { exact: true });
-  await expect(select.locator('option')).toHaveCount(13, { timeout: 20_000 });
+  await expect(select.locator('option')).toHaveCount(14, { timeout: 20_000 });
   const options = await select.locator('option').allInnerTexts();
   expect(options).toEqual([
     'Incorporation Sheet', 'Auditor Master Sheet', 'KYC Sheet', 'Annual Filing Sheet', 'ROC Register', 'Strike Off Sheet',
-    'Auditor Registration (ADT-3)', 'Startup Odisha Sheet', 'Startup India Sheet', 'GST Sheet', 'Udyam Sheet',
+    'Auditor Registration (ADT-3)', 'Startup Odisha Sheet', 'Startup India Sheet', 'GST Sheet', 'TDS Sheet', 'Udyam Sheet',
     'Professional Tax Sheet', 'FSSAI Sheet',
   ]);
 });
@@ -173,4 +183,123 @@ test('clients cannot reach the worksheets', async ({ clientPage }) => {
   expect((await client.get('/api/worksheets/modules/company')).status()).toBe(403);
   expect((await client.post('/api/worksheets/sheets/udyam/records', { data: { values: { client: 'x' } } })).status()).toBe(403);
   await client.dispose();
+});
+
+/* ── #280 TDS Sheet ─────────────────────────────────────────────────────── */
+
+test('#280 the TDS Sheet has the firm\'s columns in the firm\'s order, starting with Sl. No.', async ({ managerPage }) => {
+  await openSheet(managerPage, 'TDS Sheet');
+  const headers = (await managerPage.locator('thead th').allInnerTexts()).map((t) => t.trim()).filter((t) => t && t !== 'Actions');
+  expect(headers.map((h) => h.toUpperCase())).toEqual([
+    'SL. NO.', 'COMPANY NAME', 'ASSIGNED TO', 'CHECKER', 'CLIENT', 'TAN NO', 'USER ID', 'TRACES PASSWORD', 'IT PASSWORD',
+    'TDS DATA RECEIVED', 'EXCEL PREPARED', 'FINAL EXCEL MAIL TO CLIENT', 'CHALLAN PAID BY CLIENT',
+    'SALARY (FORM 138) FILING DATE', 'NON-SALARY (FORM 140) FILING DATE', 'SALARY (FORM 138) PR NO',
+    'NON-SALARY (FORM 140) PR NO', 'STATEMENT STATUS 26Q (FORM 140)', 'STATEMENT STATUS 24Q (FORM 138)',
+  ]);
+  for (const name of ['Add record', 'Upload Excel', 'Edit dropdowns', 'Download Excel']) {
+    await expect(managerPage.getByRole('button', { name })).toBeVisible();
+  }
+});
+
+/** #280: the first active person the TDS "Assigned to" column lists (staff of the portal, by name). */
+const firstStaff = () => tdsSnapshot.columns.find((c) => c.key === 'assigned_to')?.choices?.find((c) => c.active);
+
+test('#280 a team member adds a "Client" choice and picks a staff member as "Assigned to" when adding a TDS record', async ({ teamPage }) => {
+  const choice = `${RUN} Client`;
+  const person = firstStaff();
+  test.skip(!person, 'the TDS sheet lists no active staff on this environment');
+  await openSheet(teamPage, 'TDS Sheet');
+  await teamPage.getByRole('button', { name: 'Edit dropdowns' }).click();
+  // Assigned to and Checker list the portal's staff, so they are not typed lists.
+  const editable = await teamPage.getByLabel('Dropdown column').locator('option').allInnerTexts();
+  expect(editable).not.toContain('Assigned to');
+  expect(editable).not.toContain('Checker');
+  await teamPage.getByLabel('Dropdown column').selectOption({ label: 'Client' });
+  await teamPage.getByLabel('New choice').fill(choice);
+  await teamPage.getByRole('button', { name: 'Add choice' }).click();
+  await teamPage.getByRole('button', { name: 'Save choices' }).click();
+  await expect(teamPage.getByText('Choices for Client saved.')).toBeVisible();
+  await teamPage.getByRole('button', { name: 'Back', exact: true }).click();
+
+  await teamPage.getByRole('button', { name: 'Add record' }).click();
+  await teamPage.getByLabel('Company Name', { exact: true }).fill(`${RUN} Lift Irrigation Ltd`);
+  // The picker shows names; no email address is ever listed.
+  const offered = await teamPage.getByLabel('Assigned to', { exact: true }).locator('option').allInnerTexts();
+  expect(offered).toContain(person!.label);
+  expect(offered.some((o) => o.includes('@'))).toBe(false);
+  await teamPage.getByLabel('Assigned to', { exact: true }).selectOption({ label: person!.label });
+  await teamPage.getByLabel('Client', { exact: true }).selectOption(choice);
+  await teamPage.getByLabel('TAN NO', { exact: true }).fill(TAN);
+  await teamPage.getByLabel('TDS Data Received', { exact: true }).selectOption('Yes');
+  await teamPage.getByLabel('SALARY (Form 138) PR NO', { exact: true }).fill('752309600068224');
+  await teamPage.getByRole('button', { name: 'Add record' }).last().click();
+  await expect(teamPage.getByText('Record added.')).toBeVisible();
+  await teamPage.getByLabel('Search this sheet').fill(RUN);
+  const r = row(teamPage, `${RUN} Lift Irrigation Ltd`);
+  await expect(r).toContainText(person!.label);
+  await expect(r).toContainText(choice);
+  await expect(r).toContainText('752309600068224');
+  await expect(r.locator('td').nth(1)).toHaveText('1'); // Sl. No.
+  // The row stores WHO was picked (the uid), not the name.
+  const saved = (await listWorksheet('team', 'tds')).find((x) => x.values.tan === TAN)!;
+  expect(saved.values.assigned_to).toBe(person!.value);
+});
+
+test('#280 TDS upload from the firm\'s layout: Sl. No. is skipped, rows match by TAN, staff are matched by name', async ({ adminPage }) => {
+  const person = firstStaff();
+  test.skip(!person, 'the TDS sheet lists no active staff on this environment');
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([
+    ['Sl. No.', 'Company Name', 'Assigned to', 'Checker', 'Client', 'TAN NO', 'USER ID', 'TDS Data Received', 'Excel Prepared',
+      'SALARY (Form 138) FILING DATE'],
+    // A name in any case matches the person; one that is nobody on the staff is kept as written.
+    [1, `${RUN} Lift Irrigation Ltd`, '', person!.label.toUpperCase(), 'MGGS', TAN, 'OLICLBBSR', 'Yes', 'YES', '27-10-2026'],
+    [2, `${RUN} Second Ltd`, `${RUN} Nobody`, '', '', `${TAN}2`, '', 'No', '', ''],
+  ]), 'Sheet1');
+  const buffer = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' }) as Buffer;
+
+  await openSheet(adminPage, 'TDS Sheet');
+  await adminPage.getByRole('button', { name: 'Upload Excel' }).click();
+  await adminPage.getByLabel('Excel file').setInputFiles({
+    name: `${RUN}-tds.xlsx`, mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', buffer,
+  });
+  await expect(adminPage.getByText(/cells were kept as written/)).toBeVisible();
+  await adminPage.getByText(/cells were kept as written/).click();
+  await expect(adminPage.getByText(`"${RUN} Nobody" is not a staff member`, { exact: false })).toBeVisible();
+  await adminPage.getByRole('button', { name: 'Apply: add 1, update 1' }).click();
+  await expect(adminPage.getByText(/Upload applied/)).toBeVisible();
+
+  const rows = (await listWorksheet('admin', 'tds')).filter((x) => String(x.values.tan).includes(RUN));
+  expect(rows).toHaveLength(2);
+  const first = rows.find((x) => x.values.tan === TAN)!;
+  expect(first.values.excel_prepared).toBe('Yes');
+  expect(first.values.salary_filing_date).toBe('2026-10-27');
+  expect(first.values.assigned_to).toBe(person!.value); // a blank cell never clears
+  expect(first.values.checker).toBe(person!.value);
+  expect(rows.find((x) => x.values.tan === `${TAN}2`)!.values.assigned_to).toBe(`${RUN} Nobody`);
+
+  // The grid and the download show the name; the unmatched text shows as written.
+  await adminPage.getByLabel('Search this sheet').fill(RUN);
+  await expect(row(adminPage, `${RUN} Lift Irrigation Ltd`)).toContainText(person!.label);
+  await expect(row(adminPage, `${RUN} Second Ltd`)).toContainText(`${RUN} Nobody`);
+});
+
+test('#280 dropdown choices: clients are refused; only a dropdown column has choices', async () => {
+  const client = await apiAs('client');
+  expect((await client.put('/api/worksheets/sheets/tds/options/assigned_to', { data: { options: ['x'] } })).status()).toBe(403);
+  await client.dispose();
+  const team = await apiAs('team');
+  const notSelect = await team.put('/api/worksheets/sheets/tds/options/tan', { data: { options: ['x'] } });
+  expect(notSelect.status()).toBe(400);
+  expect((await notSelect.json()).message).toMatch(/not a dropdown/);
+  // #280: Assigned to / Checker list the staff — they have no typed choices.
+  const staffCol = await team.put('/api/worksheets/sheets/tds/options/checker', { data: { options: ['x'] } });
+  expect(staffCol.status()).toBe(400);
+  expect((await staffCol.json()).message).toMatch(/not a dropdown/);
+  expect((await team.put('/api/worksheets/sheets/tds/options/client', { data: { options: 'x' } })).status()).toBe(400);
+  // A typed name is refused on a manual edit: a person is picked from the list.
+  const typed = await team.post('/api/worksheets/sheets/tds/records', { data: { values: { tan: `${TAN}X`, assigned_to: 'Somebody' } } });
+  expect(typed.status()).toBe(400);
+  expect((await typed.json()).message).toMatch(/Pick a person from the "Assigned to" list/);
+  await team.dispose();
 });

@@ -5,6 +5,8 @@ import { Link } from 'react-router-dom';
 import { apiFetch } from '../../api/client';
 import { AlertCircle, CheckCircle } from 'lucide-react';
 import { LTMark } from '../../components/common/LTLogo';
+import PasswordChecklist, { TermsAgreement } from '../../components/auth/PasswordChecklist';
+import { isStrongPassword, PASSWORD_RULES_MESSAGE } from '@shared/auth/passwordRules.js';
 
 export default function SignupPage() {
   const [email, setEmail] = useState('');
@@ -12,6 +14,7 @@ export default function SignupPage() {
   const [fullName, setFullName] = useState('');
   const [mobile, setMobile] = useState('');
   const [businessName, setBusinessName] = useState('');
+  const [termsAccepted, setTermsAccepted] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -19,18 +22,43 @@ export default function SignupPage() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError('');
+    // #35: checked here, before any account exists (the form is noValidate so
+    // every message is ours, in one place).
+    if (!fullName.trim()) {
+      setError('Enter your full name.');
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      setError('Enter a valid email address.');
+      return;
+    }
+    if (!isStrongPassword(password)) {
+      setError(PASSWORD_RULES_MESSAGE);
+      return;
+    }
+    if (!termsAccepted) {
+      setError('Please agree to the Terms & Conditions and Privacy Policy to continue.');
+      return;
+    }
     setLoading(true);
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const userCredential = await createUserWithEmailAndPassword(auth, email.trim(), password);
       const idToken = await userCredential.user.getIdToken();
       await apiFetch('/api/auth/register', {
         method: 'POST',
         headers: { Authorization: `Bearer ${idToken}` },
-        body: JSON.stringify({ fullName, mobile, businessName }),
+        body: JSON.stringify({ fullName, mobile, businessName, termsAccepted: true }),
       });
       setSuccess(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Signup failed');
+      const code = (err as { code?: string })?.code;
+      // Firebase's own refusals, never shown as a raw code. The policy one only
+      // appears if a password policy is switched on for the project.
+      if (code === 'auth/weak-password' || code === 'auth/password-does-not-meet-requirements') setError(PASSWORD_RULES_MESSAGE);
+      else if (code === 'auth/email-already-in-use') setError('An account with this email already exists. Sign in instead.');
+      else if (code === 'auth/invalid-email') setError('Enter a valid email address.');
+      else if (code) setError('Could not create the account. Please try again.');
+      else setError(err instanceof Error ? err.message : 'Signup failed');
     } finally {
       setLoading(false);
     }
@@ -88,24 +116,25 @@ export default function SignupPage() {
           <p className="mt-1 text-sm text-ink-muted">Fill in your details to get started.</p>
 
           {error && (
-            <div className="mt-5 flex items-start gap-2.5 p-3.5 bg-red-50 border border-red-100 rounded-lg">
+            <div role="alert" className="mt-5 flex items-start gap-2.5 p-3.5 bg-red-50 border border-red-100 rounded-lg">
               <AlertCircle className="w-4 h-4 text-red-500 mt-0.5 shrink-0" />
               <p className="text-sm text-red-600">{error}</p>
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+          <form onSubmit={handleSubmit} className="mt-6 space-y-4" noValidate>
             <div>
-              <label className="input-label">Full Name <span className="text-red-400">*</span></label>
-              <input type="text" value={fullName} onChange={(e) => setFullName(e.target.value)} required placeholder="Ankit Sharma" className="input-field" />
+              <label htmlFor="signup-name" className="input-label">Full Name <span className="text-red-400">*</span></label>
+              <input id="signup-name" type="text" value={fullName} onChange={(e) => setFullName(e.target.value)} required placeholder="Ankit Sharma" className="input-field" />
             </div>
             <div>
-              <label className="input-label">Email <span className="text-red-400">*</span></label>
-              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required placeholder="you@example.com" className="input-field" />
+              <label htmlFor="signup-email" className="input-label">Email <span className="text-red-400">*</span></label>
+              <input id="signup-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required placeholder="you@example.com" className="input-field" />
             </div>
             <div>
-              <label className="input-label">Password <span className="text-red-400">*</span></label>
-              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6} placeholder="Min. 6 characters" className="input-field" />
+              <label htmlFor="signup-password" className="input-label">Password <span className="text-red-400">*</span></label>
+              <input id="signup-password" type="password" autoComplete="new-password" value={password} onChange={(e) => setPassword(e.target.value)} required aria-describedby="password-rules" placeholder="Create a password" className="input-field" />
+              <PasswordChecklist password={password} id="password-rules" />
             </div>
             <div>
               <label className="input-label">Mobile <span className="text-ink-faint font-normal">(optional)</span></label>
@@ -115,6 +144,7 @@ export default function SignupPage() {
               <label className="input-label">Business Name <span className="text-ink-faint font-normal">(optional)</span></label>
               <input type="text" value={businessName} onChange={(e) => setBusinessName(e.target.value)} placeholder="Acme Pvt Ltd" className="input-field" />
             </div>
+            <TermsAgreement checked={termsAccepted} onChange={setTermsAccepted} />
             <button type="submit" disabled={loading} className="btn-primary w-full py-2.5 mt-1">
               {loading ? 'Creating account…' : 'Create account'}
             </button>

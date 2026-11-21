@@ -29,6 +29,29 @@ export const putEmailTemplates = (templates: Record<string, EmailTemplate>) =>
     body: JSON.stringify({ templates }),
   });
 
+/** #310: the "Explore more services" block on the client's completion email. */
+export interface CompletionMarketing {
+  enabled: boolean;
+  heading: string;
+  body: string;
+}
+
+export interface CompletionMarketingResponse {
+  settings: CompletionMarketing;
+  default: CompletionMarketing;
+  limits: { heading: number; body: number };
+}
+
+/** Admin + manager. */
+export const getCompletionMarketing = () =>
+  apiFetch<CompletionMarketingResponse>('/api/settings/completion-marketing');
+
+export const putCompletionMarketing = (settings: CompletionMarketing) =>
+  apiFetch<{ settings: CompletionMarketing }>('/api/settings/completion-marketing', {
+    method: 'PUT',
+    body: JSON.stringify(settings),
+  });
+
 export interface ApiTokenRow {
   id: string;
   name: string | null;

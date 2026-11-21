@@ -15,9 +15,12 @@ import {
   FaPhone,
   FaChevronRight,
   FaArrowRight,
+  FaShoppingCart,
 } from "react-icons/fa";
 import { onAuthStateChanged } from "firebase/auth";
 import { getFirebaseAuth } from "../../utils/firebase";
+import { useCart, unitsIn } from "../../utils/cart.js";
+import { PAYMENTS_ENABLED } from "../../utils/pricing.js";
 import "./Navbar.css";
 import LOGO_ASSET from "../../assets/Legal-Terminus-LOGO-GIF_300-x-150.gif";
 
@@ -213,6 +216,9 @@ const navData = [
       },
     ],
   },
+  // Software services sold by the firm, delivered by Infynia Labs — a plain
+  // link, not a mega menu: it is one page.
+  { id: "technology", label: "Technology Services", href: "/technology-services" },
   {
     id: "know-us",
     label: "Know Us",
@@ -238,6 +244,22 @@ const navData = [
     ],
   },
 ];
+
+/** #244: the cart link in the header, with a count of the services in it. */
+function CartIcon() {
+  // #244: every unit is a service (3 Trademark Registrations count 3).
+  const count = unitsIn(useCart());
+  const label = count ? `Cart, ${count} service${count === 1 ? "" : "s"}` : "Cart, empty";
+  return (
+    <div className="user-login-wrap">
+      <a href="/cart" className="icon-btn user-login-btn nav-cart-btn" aria-label={label}>
+        <FaShoppingCart />
+        {count > 0 && <span className="nav-cart-count" aria-hidden="true">{count}</span>}
+      </a>
+      <span className="user-login-tooltip">Cart</span>
+    </div>
+  );
+}
 
 export default function NavbarAdvanced() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -594,7 +616,9 @@ export default function NavbarAdvanced() {
                           {it.label}
                         </button>
                       ) : (
-                        <a role="menuitem" href={it.href} className="nav-link" style={{ fontWeight: 700 }}>
+                        // Only Home is bold (decided May 2026). The style used to apply to every
+                        // link without a dropdown, which made Technology Services bold too.
+                        <a role="menuitem" href={it.href} className="nav-link" style={it.id === "home" ? { fontWeight: 700 } : undefined}>
                           {it.label}
                         </a>
                       )}
@@ -891,6 +915,9 @@ export default function NavbarAdvanced() {
             </div>
 
             <div className="nav-right">
+              {/* #244: the cart, with how many services are in it. Shown only
+                  where online payment is switched on. */}
+              {PAYMENTS_ENABLED && <CartIcon />}
               <div className="user-login-wrap">
                 <a
                   href={loggedIn ? "/my-profile" : "/login"}

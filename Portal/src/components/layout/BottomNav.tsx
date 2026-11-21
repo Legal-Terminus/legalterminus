@@ -10,7 +10,7 @@ export default function BottomNav() {
   if (!role || links.length === 0) return null;
 
   return (
-    <nav className="md:hidden fixed bottom-0 inset-x-0 z-20 bg-white border-t border-hairline flex">
+    <nav className="app-bottombar md:hidden fixed bottom-0 inset-x-0 z-20 bg-white border-t border-hairline flex">
       {links.map((link) => {
         const Icon = link.icon;
         const active = isNavActive(link.to, location.pathname);

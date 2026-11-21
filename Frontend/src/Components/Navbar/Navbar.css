@@ -628,3 +628,12 @@
 */
 
 /* end of stylesheet */
+
+/* #244: cart icon + count badge */
+.nav-cart-btn { position: relative; min-width: 44px; min-height: 44px; }
+.nav-cart-count {
+  position: absolute; top: -4px; right: -4px;
+  min-width: 20px; height: 20px; padding: 0 5px; box-sizing: border-box;
+  border-radius: 10px; background: #21b738; color: #fff;
+  font-size: 12px; font-weight: 700; line-height: 20px; text-align: center;
+}

@@ -2,11 +2,12 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
 
-export default defineConfig(({ mode }) => ({
+export default defineConfig(() => ({
   // Firebase deployment: base should be '/portal/' so assets are at /portal/assets/...
-  // Direct Cloud Run access: would need base='/' but we prioritize Firebase
-  // `--mode mobile` (Capacitor app bundle) serves from the root. Web builds are unchanged.
-  base: mode === 'mobile' ? '/' : '/portal/',
+  // Direct Cloud Run access: would need base='/' but we prioritize Firebase.
+  // The Android and iPhone apps open this same hosted build (MobileApp/capacitor.config.ts
+  // server.url): there is no separate mobile build.
+  base: '/portal/',
   plugins: [react()],
   resolve: {
     alias: {

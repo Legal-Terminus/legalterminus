@@ -1,6 +1,7 @@
 import { db } from '../config/firebase.js';
 import { VALID_ROLES, isValidRole, canAssignRole } from '../config/roles.js';
 import { logger } from "../config/logger.js";
+import { logValue } from '../utils/sanitize.js';
 import { invalidateIdentity } from '../middleware/auth.middleware.js';
 import {
   upsertUser,
@@ -8,6 +9,7 @@ import {
   deleteUser,
   normalizeUserProfile,
 } from '../services/userService.js';
+import { afterClientProfileWrite } from '../services/clientName.service.js';
 
 /**
  * Unified user-management controller (BMAD architecture §3.5).
@@ -158,6 +160,7 @@ export const createUser = async (req, res) => {
       designation, joiningDate, fathersName, dateOfBirth, address,
       organisation, businessName, professionalName, professionalUid, groupCompany, gstNumber, panNumber, aadhaarNumber, state, emailIds,
       altPhone, contactDesignation, // #205
+      gstReturnFrequency, // #219
     } = req.body;
 
     // Privilege guard: a manager cannot create admin/manager accounts (escalation).
@@ -174,6 +177,8 @@ export const createUser = async (req, res) => {
       designation, joiningDate, fathersName, dateOfBirth, address,
       organisation, businessName, professionalName, groupCompany, gstNumber, panNumber, aadhaarNumber, state,
       altPhone, contactDesignation,
+      // #219: the day it was chosen decides the first period opened.
+      ...(role === 'client' && gstReturnFrequency ? { gstReturnFrequency, gstReturnFrequencySetAt: new Date().toISOString() } : {}),
       ...professional,
       emailIds: role === 'client'
         ? (emailIds && emailIds.length > 0 ? emailIds : [email])
@@ -219,6 +224,7 @@ export const updateUser = async (req, res) => {
       designation, joiningDate, fathersName, dateOfBirth, address,
       organisation, businessName, professionalName, professionalUid, groupCompany, gstNumber, panNumber, aadhaarNumber, state, emailIds,
       altPhone, contactDesignation, // #205
+      gstReturnFrequency, // #219
     } = req.body;
 
     // #151: validate + snapshot the assigned professional before any write.
@@ -247,6 +253,11 @@ export const updateUser = async (req, res) => {
       designation, joiningDate, fathersName, dateOfBirth, address,
       organisation, businessName, professionalName, groupCompany, gstNumber, panNumber, aadhaarNumber, state,
       altPhone, contactDesignation,
+      // #219: a change of frequency restarts the clock — the first period opened
+      // is the one whose 1st falls on or after today. '' switches it off.
+      ...(gstReturnFrequency !== undefined && (gstReturnFrequency || null) !== (current.gstReturnFrequency ?? null)
+        ? { gstReturnFrequency: gstReturnFrequency || null, gstReturnFrequencySetAt: gstReturnFrequency ? new Date().toISOString() : null }
+        : {}),
       // #151: {} when absent (leave as-is), explicit nulls when cleared to "None".
       ...professional,
       emailIds: emailIds && emailIds.length > 0 ? emailIds : undefined,
@@ -259,6 +270,12 @@ export const updateUser = async (req, res) => {
     // 60s identity cache expires.
     invalidateIdentity(uid);
 
+    // #277: a renamed client's existing matters still showed the old name —
+    // `clientName` on a matter is a copy, and nothing refreshed it.
+    if (updates.name !== undefined) {
+      await afterClientProfileWrite(db, uid, { ...current, ...updates });
+    }
+
     // Sync the Firebase custom claim only when a role was actually (and
     // legitimately) written. `role` itself is already persisted in `updates`.
     if (writableRole) {
@@ -266,7 +283,7 @@ export const updateUser = async (req, res) => {
       try {
         await admin.auth().setCustomUserClaims(uid, { role: writableRole });
       } catch (e) {
-        logger.warn({ err: e }, `[updateUser] Could not set claims for ${uid}:`);
+        logger.warn({ err: e, uid: logValue(uid) }, '[updateUser] Could not set claims');
       }
     }
 
@@ -333,7 +350,7 @@ export const reassignUserWork = async (req, res) => {
       await batch.commit();
     }
 
-    logger.info(`[reassignUserWork] ${uid} → ${toUid}: matters=${matters.size}, steps=${steps.size}`);
+    logger.info({ uid: logValue(uid), toUid: logValue(toUid), matters: matters.size, steps: steps.size }, '[reassignUserWork] Work reassigned');
     res.status(200).json({
       message: 'Work reassigned successfully',
       mattersMoved: matters.size,

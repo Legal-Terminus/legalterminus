@@ -33,7 +33,7 @@
  * unanswerable without reading git log.
  */
 import { execSync } from 'node:child_process';
-import { readFileSync, writeFileSync, existsSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 
 const sh = (cmd) => execSync(cmd, { encoding: 'utf8' }).trim();
 const die = (msg) => { console.error(`✖ ${msg}`); process.exit(1); };
@@ -121,9 +121,14 @@ Each released version is an annotated git tag. An installation reports the
 version it is running on \`GET /health\`.
 `;
 
-const existing = existsSync('CHANGELOG.md')
-  ? readFileSync('CHANGELOG.md', 'utf8').replace(HEADER, '').trimStart()
-  : '';
+// Read, and treat "no such file" as empty — rather than check-then-read, which
+// leaves a window between the two (CodeQL js/file-system-race).
+let existing = '';
+try {
+  existing = readFileSync('CHANGELOG.md', 'utf8').replace(HEADER, '').trimStart();
+} catch (err) {
+  if (err.code !== 'ENOENT') throw err;
+}
 const changelog = `${HEADER}\n${out.join('\n')}\n${existing}`.trimEnd() + '\n';
 
 console.log(`\n${tag}  (${log.length} commits since ${prev ?? 'the beginning'})\n`);

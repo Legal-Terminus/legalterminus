@@ -1,6 +1,7 @@
 import { test, expect } from './fixtures';
 import { apiAs, createMatter, deleteMatter, assignMatter, getNotifications, waitForNotification, assignStep, currentStep } from './api';
 import { env } from './helpers';
+import { solidPng } from './png';
 
 /**
  * #123 — per-matter discussion thread (client ⇄ internal team).
@@ -85,11 +86,11 @@ test('#123: the Discussion tab renders and can post a message', async ({ adminPa
   const taskId = await createMatter();
   try {
     await adminPage.goto(`tasks/${taskId}`);
-    await adminPage.getByRole('button', { name: 'Discussion', exact: true }).click();
+    await adminPage.getByRole('button', { name: 'Chat', exact: true }).click();
     await expect(adminPage.getByText('No messages yet')).toBeVisible();
 
     const msg = `UI-MSG-${Date.now()}`;
-    await adminPage.getByLabel('Message').fill(msg);
+    await adminPage.getByLabel('Message', { exact: true }).fill(msg);
     await adminPage.getByRole('button', { name: /^Send$/ }).click();
     await expect(adminPage.getByText(msg)).toBeVisible();
     // Staff default is internal-only — the bubble says so.
@@ -167,8 +168,8 @@ test('#200: typing "@" suggests colleagues; picking one inserts their address an
   const taskId = await createMatter();
   try {
     await adminPage.goto(`tasks/${taskId}`);
-    await adminPage.getByRole('button', { name: 'Discussion', exact: true }).click();
-    const box = adminPage.getByLabel('Message');
+    await adminPage.getByRole('button', { name: 'Chat', exact: true }).click();
+    const box = adminPage.getByLabel('Message', { exact: true });
     await box.click();
     await box.pressSequentially('Please check @E2E Te');
     const list = adminPage.getByRole('listbox', { name: 'Mention a colleague' });
@@ -188,8 +189,8 @@ test('#200: typing "@" alone lists the WHOLE team, not the first six', async ({ 
     await admin.dispose();
 
     await adminPage.goto(`tasks/${taskId}`);
-    await adminPage.getByRole('button', { name: 'Discussion', exact: true }).click();
-    const box = adminPage.getByLabel('Message');
+    await adminPage.getByRole('button', { name: 'Chat', exact: true }).click();
+    const box = adminPage.getByLabel('Message', { exact: true });
     await box.click();
     await box.pressSequentially('@');
     const list = adminPage.getByRole('listbox', { name: 'Mention a colleague' });
@@ -279,5 +280,372 @@ test('#200: a staff reply shared with the client does not page the team', async 
     await new Promise((r) => setTimeout(r, 3000));
     expect(await clientMessageCount('team', taskId)).toBe(0);
     expect(await clientMessageCount('manager', taskId)).toBe(0);
+  } finally { await deleteMatter(taskId); }
+});
+
+/* ── Chat: edit, delete, and confirm before sharing with the client ── */
+
+type Msg = { id: string; body: string; editedAt?: string | null; deleted?: boolean; canEdit?: boolean; canDelete?: boolean };
+const listAs = async (api: Awaited<ReturnType<typeof apiAs>>, taskId: string) =>
+  ((await (await api.get(`/api/tasks/${taskId}/messages`)).json()).data ?? []) as Msg[];
+const clientNotes = async (taskId: string) =>
+  (await getNotifications('client')).filter((n) => n.taskId === taskId).length;
+
+/** The client's notifications for this matter whose title says a message was edited. */
+const editedNotes = async (role: 'client' | 'team' | 'manager', taskId: string) =>
+  (await getNotifications(role)).filter((n) => n.taskId === taskId && /edited/i.test(n.title));
+
+test('#297: the author fixes a shared message; the client sees the new text and is told ONCE that it was edited', async () => {
+  const taskId = await createMatter();
+  const admin = await apiAs('admin');
+  const client = await apiAs('client');
+  try {
+    const typo = `SENT-WITH-A-TYPO-${Date.now()}`;
+    const res = await admin.post(`/api/tasks/${taskId}/messages`, { data: { body: typo, clientVisible: true } });
+    const { id } = await res.json();
+    await new Promise((r) => setTimeout(r, 2000));
+    const before = await clientNotes(taskId);
+
+    const fixed = `FIXED-${Date.now()}`;
+    const edit = await admin.patch(`/api/tasks/${taskId}/messages/${id}`, { data: { body: fixed } });
+    expect(edit.status(), await edit.text()).toBe(200);
+    // The same text again (a double-clicked Save) changes nothing and tells nobody.
+    expect((await admin.patch(`/api/tasks/${taskId}/messages/${id}`, { data: { body: fixed } })).status()).toBe(200);
+
+    const seen = (await listAs(client, taskId)).find((m) => m.id === id)!;
+    expect(seen.body).toContain(fixed);
+    expect(seen.body).not.toContain(typo);
+    expect(seen.editedAt).toBeTruthy();
+    // The client cannot change the firm's message.
+    expect(seen.canEdit).toBe(false);
+
+    // #297: exactly one new notification (its email is the template's), saying it was edited, with the new text.
+    expect(await waitForNotification('client', /edited/i, 20_000, taskId)).toBe(true);
+    await new Promise((r) => setTimeout(r, 2000));
+    expect(await clientNotes(taskId)).toBe(before + 1);
+    const notes = await editedNotes('client', taskId);
+    expect(notes).toHaveLength(1);
+    expect(notes[0].message).toContain(fixed);
+
+    // The earlier text is never returned by the API.
+    expect(JSON.stringify(await listAs(admin, taskId))).not.toContain(typo);
+    // Clearing the text is refused: deleting is the way to remove it.
+    expect((await admin.patch(`/api/tasks/${taskId}/messages/${id}`, { data: { body: '   ' } })).status()).toBe(400);
+  } finally { await admin.dispose(); await client.dispose(); await deleteMatter(taskId); }
+});
+
+test('#297: a client edits their message — the matter owner is told once; editing an internal note tells the client nothing', async () => {
+  const taskId = await createMatter();
+  const admin = await apiAs('admin');
+  const client = await apiAs('client');
+  try {
+    await assignMatter(taskId, env('E2E_TEAM_UID'));
+    const { id } = await (await client.post(`/api/tasks/${taskId}/messages`, { data: { body: 'The name is XZY' } })).json();
+    const fixed = `The name is XYZ-${Date.now()}`;
+    expect((await client.patch(`/api/tasks/${taskId}/messages/${id}`, { data: { body: fixed } })).status()).toBe(200);
+    expect(await waitForNotification('team', /edited/i, 20_000, taskId)).toBe(true);
+    const teamNotes = await editedNotes('team', taskId);
+    expect(teamNotes).toHaveLength(1);
+    expect(teamNotes[0].message).toContain(fixed);
+
+    // An internal staff note, edited: the client hears nothing.
+    const { id: internal } = await (await admin.post(`/api/tasks/${taskId}/messages`, { data: { body: 'internal' } })).json();
+    expect((await admin.patch(`/api/tasks/${taskId}/messages/${internal}`, { data: { body: 'internal, fixed' } })).status()).toBe(200);
+    await new Promise((r) => setTimeout(r, 2000));
+    expect(await editedNotes('client', taskId)).toHaveLength(0);
+  } finally { await admin.dispose(); await client.dispose(); await deleteMatter(taskId); }
+});
+
+test('#297: who may edit — the author only; who may delete — the author or an admin', async () => {
+  const taskId = await createMatter();
+  const admin = await apiAs('admin');
+  const manager = await apiAs('manager');
+  const team = await apiAs('team');
+  const client = await apiAs('client');
+  try {
+    await assignMatter(taskId, env('E2E_TEAM_UID'));
+    const post = async (api: typeof admin, body: string, clientVisible?: boolean) =>
+      (await (await api.post(`/api/tasks/${taskId}/messages`, { data: { body, clientVisible } })).json()).id as string;
+    const byAdmin = await post(admin, 'admin note', true);
+    const byManager = await post(manager, 'manager note');
+    const internal = await post(admin, 'internal note');
+    const byClient = await post(client, 'client question');
+
+    // A colleague cannot change someone else's message — and since #297 neither can an admin.
+    expect((await manager.patch(`/api/tasks/${taskId}/messages/${byAdmin}`, { data: { body: 'x' } })).status()).toBe(403);
+    expect((await manager.delete(`/api/tasks/${taskId}/messages/${byAdmin}`)).status()).toBe(403);
+    expect((await admin.patch(`/api/tasks/${taskId}/messages/${byManager}`, { data: { body: 'tidied by admin' } })).status()).toBe(403);
+    // #297: no internal user may edit a CLIENT's message — enforced by the API, not only the UI.
+    for (const staff of [admin, manager, team]) {
+      expect((await staff.patch(`/api/tasks/${taskId}/messages/${byClient}`, { data: { body: 'rewritten by staff' } })).status()).toBe(403);
+    }
+    const listed = await listAs(admin, taskId);
+    expect(listed.find((m) => m.id === byClient)).toMatchObject({ canEdit: false, canDelete: true });
+    expect(listed.find((m) => m.id === byManager)).toMatchObject({ canEdit: false, canDelete: true });
+    expect(listed.find((m) => m.id === byAdmin)).toMatchObject({ canEdit: true, canDelete: true });
+    expect((await listAs(manager, taskId)).find((m) => m.id === byClient)).toMatchObject({ canEdit: false, canDelete: false });
+
+    // A client cannot touch the firm's messages, and an internal one does not exist for them.
+    expect((await client.patch(`/api/tasks/${taskId}/messages/${byAdmin}`, { data: { body: 'x' } })).status()).toBe(403);
+    expect((await client.delete(`/api/tasks/${taskId}/messages/${internal}`)).status()).toBe(404);
+    // A client can fix and delete their own.
+    expect((await client.patch(`/api/tasks/${taskId}/messages/${byClient}`, { data: { body: 'client question, fixed' } })).status()).toBe(200);
+    // An admin may still delete any message (moderation).
+    expect((await admin.delete(`/api/tasks/${taskId}/messages/${byManager}`)).status()).toBe(200);
+    expect((await client.delete(`/api/tasks/${taskId}/messages/${byClient}`)).status()).toBe(200);
+
+    // A deleted message keeps its place, without its text, and cannot be changed again.
+    const gone = (await listAs(admin, taskId)).find((m) => m.id === byClient)!;
+    expect(gone).toMatchObject({ deleted: true, body: '', canEdit: false });
+    expect((await client.patch(`/api/tasks/${taskId}/messages/${byClient}`, { data: { body: 'again' } })).status()).toBe(409);
+    // Unknown fields are refused: an edit cannot change who sees the message.
+    expect((await admin.patch(`/api/tasks/${taskId}/messages/${internal}`, { data: { body: 'x', clientVisible: true } })).status()).toBe(400);
+  } finally {
+    await admin.dispose(); await manager.dispose(); await team.dispose(); await client.dispose(); await deleteMatter(taskId);
+  }
+});
+
+test('#297: staff see no Edit on a client\'s message; their own sent bubble is a darker green', async ({ adminPage }) => {
+  const taskId = await createMatter();
+  const client = await apiAs('client');
+  try {
+    const text = `CLIENT-WROTE-${Date.now()}`;
+    await client.post(`/api/tasks/${taskId}/messages`, { data: { body: text } });
+    await adminPage.goto(`tasks/${taskId}`);
+    await adminPage.getByRole('button', { name: 'Chat', exact: true }).click();
+    const theirs = adminPage.getByTestId('chat-bubble').filter({ hasText: text });
+    await expect(theirs).toBeVisible();
+    await expect(theirs.getByRole('button', { name: 'Edit message' })).toHaveCount(0);
+    await expect(theirs.getByRole('button', { name: 'Delete message' })).toBeVisible(); // admin moderation
+
+    const mine = `ADMIN-WROTE-${Date.now()}`;
+    await adminPage.getByLabel('Message', { exact: true }).fill(mine);
+    await adminPage.getByRole('button', { name: /^Send$/ }).click();
+    const bubble = adminPage.getByTestId('chat-bubble-mine').filter({ hasText: mine });
+    await expect(bubble.getByRole('button', { name: 'Edit message' })).toBeVisible();
+    // Not white and not the old, near-white emerald-50.
+    const bg = await bubble.evaluate((el) => getComputedStyle(el).backgroundColor);
+    expect(bg).not.toMatch(/^rgba?\(255, 255, 255/);
+    await expect(bubble).toHaveClass(/bg-emerald-100/);
+  } finally { await client.dispose(); await deleteMatter(taskId); }
+});
+
+test('Chat: the tab is called Chat; sharing with the client asks first; a message can be edited and deleted', async ({ adminPage }) => {
+  const taskId = await createMatter();
+  try {
+    await adminPage.goto(`tasks/${taskId}`);
+    await adminPage.getByRole('button', { name: 'Chat', exact: true }).click();
+    await expect(adminPage.getByRole('button', { name: 'Discussion', exact: true })).toHaveCount(0);
+
+    const msg = `TO-CLIENT-${Date.now()}`;
+    await adminPage.getByLabel('Message', { exact: true }).fill(msg);
+    await adminPage.getByLabel('Visible to client').check();
+    await adminPage.getByRole('button', { name: /^Send$/ }).click();
+
+    // The preview shows exactly what will go out. "Keep editing" sends nothing.
+    const dialog = adminPage.getByRole('dialog');
+    await expect(dialog.getByText('Send this to the client?')).toBeVisible();
+    await expect(dialog.getByText(msg)).toBeVisible();
+    await dialog.getByRole('button', { name: 'Keep editing' }).click();
+    await expect(dialog).toHaveCount(0);
+    await expect(adminPage.getByText('No messages yet')).toBeVisible();
+
+    await adminPage.getByRole('button', { name: /^Send$/ }).click();
+    await adminPage.getByRole('dialog').getByRole('button', { name: 'Send to client' }).click();
+    await expect(adminPage.getByText(msg)).toBeVisible();
+
+    // Edit it.
+    const fixed = `${msg}-FIXED`;
+    await adminPage.getByRole('button', { name: 'Edit message' }).click();
+    await adminPage.getByLabel('Edit message').fill(fixed);
+    await adminPage.getByRole('button', { name: 'Save', exact: true }).click();
+    await expect(adminPage.getByText(fixed)).toBeVisible();
+    await expect(adminPage.getByText(/· edited/)).toBeVisible();
+
+    // Delete it, after confirming.
+    await adminPage.getByRole('button', { name: 'Delete message' }).click();
+    await adminPage.getByRole('dialog').getByRole('button', { name: 'Delete', exact: true }).click();
+    await expect(adminPage.getByText('This message was deleted')).toBeVisible();
+    await expect(adminPage.getByText(fixed)).toHaveCount(0);
+  } finally { await deleteMatter(taskId); }
+});
+
+/* ── #295: Chat on a phone (the mobile app renders this same page) ───────── */
+
+test('#295: on a phone, a long message keeps Send on screen and the tab is called Chat', async ({ clientPage }) => {
+  const taskId = await createMatter();
+  try {
+    // An iPhone-12-sized viewport, with room taken off for an on-screen keyboard.
+    await clientPage.setViewportSize({ width: 390, height: 520 });
+    await clientPage.goto(`tasks/${taskId}`);
+    await clientPage.getByRole('button', { name: 'Chat', exact: true }).click();
+    await expect(clientPage.getByRole('button', { name: 'Discussion', exact: true })).toHaveCount(0);
+
+    // A long message: 120 paragraphs, far taller than the screen.
+    const editor = clientPage.getByLabel('Message', { exact: true });
+    await editor.click();
+    const long = Array.from({ length: 120 }, (_, i) => `Line ${i + 1} of a very long message about the proposed company names.`).join('\n');
+    await editor.fill(long);
+
+    // The text area stops growing and scrolls inside itself…
+    const box = await clientPage.getByTestId('rich-text-scroll').first().boundingBox();
+    expect(box!.height, 'the text area is capped').toBeLessThan(520 * 0.5);
+    // …so Send stays visible and usable, not under the bottom navigation.
+    const send = clientPage.getByRole('button', { name: /^Send$/ });
+    await expect(send).toBeInViewport();
+    await expect(send).toBeEnabled();
+    await expect(clientPage.locator('.app-bottombar')).toBeHidden();
+    const sendBox = await send.boundingBox();
+    expect(sendBox!.height, 'a 44px touch target').toBeGreaterThanOrEqual(44);
+
+    await send.click();
+    await expect(clientPage.getByText('Line 120 of a very long message', { exact: false })).toBeVisible();
+  } finally { await deleteMatter(taskId); }
+});
+
+test('#295: a 5,000-word message can be sent; the counter shows the 5,000 limit', async ({ adminPage }) => {
+  const taskId = await createMatter();
+  try {
+    await adminPage.goto(`tasks/${taskId}`);
+    await adminPage.getByRole('button', { name: 'Chat', exact: true }).click();
+    const editor = adminPage.getByLabel('Message', { exact: true });
+    await editor.click();
+    await editor.fill(Array(4200).fill('word').join(' '));
+    // The counter appears near the limit and names the CHAT limit, not a comment's 1,000.
+    await expect(adminPage.getByText(/4,200 \/ 5,000 words/)).toBeVisible();
+    await adminPage.getByRole('button', { name: /^Send$/ }).click();
+    await expect(adminPage.getByText('internal').first()).toBeVisible();
+  } finally { await deleteMatter(taskId); }
+});
+
+/* ── #297 follow-up: received bubble and drafts ─────────────────────────── */
+
+test('#297: a received message sits on a darker grey bubble with readable meta text', async ({ adminPage }) => {
+  const taskId = await createMatter();
+  const client = await apiAs('client');
+  try {
+    const text = `RECEIVED-${Date.now()}`;
+    await client.post(`/api/tasks/${taskId}/messages`, { data: { body: text } });
+    await adminPage.goto(`tasks/${taskId}`);
+    await adminPage.getByRole('button', { name: 'Chat', exact: true }).click();
+    const theirs = adminPage.getByTestId('chat-bubble').filter({ hasText: text }).filter({ visible: true });
+    await expect(theirs).toBeVisible();
+    await expect(theirs).toHaveClass(/bg-surface-strong/);
+    // #e5e7eb — no longer the near-white #f8f9fa that vanished on the white thread.
+    expect(await theirs.evaluate((el) => getComputedStyle(el).backgroundColor)).toBe('rgb(229, 231, 235)');
+    // Meta text on it is ink-soft (AA on the grey), not the faint grey it was.
+    await expect(theirs.getByText('shared', { exact: true })).toHaveClass(/text-ink-soft/);
+  } finally { await client.dispose(); await deleteMatter(taskId); }
+});
+
+test('#297: an unsent Chat draft survives a tab switch and a reload, and is gone once sent', async ({ adminPage }) => {
+  const taskId = await createMatter();
+  try {
+    await adminPage.goto(`tasks/${taskId}`);
+    const chatTab = adminPage.getByRole('button', { name: 'Chat', exact: true });
+    await chatTab.click();
+    const draft = `DRAFT-${Date.now()}`;
+    const editor = adminPage.getByLabel('Message', { exact: true });
+    await editor.click();
+    await editor.pressSequentially(draft);
+
+    // Straight to another tab — no pause for the autosave — and back.
+    await adminPage.getByRole('button', { name: 'Steps', exact: true }).click();
+    await chatTab.click();
+    await expect(adminPage.getByLabel('Message', { exact: true })).toContainText(draft);
+
+    // A reload keeps it too.
+    await adminPage.reload();
+    await adminPage.getByRole('button', { name: 'Chat', exact: true }).click();
+    await expect(adminPage.getByLabel('Message', { exact: true })).toContainText(draft);
+
+    // Sent → the box is empty, and stays empty after a tab switch.
+    await adminPage.getByRole('button', { name: /^Send$/ }).click();
+    await expect(adminPage.getByTestId('chat-bubble-mine').filter({ hasText: draft })).toBeVisible();
+    await adminPage.getByRole('button', { name: 'Steps', exact: true }).click();
+    await adminPage.getByRole('button', { name: 'Chat', exact: true }).click();
+    await expect(adminPage.getByTestId('chat-bubble-mine').filter({ hasText: draft })).toBeVisible();
+    await expect(adminPage.getByLabel('Message', { exact: true })).not.toContainText(draft);
+  } finally { await deleteMatter(taskId); }
+});
+
+test('#297: an edit in progress survives a tab switch; Cancel discards it', async ({ adminPage }) => {
+  const taskId = await createMatter();
+  const admin = await apiAs('admin');
+  try {
+    const original = `ORIGINAL-${Date.now()}`;
+    await admin.post(`/api/tasks/${taskId}/messages`, { data: { body: original, clientVisible: false } });
+    await adminPage.goto(`tasks/${taskId}`);
+    await adminPage.getByRole('button', { name: 'Chat', exact: true }).click();
+    await adminPage.getByRole('button', { name: 'Edit message' }).click();
+    const changed = `${original}-HALF-DONE`;
+    await adminPage.getByLabel('Edit message', { exact: true }).fill(changed);
+
+    await adminPage.getByRole('button', { name: 'Steps', exact: true }).click();
+    await adminPage.getByRole('button', { name: 'Chat', exact: true }).click();
+    // Back in edit mode, with the unsaved text.
+    await expect(adminPage.getByLabel('Edit message', { exact: true })).toContainText(changed);
+
+    await adminPage.getByTestId('chat-bubble-mine').getByRole('button', { name: 'Cancel', exact: true }).click();
+    await adminPage.getByRole('button', { name: 'Steps', exact: true }).click();
+    await adminPage.getByRole('button', { name: 'Chat', exact: true }).click();
+    // The edit BOX is gone. (The bubble's Edit button is also labelled "Edit
+    // message", so match the editable area, not any element with that label.)
+    await expect(adminPage.locator('[contenteditable="true"][aria-label="Edit message"]')).toHaveCount(0);
+    await expect(adminPage.getByRole('button', { name: 'Edit message' })).toBeVisible();
+    await expect(adminPage.getByText(original, { exact: true })).toBeVisible();
+  } finally { await admin.dispose(); await deleteMatter(taskId); }
+});
+
+/* ── #319: images in Chat ───────────────────────────────────────────────── */
+
+test('#319: Chat images load and show in one fixed box, whatever their shape', async ({ adminPage }) => {
+  const taskId = await createMatter();
+  try {
+    await adminPage.goto(`tasks/${taskId}`);
+    await adminPage.getByRole('button', { name: 'Chat', exact: true }).click();
+    const msg = `IMG-SIZE-${Date.now()}`;
+    await adminPage.getByLabel('Message', { exact: true }).pressSequentially(msg);
+    const input = adminPage.getByTestId('comment-image-input').first();
+    // A tall strip and a wide banner — very different shapes.
+    await input.setInputFiles({ name: 'tall.png', mimeType: 'image/png', buffer: solidPng(40, 1600) });
+    await input.setInputFiles({ name: 'wide.png', mimeType: 'image/png', buffer: solidPng(1600, 60) });
+    await expect(adminPage.getByLabel('Message', { exact: true }).locator('img[data-lt-image][src^="blob:"]')).toHaveCount(2, { timeout: 15_000 });
+    await adminPage.getByRole('button', { name: /^Send$/ }).click();
+
+    const bubble = adminPage.getByTestId('chat-bubble-mine').filter({ hasText: msg }).filter({ visible: true });
+    await expect(bubble).toBeVisible();
+    const imgs = bubble.locator('img[data-lt-image]');
+    await expect(imgs).toHaveCount(2);
+    // Both really decoded (the bug: a broken box with "Read more" under it).
+    for (const i of [0, 1]) {
+      await expect.poll(() => imgs.nth(i).evaluate((el) => (el as HTMLImageElement).naturalWidth), { timeout: 15_000 }).toBeGreaterThan(0);
+    }
+    const boxes = await Promise.all([0, 1].map((i) => imgs.nth(i).boundingBox()));
+    for (const b of boxes) {
+      expect(Math.round(b!.height)).toBe(180); // 11.25rem
+    }
+    expect(Math.round(boxes[0]!.width)).toBe(Math.round(boxes[1]!.width));
+    expect(await imgs.first().evaluate((el) => getComputedStyle(el).objectFit)).toBe('contain');
+  } finally { await deleteMatter(taskId); }
+});
+
+test('#319: an image outside 20–8,000 px is refused before sending, with a clear reason', async ({ adminPage }) => {
+  const taskId = await createMatter();
+  try {
+    await adminPage.goto(`tasks/${taskId}`);
+    await adminPage.getByRole('button', { name: 'Chat', exact: true }).click();
+    const editor = adminPage.getByLabel('Message', { exact: true });
+    const input = adminPage.getByTestId('comment-image-input').first();
+
+    await input.setInputFiles({ name: 'dot.png', mimeType: 'image/png', buffer: solidPng(10, 10) });
+    await expect(adminPage.getByRole('alert').filter({ hasText: /too small.*10 × 10 pixels.*at least 20 × 20/ })).toBeVisible();
+    await expect(editor.locator('img')).toHaveCount(0);
+
+    await input.setInputFiles({ name: 'huge.png', mimeType: 'image/png', buffer: solidPng(8001, 20) });
+    await expect(adminPage.getByRole('alert').filter({ hasText: /too large.*8,000 pixels/ })).toBeVisible();
+    await expect(editor.locator('img')).toHaveCount(0);
+    // Nothing to send: no text, no image.
+    await expect(adminPage.getByRole('button', { name: /^Send$/ })).toBeDisabled();
   } finally { await deleteMatter(taskId); }
 });

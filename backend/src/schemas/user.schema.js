@@ -36,6 +36,9 @@ const profileFields = {
   altPhone: z.union([phone, z.literal('')]).optional(),
   contactDesignation: z.union([z.enum(CONTACT_DESIGNATIONS), z.literal('')]).optional(),
   gstNumber: z.string().trim().max(30).optional(),
+  // #219: how often we file this client's GST returns. A matter and an email
+  // are created for each period automatically. '' = we do not file them.
+  gstReturnFrequency: z.union([z.enum(['monthly', 'quarterly']), z.literal('')]).optional(),
   panNumber: z.string().trim().max(20).optional(),
   aadhaarNumber: z.string().trim().max(20).optional(),
   state: optShort,

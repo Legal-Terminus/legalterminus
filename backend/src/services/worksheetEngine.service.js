@@ -11,19 +11,28 @@
  *     sheets: { [sheetKey]: { columns: [{ key, label?, hidden? }], linkedServices?: [] } } }
  */
 import { BOOKS, SHEETS, MODULES, ADDABLE_TYPES } from '../config/worksheetDefinitions.js';
+import { stripTags, removeDelimited, isSafeKey } from '../utils/sanitize.js';
 
 const httpError = (status, message, extra = {}) => Object.assign(new Error(message), { status, ...extra });
 
 /* ── Resolving definitions + overrides ──────────────────────────────────── */
 
-/** Every field a book's records may hold: built-in plus the firm's own. */
+/**
+ * Every field a book's records may hold: built-in plus the firm's own.
+ *
+ * #280 / #279: the options of ANY choice list — built-in or added — may be
+ * edited by staff; the edited list is stored in `optionOverrides[field]` and
+ * replaces the default here, so every sheet, form and upload sees it at once.
+ */
 export function bookFields(bookKey, config = {}) {
   const book = BOOKS[bookKey];
   if (!book) return [];
-  const builtIn = book.fields.map((fd) => ({ ...fd, builtIn: true }));
+  const overrides = config?.optionOverrides && typeof config.optionOverrides === 'object' ? config.optionOverrides : {};
+  const withOptions = (fd) => (fd.type === 'select' && Array.isArray(overrides[fd.key]) ? { ...fd, options: overrides[fd.key] } : fd);
+  const builtIn = book.fields.map((fd) => withOptions({ ...fd, builtIn: true }));
   const custom = (Array.isArray(config?.customFields) ? config.customFields : [])
     .filter((cf) => cf && typeof cf.key === 'string' && !book.fields.some((b) => b.key === cf.key))
-    .map((cf) => ({
+    .map((cf) => withOptions({
       key: cf.key, label: cf.label, type: ADDABLE_TYPES.includes(cf.type) ? cf.type : 'text',
       ...(cf.type === 'select' ? { options: Array.isArray(cf.options) ? cf.options : [] } : {}),
       builtIn: false,
@@ -82,6 +91,7 @@ export function resolveSheet(sheetKey, config = {}) {
       ...(fd.compute ? { compute: fd.compute } : {}),
       hidden: !!col.hidden,
       builtIn: fd.builtIn,
+      ...(fd.secret ? { secret: true } : {}), // #279: masked; revealed through its own endpoint
       aliases: [...aliases],
     });
   }
@@ -97,9 +107,21 @@ export function resolveSheet(sheetKey, config = {}) {
     recordKey,
     recordKeyLabel: recordKey.map((k) => byKey.get(k)?.label ?? k).join(' + '),
     linkedServices: linked,
-    // The other sheets a record of this book can also appear in (#210).
-    memberships: Object.values(SHEETS).filter((s) => s.book === sheet.book).map((s) => ({ key: s.key, label: s.label })),
+    // The other sheets a record of this book can also appear in (#210). In an
+    // EXCLUSIVE book (#279: Monthly / Quarterly) a record is in one sheet only,
+    // so switching sheets never mixes records.
+    memberships: Object.values(SHEETS)
+      .filter((s) => s.book === sheet.book && (!book.exclusive || s.key === sheet.key))
+      .map((s) => ({ key: s.key, label: s.label })),
     reminder: book.reminder ? { field: book.reminder.field, milestones: book.reminder.milestones } : null,
+    // #280 / #279: the firm's sheets start with "Sl. No." — the row's number,
+    // shown and downloaded, never stored.
+    serial: !!sheet.serial,
+    exclusive: !!book.exclusive,
+    // #279: rows that come from matters (read-only provenance for the Portal).
+    source: book.sync ? { kind: book.sync } : null,
+    // #279: Monthly / Quarterly, for the Return Period filter of the GST sheets.
+    frequency: sheet.frequency ?? null,
   };
 }
 
@@ -111,8 +133,12 @@ export const moduleSheets = (moduleKey) => MODULES[moduleKey]?.sheets ?? null;
 export function normalizeHeader(h) {
   return String(h ?? '').toUpperCase().replace(/[^A-Z0-9%]+/g, '');
 }
-/** Same, with any (parenthetical) removed: "CONSTITUTION (COMPANY/LLP)" → "CONSTITUTION". */
-const normalizeBare = (h) => normalizeHeader(String(h ?? '').replace(/\([^)]*\)/g, ''));
+/**
+ * Same, with any (parenthetical) removed: "CONSTITUTION (COMPANY/LLP)" → "CONSTITUTION".
+ * Linear: `replace(/\([^)]*\)/g, '')` was quadratic on a header of many '('
+ * (CodeQL js/polynomial-redos), and headers come from an uploaded file.
+ */
+const normalizeBare = (h) => normalizeHeader(removeDelimited(h, '(', ')'));
 
 /** Every normalised spelling that names a column. */
 function spellings(col) {
@@ -210,8 +236,55 @@ export function normalizeDate(raw) {
   return null;
 }
 
-const stripTags = (s) => String(s).replace(/<[^>]*>/g, '');
-const MAX_LEN = { text: 500, longtext: 5000, select: 200, image: 200, date: 100, number: 100 };
+// stripTags lives in utils/sanitize.js — one linear copy for the whole backend.
+const MAX_LEN = { text: 500, longtext: 5000, select: 200, staff: 200, image: 200, date: 100, number: 100 };
+
+/* ── Staff columns (#280: Assigned to, Checker) ─────────────────────────── */
+
+/*
+ * A `staff` column lists the portal's staff. `staff` below is the list the
+ * controller loads (services/worksheetStaff.service.js):
+ *   [{ uid, name, email, active }]
+ * The email is used here, on the server, to match an uploaded cell — it is never
+ * sent to the page (`staffChoices` carries uid and name only).
+ */
+const personKey = (s) => String(s ?? '').trim().toLowerCase().replace(/\s+/g, ' ');
+
+/**
+ * Who an uploaded / typed cell names: a uid, a display name (case and spacing
+ * ignored) or an email address. Active staff are tried first, then former
+ * staff (a sheet from last year may name someone who has left — their rows
+ * still show their name). Returns { uid } | { ambiguous: true } | null.
+ */
+export function matchStaff(text, staff = []) {
+  const t = personKey(text);
+  if (!t) return null;
+  const list = Array.isArray(staff) ? staff : [];
+  const byUid = list.find((p) => p.uid === String(text).trim());
+  if (byUid) return { uid: byUid.uid };
+  for (const pool of [list.filter((p) => p.active), list.filter((p) => !p.active)]) {
+    const named = pool.filter((p) => personKey(p.name) === t);
+    if (named.length === 1) return { uid: named[0].uid };
+    if (named.length > 1) return { ambiguous: true };
+    const mailed = pool.filter((p) => p.email && personKey(p.email) === t);
+    if (mailed.length === 1) return { uid: mailed[0].uid };
+  }
+  return null;
+}
+
+/** What the page receives for a staff column: active people first, by name; no emails. */
+export function staffChoices(staff = []) {
+  return (Array.isArray(staff) ? staff : [])
+    .map((p) => ({ value: p.uid, label: p.name, active: !!p.active }))
+    .sort((a, b) => Number(b.active) - Number(a.active) || a.label.localeCompare(b.label));
+}
+
+/** A resolved sheet with the staff list attached to each of its staff columns. */
+export function withStaffChoices(sheet, staff = []) {
+  if (!sheet || !sheet.columns.some((c) => c.type === 'staff')) return sheet;
+  const choices = staffChoices(staff);
+  return { ...sheet, columns: sheet.columns.map((c) => (c.type === 'staff' ? { ...c, choices } : c)) };
+}
 
 /**
  * One cell, cleaned for its field. Returns { value, warning? }: a value that
@@ -219,8 +292,14 @@ const MAX_LEN = { text: 500, longtext: 5000, select: 200, image: 200, date: 100,
  * text with a warning — the firm's data is never dropped for being untidy.
  * Empty → null (the field is cleared).
  */
-export function normalizeValue(field, raw) {
+export function normalizeValue(field, raw, { staff } = {}) {
   if (raw == null) return { value: null };
+  // #279: a secret (a GST portal password) is kept exactly as typed — never
+  // tag-stripped or trimmed — only bounded. It is never rendered as HTML.
+  if (field?.secret) {
+    const text = String(raw);
+    return text.trim() ? { value: text.slice(0, 200) } : { value: null };
+  }
   if (typeof raw === 'boolean') raw = raw ? 'Yes' : 'No';
   if (typeof raw === 'string' && raw.trim() === '') return { value: null };
   const type = field.type;
@@ -243,6 +322,18 @@ export function normalizeValue(field, raw) {
   }
   const text = stripTags(typeof raw === 'number' ? String(raw) : raw).trim().slice(0, MAX_LEN[type] ?? MAX_LEN.text);
   if (!text) return { value: null };
+  // #280: a staff cell becomes the person's uid. A name that matches nobody (or
+  // two people) is KEPT as written, with a warning — never dropped, never guessed.
+  if (type === 'staff' && Array.isArray(staff)) {
+    const hit = matchStaff(text, staff);
+    if (hit?.uid) return { value: hit.uid };
+    return {
+      value: text,
+      warning: hit?.ambiguous
+        ? `"${field.label}": more than one staff member is called "${text}" — kept as written; pick the person on the row`
+        : `"${field.label}": "${text}" is not a staff member — kept as written`,
+    };
+  }
   if (type === 'select' && Array.isArray(field.options)) {
     const hit = field.options.find((o) => o.toLowerCase() === text.toLowerCase());
     return { value: hit ?? text };
@@ -255,6 +346,17 @@ export function recordKeyFor(keyFields, values) {
   if (!keyFields?.length) return null;
   const parts = keyFields.map((k) => String(values?.[k] ?? '').toUpperCase().replace(/\s+/g, ''));
   return parts.every(Boolean) ? parts.join('|') : null;
+}
+
+/**
+ * The stored key of a record of `sheet` (a resolved sheet). In an EXCLUSIVE book
+ * (#279) the key is scoped to the sheet — "gst_return_monthly:GSTIN|PERIOD" — so
+ * an upload or a new record in Monthly never matches, updates or blocks a
+ * Quarterly row.
+ */
+export function sheetRecordKey(sheet, values) {
+  const base = recordKeyFor(sheet.recordKey, values);
+  return base && sheet.exclusive ? `${sheet.key}:${base}` : base;
 }
 
 /* ── Computed dates ──────────────────────────────────────────────────────── */
@@ -302,12 +404,16 @@ const slug = (s) => String(s).toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(
  * Returns the next config document (pure; the caller saves it).
  */
 export function applyColumnEdit(sheetKey, config = {}, edit = {}) {
-  const sheet = SHEETS[sheetKey];
+  const sheet = Object.hasOwn(SHEETS, sheetKey) ? SHEETS[sheetKey] : null;
   if (!sheet) throw httpError(404, 'Unknown worksheet');
   const current = resolveSheet(sheetKey, config);
   const fields = bookFields(sheet.book, config);
   const byKey = new Map(fields.map((fd) => [fd.key, fd]));
   const customFields = [...(config.customFields ?? [])];
+  // A Map, not `obj[key] = …`: the key comes from the request (it is checked
+  // against the book's fields first, but a Map cannot reach a prototype at all —
+  // CodeQL js/remote-property-injection).
+  const optionOverrides = new Map(Object.entries(config.optionOverrides ?? {}));
   const cols = Array.isArray(edit.columns) ? edit.columns : null;
   if (!cols || cols.length === 0 || cols.length > 80) throw httpError(400, 'A sheet needs between 1 and 80 columns.');
 
@@ -320,10 +426,13 @@ export function applyColumnEdit(sheetKey, config = {}, edit = {}) {
     if (key) {
       const fd = byKey.get(key);
       if (!fd) throw httpError(400, `Unknown column "${key}".`);
-      // The firm may change the options of a select it added; built-in ones are fixed.
+      // The firm may change the options of a select it added here; every
+      // select's options (built-in too) are also editable under Edit dropdowns.
       if (!fd.builtIn && fd.type === 'select' && Array.isArray(col.options)) {
         const i = customFields.findIndex((cf) => cf.key === key);
-        if (i >= 0) customFields[i] = { ...customFields[i], options: cleanOptions(col.options) };
+        const options = cleanOptions(col.options);
+        if (i >= 0) customFields[i] = { ...customFields[i], options };
+        optionOverrides.set(key, options);
       }
     } else {
       const type = col?.type ?? 'text';
@@ -350,17 +459,47 @@ export function applyColumnEdit(sheetKey, config = {}, edit = {}) {
   const linked = Array.isArray(edit.linkedServices)
     ? [...new Set(edit.linkedServices.map((s) => String(s).trim()).filter((s) => /^[a-z0-9_-]{1,80}$/i.test(s)))].slice(0, 30)
     : current.linkedServices;
-  sheets[sheetKey] = { columns: next, linkedServices: linked };
-  return { customFields, sheets };
+  sheets[sheet.key] = { columns: next, linkedServices: linked };
+  // #279: the sheets of an exclusive book are one register in two views
+  // (Monthly / Quarterly) — "the same columns, dropdowns and functionalities",
+  // so a column edit applies to every sheet of the book.
+  if (BOOKS[sheet.book]?.exclusive) {
+    for (const s of Object.values(SHEETS)) if (s.book === sheet.book) sheets[s.key] = { columns: next, linkedServices: linked };
+  }
+  return { customFields, sheets, optionOverrides: Object.fromEntries(optionOverrides) };
 }
 
-function cleanOptions(options) {
+export const MAX_OPTIONS = 200;
+export const MAX_OPTION_LENGTH = 80;
+
+/** Trimmed, tag-free, de-duplicated (case-insensitively), in the order given. */
+export function cleanOptions(options) {
   const out = [];
   for (const o of Array.isArray(options) ? options : []) {
-    const v = stripTags(o).trim().slice(0, 60);
+    const v = stripTags(o).trim().slice(0, MAX_OPTION_LENGTH);
     if (v && !out.some((x) => x.toLowerCase() === v.toLowerCase())) out.push(v);
   }
-  return out.slice(0, 40);
+  return out.slice(0, MAX_OPTIONS);
+}
+
+/* ── Dropdown options (staff) ───────────────────────────────────────────── */
+
+/**
+ * #280 / #279 — staff (admin, manager, team member) add, rename and remove the
+ * options of a choice-list column. The whole list is sent; it replaces the
+ * field's options for every sheet of the book. Records keep the value they
+ * hold: a renamed or removed option stays on the rows that use it (shown as it
+ * is) until someone picks another. Returns `{ optionOverrides }` (pure; the
+ * caller saves it with a merge).
+ */
+export function applyOptionsEdit(sheetKey, config = {}, fieldKey, options) {
+  const sheet = Object.hasOwn(SHEETS, sheetKey) ? SHEETS[sheetKey] : null;
+  if (!sheet) throw httpError(404, 'Unknown worksheet');
+  const fd = bookFields(sheet.book, config).find((x) => x.key === fieldKey);
+  if (!fd) throw httpError(404, 'Unknown column');
+  if (fd.type !== 'select') throw httpError(400, `"${fd.label}" is not a dropdown column.`);
+  if (!Array.isArray(options)) throw httpError(400, 'Send the list of options.');
+  return { optionOverrides: Object.fromEntries([[fd.key, cleanOptions(options)]]) };
 }
 
 /* ── Record writes ──────────────────────────────────────────────────────── */
@@ -370,24 +509,32 @@ function cleanOptions(options) {
  * upload, a manual edit that does not fit its type is REFUSED (the person is
  * right there to correct it). Computed fields cannot be written.
  */
-export function cleanRecordValues(fields, values) {
+export function cleanRecordValues(fields, values, { staff = [] } = {}) {
   const byKey = new Map(fields.map((fd) => [fd.key, fd]));
-  const out = {};
+  const activeStaff = new Set((Array.isArray(staff) ? staff : []).filter((p) => p.active).map((p) => p.uid));
+  const out = [];
   for (const [key, raw] of Object.entries(values ?? {})) {
-    const fd = byKey.get(key);
+    const fd = isSafeKey(key) ? byKey.get(key) : undefined;
     if (!fd) throw httpError(400, `Unknown column "${key}".`);
     if (fd.type === 'computed') throw httpError(400, `"${fd.label}" is calculated and cannot be typed.`);
     const { value, warning } = normalizeValue(fd, raw);
     if (warning && (fd.type === 'number' || fd.type === 'matter')) throw httpError(400, `${warning}.`);
     if (warning && fd.type === 'date') throw httpError(400, `${warning} — use the date picker.`);
-    out[key] = value;
+    // #280: a person is picked from the list — the value is an active staff uid.
+    if (fd.type === 'staff' && value != null && !activeStaff.has(value)) {
+      throw httpError(400, `Pick a person from the "${fd.label}" list.`);
+    }
+    out.push([fd.key, value]);
   }
-  return out;
+  // Entries → object, so a key can only be an own property (js/remote-property-injection).
+  return Object.fromEntries(out);
 }
 
 /* ── Upload planning ────────────────────────────────────────────────────── */
 
 const MAX_WARNINGS = 50;
+/** Headings that mean "row number" in the firm's files (normalised). */
+const SERIAL_HEADERS = new Set(['SLNO', 'SNO', 'SRNO', 'SERIALNO', 'SERIALNUMBER', 'SL']);
 
 /**
  * What an upload WILL do, before anything is written (the dry run), and the
@@ -400,19 +547,25 @@ const MAX_WARNINGS = 50;
  * - A key repeated in the file is merged into one record (later cells win).
  * - Unknown headers are reported, never silently dropped; calculated columns
  *   in the file are ignored (the portal calculates them).
+ * - #280: a staff cell (Assigned to, Checker) is matched to a person by name or
+ *   email (`staff`, see matchStaff); one that matches nobody is kept as written
+ *   and reported in `warnings`.
  *
  * `existingByKey`: Map(recordKey → { id, values }) for the keys in this file.
  * `startRow`: the sheet row number of rows[0], for warnings.
  */
-export function planImport({ sheet, fields, headers, rows, existingByKey = new Map(), startRow = 2 }) {
+export function planImport({ sheet, fields, headers, rows, existingByKey = new Map(), startRow = 2, staff }) {
   // The sheet's visible columns are tried first; then every other field of the
   // book (hidden here, or shown only on another report) with all its headings.
   const visible = sheet.columns.filter((col) => !col.hidden);
   const others = fields
     .filter((fd) => !visible.some((col) => col.key === fd.key))
     .map((fd) => ({ ...fd, aliases: [...(fd.aliases ?? []), ...bookHeadings(sheet.book, fd.key)] }));
-  const mapping = matchHeaders(headers, visible, others).map((m) => (
-    m.status === 'matched' && !visible.some((col) => col.key === m.key) ? { ...m, notShown: true } : m));
+  const mapping = matchHeaders(headers, visible, others).map((m) => {
+    // The firm's "Sl. No." is the row number: recognised, never stored.
+    if (sheet.serial && m.status === 'unknown' && SERIAL_HEADERS.has(normalizeHeader(m.header))) return { ...m, status: 'serial' };
+    return m.status === 'matched' && !visible.some((col) => col.key === m.key) ? { ...m, notShown: true } : m;
+  });
   const byKey = new Map(fields.map((fd) => [fd.key, fd]));
   const writable = mapping.filter((m) => m.status === 'matched');
   const warnings = [];
@@ -426,13 +579,13 @@ export function planImport({ sheet, fields, headers, rows, existingByKey = new M
   rows.forEach((row, i) => {
     const values = {};
     for (const m of writable) {
-      const { value, warning } = normalizeValue(byKey.get(m.key), row?.[m.index]);
+      const { value, warning } = normalizeValue(byKey.get(m.key), row?.[m.index], { staff });
       if (value == null) continue;
       values[m.key] = value;
       if (warning && warnings.length < MAX_WARNINGS) warnings.push({ row: startRow + i, column: m.header, message: warning });
     }
     if (Object.keys(values).length === 0) { emptyRows += 1; return; }
-    const key = recordKeyFor(sheet.recordKey, values);
+    const key = sheetRecordKey(sheet, values);
     if (key && existingByKey.has(key)) {
       const ex = existingByKey.get(key);
       const prev = updates.get(ex.id);
@@ -456,7 +609,7 @@ export function planImport({ sheet, fields, headers, rows, existingByKey = new M
   return {
     columns: mapping,
     unknownColumns: mapping.filter((m) => m.status === 'unknown').map((m) => m.header),
-    ignoredColumns: mapping.filter((m) => ['computed', 'matter', 'duplicate'].includes(m.status)).map((m) => ({ header: m.header, reason: m.status })),
+    ignoredColumns: mapping.filter((m) => ['computed', 'matter', 'duplicate', 'serial'].includes(m.status)).map((m) => ({ header: m.header, reason: m.status })),
     creates,
     updates: upd,
     summary: {

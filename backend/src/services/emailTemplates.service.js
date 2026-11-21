@@ -47,16 +47,31 @@ export const TEMPLATE_DEFS = {
       '— The Legal Terminus Team',
   },
   matter_message: {
-    label: 'Client — New discussion message',
+    label: 'Client — New chat message',
     audience: 'client',
-    description: 'Sent when a message is posted in a matter\'s discussion thread (#123).',
+    description: 'Sent when a message is posted in a matter\'s Chat (#123).',
     placeholders: ['clientName', 'organisation', 'serviceName', 'senderName', 'message'],
     subject: 'New message on your service',
     body:
       'Hello {{clientName}},\n\n' +
       'You have a new message from {{senderName}} regarding {{serviceName}}:\n\n' +
       '{{message}}\n\n' +
-      'You can reply from the Discussion tab of your matter in the Client Portal.\n\n' +
+      'You can reply from the Chat tab of your matter in the Client Portal.\n\n' +
+      '— The Legal Terminus Team',
+  },
+  // #297: an EDITED chat message is announced like a new one, saying it was
+  // edited and carrying the new text.
+  matter_message_edited: {
+    label: 'Client — Chat message edited',
+    audience: 'client',
+    description: 'Sent when our team edits a message the client can see in a matter\'s Chat (#297). Contains the updated message.',
+    placeholders: ['clientName', 'organisation', 'serviceName', 'senderName', 'message'],
+    subject: 'A message on your service was edited',
+    body:
+      'Hello {{clientName}},\n\n' +
+      '{{senderName}} has edited a message about {{serviceName}}. The updated message reads:\n\n' +
+      '{{message}}\n\n' +
+      'You can see the whole conversation in the Chat tab of your matter in the Client Portal.\n\n' +
       '— The Legal Terminus Team',
   },
   // #111 — MANUAL reminders a staff member sends from a step. Several variants so
@@ -133,26 +148,81 @@ export const TEMPLATE_DEFS = {
       'Open the matter in the portal to pick it up.',
   },
   matter_mention: {
-    label: 'Internal — You were mentioned in a discussion',
+    label: 'Internal — You were mentioned in a chat',
     audience: 'internal',
-    description: 'Sent to a team member @mentioned by email address in a matter discussion (#200).',
+    description: 'Sent to a team member @mentioned by email address in a matter\'s Chat (#200).',
     placeholders: ['recipientName', 'senderName', 'clientName', 'organisation', 'serviceName', 'message'],
     subject: '{{senderName}} mentioned you on {{clientName}} · {{serviceName}}',
     body: 'Hi {{recipientName}},\n\n' +
-      '{{senderName}} mentioned you in the discussion on {{clientName}} · {{serviceName}}:\n\n' +
+      '{{senderName}} mentioned you in the chat on {{clientName}} · {{serviceName}}:\n\n' +
       '{{message}}\n\n' +
       'Open the matter in the portal to reply.',
   },
   matter_message_team: {
     label: 'Internal — A client sent a message',
     audience: 'internal',
-    description: 'Sent to the matter\'s owner and the people on its current step (or the admins, if there are none) when a client posts in the discussion (#200).',
+    description: 'Sent to the matter\'s owner and the people on its current step (or the admins, if there are none) when a client posts in the Chat (#200).',
     placeholders: ['recipientName', 'clientName', 'organisation', 'serviceName', 'message'],
     subject: 'New message from {{clientName}} · {{serviceName}}',
     body: 'Hi {{recipientName}},\n\n' +
       '{{clientName}} sent a message on {{serviceName}}:\n\n' +
       '{{message}}\n\n' +
       'Open the matter in the portal to reply.',
+  },
+  matter_message_team_edited: {
+    label: 'Internal — A client edited a message',
+    audience: 'internal',
+    description: 'Sent to the same people as "A client sent a message" when the client edits one of their Chat messages (#297). Contains the updated message.',
+    placeholders: ['recipientName', 'clientName', 'organisation', 'serviceName', 'message'],
+    subject: '{{clientName}} edited a message · {{serviceName}}',
+    body: 'Hi {{recipientName}},\n\n' +
+      '{{clientName}} edited a message on {{serviceName}}. The updated message reads:\n\n' +
+      '{{message}}\n\n' +
+      'Open the matter in the portal to reply.',
+  },
+  // #219: sent with the matter opened automatically for each period. The period,
+  // the due dates and the company name are filled in at send time, so they stay
+  // automatic however the wording is edited. The subject is sent exactly as
+  // written here (no "[Legal Terminus] … (#id)" wrapper), as the firm asked.
+  gst_return_monthly: {
+    label: 'Client — GST return (monthly)',
+    audience: 'client',
+    description: 'Sent on the 1st of every month to clients who file GST monthly, with the matter opened for the month just ended (#219).',
+    placeholders: ['companyName', 'clientName', 'periodTitle', 'period', 'gstr1DueDate', 'gstr3bDueDate', 'portalUrl'],
+    subject: '{{companyName}} - GST Return - {{periodTitle}}',
+    body:
+      'Dear Sir/Madam,\n\n' +
+      'In order to file GST return (GSTR 1 and GSTR 3B) for the month of {{period}}, we request you to please provide the following data at the earliest.\n\n' +
+      '- Sale Details for the month of {{period}}\n' +
+      '- Purchase details for the month of {{period}}\n' +
+      '- Bank statement for the month of {{period}}\n' +
+      '- Expenditure details for the month of {{period}}\n\n' +
+      'We would like to inform you that the last date of filing GSTR 1 is {{gstr1DueDate}} and GSTR 3B is {{gstr3bDueDate}}. ' +
+      'Accordingly, we request you to kindly provide the above details at the earliest so as to avoid last minute rush.\n\n' +
+      'Further, please note that in case there is “NIL” transaction or No Sale or Purchase transaction in any month, ' +
+      'please do check the bank statements and in case there is any credit transaction in the bank statement, ' +
+      'then do inform us about the same.\n\n' +
+      '— The Legal Terminus Team',
+  },
+  gst_return_quarterly: {
+    label: 'Client — GST return (quarterly)',
+    audience: 'client',
+    description: 'Sent on 1 July, 1 October, 1 January and 1 April to clients who file GST quarterly, with the matter opened for the quarter just ended (#219).',
+    placeholders: ['companyName', 'clientName', 'periodTitle', 'period', 'gstr1DueDate', 'gstr3bDueDate', 'portalUrl'],
+    subject: '{{companyName}} - GST Return - {{periodTitle}}',
+    body:
+      'Dear Sir/Madam,\n\n' +
+      'In order to file GST return (GSTR 1 and GSTR 3B) for the {{period}}, we request you to please provide the following data at the earliest.\n\n' +
+      '- Sale Details for the {{period}}\n' +
+      '- Purchase details for the {{period}}\n' +
+      '- Bank statement for the {{period}}\n' +
+      '- Expenditure details for the {{period}}\n\n' +
+      'We would like to inform you that the last date of filing GSTR 1 is {{gstr1DueDate}} and GSTR 3B is {{gstr3bDueDate}}. ' +
+      'Accordingly, we request you to kindly provide the above details at the earliest so as to avoid last minute rush.\n\n' +
+      'Further, please note that in case there is “NIL” transaction or No Sale or Purchase transaction in any month, ' +
+      'please do check the bank statements and in case there is any credit transaction in the bank statement, ' +
+      'then do inform us about the same.\n\n' +
+      '— The Legal Terminus Team',
   },
 };
 
@@ -221,3 +291,95 @@ export async function renderTemplate(key, vars = {}) {
  */
 export const REMINDER_TEMPLATE_KEYS = ['reminder_gentle', 'reminder_followup', 'reminder_urgent'];
 export const isReminderTemplate = (key) => REMINDER_TEMPLATE_KEYS.includes(key);
+
+// ─── #310: "Explore more services" block on the completion email ────────────
+//
+// One common marketing block, the same for every service, appended to the
+// email the client receives when their matter completes ("Your service is
+// complete"). Admins AND managers edit it from Settings → Email Templates.
+//
+// Stored apart from the templates, in `settings/completionMarketing`
+// → { enabled, heading, body }, because it is not a subject/body template and
+// a wider set of roles may edit it. Like the templates, the built-in default
+// below is merged on READ, so nothing has to be written to the database for
+// the block to appear. Unlike the templates, an empty stored field stays empty
+// (it does not fall back to the default): clearing the block is a legitimate
+// way to stop sending it, alongside the on/off switch.
+
+const MARKETING_DOC = 'completionMarketing';
+export const MARKETING_LIMITS = { heading: 200, body: 4000 };
+
+export const COMPLETION_MARKETING_DEFAULT = Object.freeze({
+  enabled: true,
+  heading: 'Explore More Services with Us',
+  body:
+    '- Business Registration: Private Limited, LLP & OPC Registration\n' +
+    '- Government Registrations: GST, MSME & Startup India Registration\n' +
+    '- Brand Protection: Trademark Registration & Renewal\n' +
+    '- Licenses & Certifications: FSSAI, Trade License, IEC & ISO Certification\n' +
+    '- Tax & Compliance: GST Return Filing, ITR Filing & Annual Filing\n' +
+    '- Employee Compliance: EPF & ESIC Registration\n\n' +
+    'One Partner. Multiple Business Solutions.\n' +
+    'Let us simplify your business registrations, taxation and compliance requirements.\n\n' +
+    'Explore All Our Services:\n' +
+    'https://legalterminus.com/',
+});
+
+/** Stored fields over the default; a field that was never stored keeps the default. */
+export function mergeCompletionMarketing(stored = {}) {
+  const s = stored && typeof stored === 'object' ? stored : {};
+  const d = COMPLETION_MARKETING_DEFAULT;
+  return {
+    enabled: typeof s.enabled === 'boolean' ? s.enabled : d.enabled,
+    heading: typeof s.heading === 'string' ? s.heading : d.heading,
+    body: typeof s.body === 'string' ? s.body : d.body,
+  };
+}
+
+/**
+ * What the completion email should carry: `{ heading, body }`, or null when the
+ * block is switched off or has nothing in it — in which case the email is sent
+ * exactly as it was before #310.
+ */
+export function marketingBlockForEmail(settings) {
+  if (!settings || settings.enabled !== true) return null;
+  const heading = String(settings.heading ?? '').trim();
+  const body = String(settings.body ?? '').trim();
+  if (!heading && !body) return null;
+  return { heading, body };
+}
+
+let _mCache = null;
+let _mCacheAt = 0;
+
+/** The effective block settings (default merged with any stored edit). Cached briefly. */
+export async function getCompletionMarketing() {
+  const now = Date.now();
+  if (_mCache && now - _mCacheAt < CACHE_TTL_MS) return _mCache;
+  let stored = {};
+  try {
+    const snap = await getDb().collection(SETTINGS_COLLECTION).doc(MARKETING_DOC).get();
+    if (snap.exists) stored = snap.data() || {};
+  } catch { /* fall back to the default */ }
+  _mCache = mergeCompletionMarketing(stored);
+  _mCacheAt = now;
+  return _mCache;
+}
+
+/** Persist an edit (shape already validated by the route's schema). Busts the cache. */
+export async function saveCompletionMarketing({ enabled, heading, body }) {
+  await getDb().collection(SETTINGS_COLLECTION).doc(MARKETING_DOC).set({
+    enabled: enabled === true,
+    heading: String(heading ?? '').slice(0, MARKETING_LIMITS.heading),
+    body: String(body ?? '').slice(0, MARKETING_LIMITS.body),
+  });
+  _mCache = null;
+  _mCacheAt = 0;
+  return getCompletionMarketing();
+}
+
+/** The block to append to the completion email right now, or null. Never throws. */
+export async function completionMarketingBlock() {
+  try { return marketingBlockForEmail(await getCompletionMarketing()); }
+  catch { return null; }
+}

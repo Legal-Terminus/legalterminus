@@ -1,4 +1,7 @@
 import sanitizeHtml from 'sanitize-html';
+import {
+  COMMENT_WORD_LIMIT, wordLimitFor, COMMENT_MAX_CHARS, maxCharsFor, COMMENT_MAX_INPUT_CHARS, MESSAGE_MAX_INPUT_CHARS,
+} from '../../../shared/richText/limits.js';
 
 /**
  * #122 — rich-text sanitisation for user-authored content (step comments and
@@ -106,11 +109,13 @@ export const RICH_TEXT_OPTIONS = {
 };
 
 /**
- * #194 — maximum words in a comment / message. The editor shows a counter and
- * stops typing at this number, but that is a convenience: this module is the
- * actual control, since anyone can post straight to the API.
+ * #194 — maximum words in a comment / note; #295 — a Chat message may have
+ * 5,000. The numbers live in shared/richText/limits.js, read by the Portal's
+ * editor too. The editor shows a counter and stops typing at the limit, but
+ * that is a convenience: this module is the actual control, since anyone can
+ * post straight to the API.
  */
-export const COMMENT_WORD_LIMIT = 1000;
+export { COMMENT_WORD_LIMIT, MESSAGE_WORD_LIMIT, wordLimitFor } from '../../../shared/richText/limits.js';
 
 /** Words in rich text, counted on the PLAIN text — markup is not content. */
 export function countWords(html) {
@@ -146,9 +151,11 @@ export function checkWordLimit(html, limit = COMMENT_WORD_LIMIT) {
  * thousand real words can produce. Exceeding it is REFUSED, never truncated —
  * cutting HTML at a byte offset loses content without telling anyone.
  */
-export const RICH_TEXT_MAX_CHARS = 60000;
+export const RICH_TEXT_MAX_CHARS = COMMENT_MAX_CHARS;
 /** Raw input cap. Matches the Zod schemas; pasted Word markup is bulky before sanitising. */
-export const RICH_TEXT_MAX_INPUT_CHARS = 200000;
+export const RICH_TEXT_MAX_INPUT_CHARS = COMMENT_MAX_INPUT_CHARS;
+/** #295: a Chat message's caps, five times a comment's (5,000 words vs 1,000). */
+export { MESSAGE_MAX_CHARS, MESSAGE_MAX_INPUT_CHARS } from '../../../shared/richText/limits.js';
 
 /**
  * Validate and sanitise one piece of user-authored rich text for storage.
@@ -159,8 +166,9 @@ export const RICH_TEXT_MAX_INPUT_CHARS = 200000;
  */
 export function prepareRichText(raw, { what = 'comment' } = {}) {
   const input = typeof raw === 'string' ? raw : String(raw ?? '');
-  const html = sanitizeRichText(input, { maxLength: RICH_TEXT_MAX_INPUT_CHARS });
-  const wl = checkWordLimit(html);
+  const isMessage = what === 'message';
+  const html = sanitizeRichText(input, { maxLength: isMessage ? MESSAGE_MAX_INPUT_CHARS : RICH_TEXT_MAX_INPUT_CHARS });
+  const wl = checkWordLimit(html, wordLimitFor(what));
   const a = /^[aeiou]/i.test(what) ? 'An' : 'A';
   if (!wl.ok) {
     return {
@@ -175,7 +183,7 @@ export function prepareRichText(raw, { what = 'comment' } = {}) {
       message: `${a} ${what} may include at most ${COMMENT_IMAGE_LIMIT} images (this one has ${images}).`,
     };
   }
-  if (html.length > RICH_TEXT_MAX_CHARS) {
+  if (html.length > maxCharsFor(what)) {
     return {
       ok: false, status: 400, code: 'RICH_TEXT_TOO_LARGE',
       message: `This ${what} carries too much formatting to save. Remove some of it — pasted tables, colours or very long links — and try again.`,

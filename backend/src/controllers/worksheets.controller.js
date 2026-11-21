@@ -4,10 +4,17 @@ import { getDb, getBucket } from '../config/firebase.js';
 import { logger } from '../config/logger.js';
 import { BOOKS, SHEETS, MODULES } from '../config/worksheetDefinitions.js';
 import {
-  resolveSheet, bookFields, computeValues, cleanRecordValues, recordKeyFor, applyColumnEdit,
-  planImport, encodeCursor, decodeCursor,
+  resolveSheet, bookFields, computeValues, cleanRecordValues, sheetRecordKey, applyColumnEdit, applyOptionsEdit,
+  planImport, encodeCursor, decodeCursor, withStaffChoices,
 } from '../services/worksheetEngine.service.js';
+import { loadWorksheetStaff } from '../services/worksheetStaff.service.js';
 import { runWorksheetReminderSweep } from '../services/worksheetReminders.service.js';
+import { syncSheetFromMatters } from '../services/gstReturnSheetSync.service.js';
+import { invalidateGstReturnServiceKeys } from '../services/gstMatterTags.service.js';
+import { matterOwnedDateFields, matterIdentityOf, checkMatterLink } from '../services/gstReturnSheet.service.js';
+import {
+  secretFieldsOf, splitSecretValues, secretWrites, secretsSetOf, withoutSecrets, sealSecret, openSecret,
+} from '../services/worksheetSecrets.service.js';
 
 /**
  * #210 / #217 — worksheets: the trademark reports and the company worksheets,
@@ -16,7 +23,8 @@ import { runWorksheetReminderSweep } from '../services/worksheetReminders.servic
  * Storage:
  *   worksheetRecords/{id}   { module, book, sheets: [sheetKey], values: {field: value},
  *                             recordKey, images: {field: {objectPath, contentType, updatedAt}},
- *                             reminderDue, remindersSent, createdAt, createdBy, updatedAt, updatedBy }
+ *                             reminderDue, remindersSent, createdAt, createdBy, updatedAt, updatedBy,
+ *                             #279 synced rows: sourceMatterId, derived {field: what the workflow last said} }
  *   worksheetConfig/{book}  the firm's column edits (see worksheetEngine.service.js)
  *   Storage: worksheets/{book}/{recordId}/{field}-{ts}.webp  (streamed back, never a signed URL)
  *
@@ -45,6 +53,13 @@ async function loadConfig(db, book) {
   return snap.exists ? snap.data() : {};
 }
 
+/**
+ * #280: the staff list, read only when the book has a staff column (TDS:
+ * Assigned to, Checker) — every other sheet never queries users.
+ */
+const hasStaffField = (fields) => fields.some((fd) => fd.type === 'staff');
+const staffFor = (db, fields) => (hasStaffField(fields) ? loadWorksheetStaff(db) : Promise.resolve([]));
+
 /** The sheet named in the URL, resolved against the firm's edits, or a 404. */
 async function sheetContext(req, res) {
   const key = req.params.sheet;
@@ -54,13 +69,50 @@ async function sheetContext(req, res) {
   return { db, config, sheet: resolveSheet(key, config), fields: bookFields(SHEETS[key].book, config) };
 }
 
-/** A record of THIS sheet's book, or a 404 (an id from another book never resolves here). */
+/**
+ * A record of THIS sheet's book, or a 404 (an id from another book never
+ * resolves here). In an exclusive book (#279) it must also be in THIS sheet: a
+ * Quarterly row is not reachable, editable or deletable through Monthly.
+ */
 async function loadRecord(db, sheet, id, tx) {
   if (!/^[A-Za-z0-9_-]{1,128}$/.test(String(id))) return null;
   const ref = db.collection(RECORDS).doc(id);
   const snap = tx ? await tx.get(ref) : await ref.get();
   if (!snap.exists || snap.data().book !== sheet.book) return null;
+  if (sheet.exclusive && !(snap.data().sheets ?? []).includes(sheet.key)) return null;
   return { ref, snap, data: snap.data() };
+}
+
+/**
+ * #279: a row whose Matter cell a person sets is linked to that matter, so the
+ * sync updates this row instead of adding a second one. Only in a synced book.
+ */
+const matterLink = (sheet, values) => (BOOKS[sheet.book]?.sync && typeof values?.matter === 'string' && values.matter
+  ? { sourceMatterId: values.matter } : {});
+
+/**
+ * #294 — the wrong-record fix, at the point of linking. Picking a matter in a
+ * row's Matter cell used to link ANY GST matter to ANY row, and the sync then
+ * wrote that matter's data over the row (see gstReturnSheet.service.js, "which
+ * row is a matter's"). Now the matter must be a return of this sheet's kind
+ * (Monthly / Quarterly), for this row's client and return period, and not
+ * already have its own row. `rowValues` are the row's values after the edit;
+ * `recordId` the row being edited (null when adding). Throws a 400 / 409.
+ */
+async function guardMatterLink(db, sheet, matterId, rowValues, recordId = null) {
+  if (!BOOKS[sheet.book]?.sync || typeof matterId !== 'string' || !matterId) return;
+  const t = await db.collection('tasks').doc(matterId).get();
+  if (!t.exists) throw httpError(400, 'That matter no longer exists.');
+  const task = { id: t.id, ...t.data() };
+  const client = task.clientUid ? ((await db.collection('users').doc(task.clientUid).get()).data() ?? null) : null;
+  const linked = await db.collection(RECORDS).where('book', '==', sheet.book).where('sourceMatterId', '==', matterId).limit(5).get();
+  const bad = checkMatterLink({
+    sheetFrequency: SHEETS[sheet.key]?.frequency ?? null,
+    row: { values: rowValues },
+    identity: matterIdentityOf({ task, client }),
+    otherRowIds: linked.docs.map((d) => d.id).filter((id) => id !== recordId),
+  });
+  if (bad) throw httpError(bad.status, bad.message, { code: 'MATTER_LINK' });
 }
 
 const reminderDueFor = (bookKey, fields, values) => {
@@ -69,14 +121,17 @@ const reminderDueFor = (bookKey, fields, values) => {
 };
 
 /** What the Portal receives for a record: stored values plus the calculated ones. */
-function serialize(doc, fields) {
+export function serialize(doc, fields) {
   const d = doc.data();
   const images = {};
   for (const [k, v] of Object.entries(d.images ?? {})) if (v?.objectPath) images[k] = { v: v.updatedAt ?? '' };
   return {
     id: doc.id,
     sheets: d.sheets ?? [],
-    values: { ...(d.values ?? {}), ...computeValues(fields, d.values ?? {}) },
+    // #279: a secret cell (GST Pswd) never leaves in a list or write response —
+    // only whether one is set; its value comes from the audited reveal endpoint.
+    values: withoutSecrets(d.book, { ...(d.values ?? {}), ...computeValues(fields, d.values ?? {}) }),
+    secretsSet: secretsSetOf(d.book, d),
     images,
     createdAt: d.createdAt ?? null,
     updatedAt: d.updatedAt ?? null,
@@ -133,9 +188,12 @@ export async function getModule(req, res) {
     const snaps = await db.getAll(...books.map((b) => db.collection(CONFIG).doc(b)));
     const configs = Object.fromEntries(snaps.map((s) => [s.id, s.exists ? s.data() : {}]));
     const isAdmin = req.user.role === 'admin';
+    const sheets = mod.sheets.map((s) => resolveSheet(s, configs[SHEETS[s].book]));
+    // #280: staff columns carry their choices (uid + name) with the sheet.
+    const staff = sheets.some((sh) => sh.columns.some((c) => c.type === 'staff')) ? await loadWorksheetStaff(db) : [];
     res.json({
       module: { key: mod.key, label: mod.label },
-      sheets: mod.sheets.map((s) => resolveSheet(s, configs[SHEETS[s].book])),
+      sheets: sheets.map((sh) => withStaffChoices(sh, staff)),
       // Everyone on the staff views and edits (firm, 29 Oct); columns and
       // deleting a record are the admin's.
       canEdit: true,
@@ -153,6 +211,12 @@ export async function listRecords(req, res) {
     const ctx = await sheetContext(req, res); if (!ctx) return;
     const { db, sheet, fields } = ctx;
     const { limit, cursor } = req.query;
+    // #279: rows that come from matters are brought up to date when the sheet
+    // is opened (its first page). A failed sync never hides the sheet.
+    if (!cursor && BOOKS[sheet.book]?.sync) {
+      await syncSheetFromMatters({ bookKey: sheet.book, config: ctx.config })
+        .catch((err) => logger.warn({ err, sheet: sheet.key }, '#279 sheet sync failed; showing stored rows'));
+    }
     let q = db.collection(RECORDS).where('sheets', 'array-contains', sheet.key)
       .orderBy('createdAt').orderBy(FieldPath.documentId()).limit(limit);
     if (cursor) {
@@ -176,11 +240,15 @@ export async function createRecord(req, res) {
   try {
     const ctx = await sheetContext(req, res); if (!ctx) return;
     const { db, sheet, fields } = ctx;
-    const values = dropNulls(cleanRecordValues(fields, req.body.values));
-    if (Object.keys(values).length === 0) return res.status(400).json({ message: 'Fill in at least one column.' });
+    // #279: secret cells are taken out first and kept, as typed, under `secrets`.
+    const split = splitSecretValues(sheet.book, req.body.values);
+    const values = dropNulls(cleanRecordValues(fields, split.values, { staff: await staffFor(db, fields) }));
+    if (Object.keys(values).length === 0 && Object.keys(split.secrets).length === 0) return res.status(400).json({ message: 'Fill in at least one column.' });
     await checkMatters(db, sheet, fields, values);
+    await guardMatterLink(db, sheet, values.matter, values);
+    const sealed = secretWrites(sheet.book, { values, incoming: split.secrets });
     const sheets = cleanMemberships(sheet, [sheet.key, ...(req.body.sheets ?? [])]);
-    const recordKey = recordKeyFor(sheet.recordKey, values);
+    const recordKey = sheetRecordKey(sheet, values);
     const now = new Date().toISOString();
     const ref = db.collection(RECORDS).doc();
 
@@ -197,9 +265,11 @@ export async function createRecord(req, res) {
         }
       }
       tx.set(ref, {
-        module: sheet.module, book: sheet.book, sheets, values, recordKey,
+        module: sheet.module, book: sheet.book, sheets, values: sealed.values, recordKey,
+        ...(Object.keys(sealed.secrets).length ? { secrets: sealed.secrets } : {}),
         images: {}, reminderDue: reminderDueFor(sheet.book, fields, values), remindersSent: {},
         createdAt: now, createdBy: req.user.uid, updatedAt: now, updatedBy: req.user.uid,
+        ...matterLink(sheet, values),
       });
     });
     const saved = await ref.get();
@@ -213,27 +283,48 @@ export async function updateRecord(req, res) {
   try {
     const ctx = await sheetContext(req, res); if (!ctx) return;
     const { db, sheet, fields } = ctx;
-    const patch = req.body.values ? cleanRecordValues(fields, req.body.values) : {};
+    // #279: secret cells are taken out first (an empty password box means "no change").
+    const split = splitSecretValues(sheet.book, req.body.values ?? {});
+    const patch = req.body.values ? cleanRecordValues(fields, split.values, { staff: await staffFor(db, fields) }) : {};
     await checkMatters(db, sheet, fields, patch);
+    if (BOOKS[sheet.book]?.sync && typeof patch.matter === 'string' && patch.matter) {
+      // #294: only a NEW link is checked — re-saving a row with its own matter is not.
+      const current = await loadRecord(db, sheet, req.params.id);
+      if (!current) return res.status(404).json({ message: 'Record not found' });
+      if (patch.matter !== current.data.sourceMatterId) {
+        await guardMatterLink(db, sheet, patch.matter, { ...(current.data.values ?? {}), ...patch }, current.ref.id);
+      }
+    }
     const sheets = req.body.sheets ? cleanMemberships(sheet, req.body.sheets) : null;
     const now = new Date().toISOString();
 
     const ref = await db.runTransaction(async (tx) => {
       const rec = await loadRecord(db, sheet, req.params.id, tx);
       if (!rec) throw httpError(404, 'Record not found');
+      // #294: on a row synced from a matter, the GSTR-1 / GSTR-3B filing date the
+      // workflow fills is the MATTER's — corrected on its filing task, so the
+      // sheet and the matter's "Filed on" tag can never disagree.
+      const owned = matterOwnedDateFields(rec.data, patch);
+      if (owned.length) {
+        const label = fields.find((fd) => fd.key === owned[0])?.label ?? 'This date';
+        throw httpError(409, `${label} comes from the matter. Change it on the matter's filing task ("Filed on").`, { code: 'MATTER_OWNED_DATE' });
+      }
       // Merged inside the transaction so two people editing different cells
       // of the same row never overwrite each other.
       const values = dropNulls({ ...(rec.data.values ?? {}), ...patch });
-      const recordKey = recordKeyFor(sheet.recordKey, values);
+      const recordKey = sheetRecordKey(sheet, values);
       if (recordKey && recordKey !== rec.data.recordKey) {
         const dup = await tx.get(db.collection(RECORDS).where('book', '==', sheet.book).where('recordKey', '==', recordKey).limit(2));
         if (dup.docs.some((d) => d.id !== rec.ref.id)) {
           throw httpError(409, `Another record already has this ${sheet.recordKeyLabel}.`, { code: 'DUPLICATE_KEY' });
         }
       }
+      const sealed = secretWrites(sheet.book, { values, existingSecrets: rec.data.secrets, incoming: split.secrets });
       tx.update(rec.ref, {
-        values, recordKey, reminderDue: reminderDueFor(sheet.book, fields, values),
+        values: sealed.values, recordKey, reminderDue: reminderDueFor(sheet.book, fields, values),
+        ...Object.fromEntries(Object.entries(sealed.secrets).map(([f, v]) => [`secrets.${f}`, v])),
         ...(sheets ? { sheets } : {}),
+        ...matterLink(sheet, patch),
         updatedAt: now, updatedBy: req.user.uid,
       });
       return rec.ref;
@@ -266,12 +357,34 @@ export async function putColumns(req, res) {
   try {
     const ctx = await sheetContext(req, res); if (!ctx) return;
     const next = applyColumnEdit(ctx.sheet.key, ctx.config, req.body);
+    // Merged, so the dropdown choices staff edit (`optionOverrides`, #280) are
+    // never wiped by a column save.
     await ctx.db.collection(CONFIG).doc(ctx.sheet.book).set({
       ...next, updatedAt: new Date().toISOString(), updatedBy: req.user.uid,
-    });
+    }, { merge: true });
+    // #292: the GST sheet's linked services decide which matters show a Filing Month.
+    if (ctx.sheet.book === 'gst_return') invalidateGstReturnServiceKeys();
     logger.info({ sheet: ctx.sheet.key, actorUid: req.user.uid }, 'Worksheet columns updated');
-    res.json(resolveSheet(ctx.sheet.key, next));
+    res.json(withStaffChoices(resolveSheet(ctx.sheet.key, { ...ctx.config, ...next }), await staffFor(ctx.db, ctx.fields)));
   } catch (err) { sendKnown(res, err, 'putColumns failed'); }
+}
+
+/* ── Dropdown options (staff) ───────────────────────────────────────────── */
+
+// PUT /api/worksheets/sheets/:sheet/options/:field { options } — #280 / #279.
+// Admin, manager and team member: the issue asks all three to manage the
+// choices of every dropdown column. One field's list per request; a merge on
+// `optionOverrides.<field>` so two people editing different lists never clash.
+export async function putOptions(req, res) {
+  try {
+    const ctx = await sheetContext(req, res); if (!ctx) return;
+    const { optionOverrides } = applyOptionsEdit(ctx.sheet.key, ctx.config, req.params.field, req.body.options);
+    const now = new Date().toISOString();
+    await ctx.db.collection(CONFIG).doc(ctx.sheet.book).set({ optionOverrides, updatedAt: now, updatedBy: req.user.uid }, { merge: true });
+    const config = { ...ctx.config, optionOverrides: { ...(ctx.config.optionOverrides ?? {}), ...optionOverrides } };
+    logger.info({ sheet: ctx.sheet.key, field: req.params.field, count: optionOverrides[req.params.field].length, actorUid: req.user.uid }, 'Worksheet dropdown options updated');
+    res.json(withStaffChoices(resolveSheet(ctx.sheet.key, config), await staffFor(ctx.db, ctx.fields)));
+  } catch (err) { sendKnown(res, err, 'putOptions failed'); }
 }
 
 /* ── Excel upload ───────────────────────────────────────────────────────── */
@@ -289,9 +402,30 @@ export async function importRows(req, res) {
     const existingByKey = new Map();
     for (let i = 0; i < keys.length; i += 30) {
       const snap = await db.collection(RECORDS).where('book', '==', sheet.book).where('recordKey', 'in', keys.slice(i, i + 30)).get();
-      for (const d of snap.docs) existingByKey.set(d.data().recordKey, { id: d.id, values: d.data().values ?? {}, sheets: d.data().sheets ?? [] });
+      for (const d of snap.docs) {
+        existingByKey.set(d.data().recordKey, {
+          id: d.id, values: d.data().values ?? {}, sheets: d.data().sheets ?? [],
+          sourceMatterId: d.data().sourceMatterId ?? null, derived: d.data().derived ?? null,
+        });
+      }
     }
-    const plan = planImport({ sheet, fields, headers, rows, existingByKey, startRow });
+    // #280: Assigned to / Checker cells are matched to staff by name or email.
+    const staff = await staffFor(db, fields);
+    const plan = planImport({ sheet, fields, headers, rows, existingByKey, startRow, staff });
+    // #294: an upload never overwrites a filing date that comes from a matter (see updateRecord).
+    for (const up of plan.updates) {
+      const ex = existingByKey.get(up.key);
+      const owned = matterOwnedDateFields(ex, up.values);
+      if (!owned.length) continue;
+      for (const k of owned) delete up.values[k];
+      up.changed = Object.entries(up.values).some(([k, v]) => ex.values?.[k] !== v);
+      if (plan.warnings.length < 50) {
+        plan.warnings.push({ row: null, column: owned.map((k) => fields.find((fd) => fd.key === k)?.label ?? k).join(', '),
+          message: `Kept the matter's date for ${up.key}: change it on the matter's filing task.` });
+      }
+    }
+    plan.summary.updatedRows = plan.updates.filter((u) => u.changed || u.addsSheet).length;
+    plan.summary.unchangedRows = plan.updates.filter((u) => !u.changed && !u.addsSheet).length;
     const report = {
       columns: plan.columns,
       unknownColumns: plan.unknownColumns,
@@ -309,9 +443,13 @@ export async function importRows(req, res) {
     let ops = 0;
     const flush = async () => { if (ops) { await batch.commit(); batch = db.batch(); ops = 0; } };
     // createdAt steps by a millisecond per row so the sheet keeps the file's order.
+    const secretFields = secretFieldsOf(sheet.book);
     for (const [i, cr] of plan.creates.entries()) {
+      // #279: an uploaded GST Pswd goes to `secrets` — never into `values`.
+      const sealed = secretWrites(sheet.book, { values: cr.values });
       batch.set(db.collection(RECORDS).doc(), {
-        module: sheet.module, book: sheet.book, sheets: [sheet.key], values: cr.values, recordKey: cr.key,
+        module: sheet.module, book: sheet.book, sheets: [sheet.key], values: sealed.values, recordKey: cr.key,
+        ...(Object.keys(sealed.secrets).length ? { secrets: sealed.secrets } : {}),
         images: {}, reminderDue: reminderDueFor(sheet.book, fields, cr.values), remindersSent: {},
         createdAt: new Date(baseMs + i).toISOString(), createdBy: req.user.uid, updatedAt: now, updatedBy: req.user.uid,
         source: 'excel',
@@ -323,7 +461,12 @@ export async function importRows(req, res) {
       const merged = { ...existingByKey.get(up.key).values, ...up.values };
       const update = { sheets: FieldValue.arrayUnion(sheet.key), reminderDue: reminderDueFor(sheet.book, fields, merged), updatedAt: now, updatedBy: req.user.uid };
       // Cell by cell: a value the file leaves blank is never cleared.
-      for (const [k, v] of Object.entries(up.values)) update[`values.${k}`] = v;
+      for (const [k, v] of Object.entries(up.values)) {
+        if (secretFields.includes(k)) {
+          // #279: into `secrets`; a legacy copy in `values` is removed.
+          if (v != null && v !== '') { update[`secrets.${k}`] = sealSecret(v); update[`values.${k}`] = FieldValue.delete(); }
+        } else update[`values.${k}`] = v;
+      }
       batch.update(db.collection(RECORDS).doc(up.id), update);
       ops += 1; if (ops >= 400) await flush();
     }
@@ -331,6 +474,36 @@ export async function importRows(req, res) {
     logger.info({ sheet: sheet.key, actorUid: req.user.uid, ...plan.summary }, 'Worksheet Excel batch applied');
     res.json({ ...report, applied: true });
   } catch (err) { sendKnown(res, err, 'importRows failed'); }
+}
+
+/* ── Secret cells (#279: GST portal password) ───────────────────────────── */
+
+export const GST_PORTAL_LOGIN_URL = 'https://services.gst.gov.in/services/login';
+
+// POST /api/worksheets/sheets/:sheet/records/:id/secrets/:field/reveal
+// Staff only (route guard). Returns ONE row's password, with the row's GST user
+// ID and the GST portal's login page. A legacy value still in `values` is moved
+// into `secrets` on the way.
+export async function revealSecret(req, res) {
+  try {
+    const ctx = await sheetContext(req, res); if (!ctx) return;
+    const { db, sheet } = ctx;
+    const field = String(req.params.field);
+    if (!secretFieldsOf(sheet.book).includes(field)) return res.status(404).json({ message: 'Unknown column' });
+    const rec = await loadRecord(db, sheet, req.params.id);
+    if (!rec) return res.status(404).json({ message: 'Record not found' });
+
+    const stored = rec.data.secrets?.[field] ?? null;
+    const legacy = rec.data.values?.[field];
+    const value = stored ? openSecret(stored) : (legacy != null && legacy !== '' ? String(legacy) : null);
+    if (value == null) return res.status(404).json({ message: 'No password is saved for this row.' });
+
+    if (!stored) {
+      await rec.ref.update({ [`secrets.${field}`]: sealSecret(value), [`values.${field}`]: FieldValue.delete() });
+    }
+    res.set('Cache-Control', 'no-store');
+    res.json({ value, userId: rec.data.values?.gst_user_id ?? null, loginUrl: GST_PORTAL_LOGIN_URL });
+  } catch (err) { sendKnown(res, err, 'revealSecret failed'); }
 }
 
 /* ── Matter link ────────────────────────────────────────────────────────── */

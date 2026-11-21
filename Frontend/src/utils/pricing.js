@@ -25,7 +25,7 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "";
  */
 export const PAYMENTS_ENABLED = import.meta.env.VITE_PAYMENTS_ENABLED === "true";
 
-let cached = null;      // { [productKey]: { label, plans: [{ id, name, price, oldPrice }] } }
+let cached = null;      // { [productKey]: { label, plans: [{ id, name, price, oldPrice }], choice? } }
 let pending = null;     // one request for the whole site, however many cards ask
 
 /**
@@ -41,8 +41,15 @@ export function withGst(price, percent = gstPercent) {
   return { price, gstPercent: percent, gst, total: Math.round((price + gst) * 100) / 100 };
 }
 
-/** "₹7,078.82" — two decimals only when there are paise to show. */
-export const inr = (n) => `₹${Number(n).toLocaleString("en-IN", { maximumFractionDigits: 2 })}`;
+/**
+ * "₹7,078.82" — two decimals only when there are paise to show, and then
+ * always two: "₹299.80", never "₹299.8" (a coupon's 10% made the short form common).
+ */
+export const inr = (n) => {
+  const v = Number(n);
+  const paise = Math.round(v * 100) % 100 !== 0;
+  return `₹${v.toLocaleString("en-IN", { minimumFractionDigits: paise ? 2 : 0, maximumFractionDigits: 2 })}`;
+};
 
 export function loadPricing() {
   if (cached) return Promise.resolve(cached);
@@ -93,12 +100,8 @@ export function withLivePrices(defaults, product) {
   return plans.length ? plans : defaults;
 }
 
-/**
- * `const PLANS = usePlans("trademark-application", DEFAULT_PLANS);`
- *
- * `productKey` is the same value the component passes to the checkout as `source`.
- */
-export function usePlans(productKey, defaults) {
+/** The catalogue, once loaded; null until then (and if it cannot be reached). */
+function useCatalog() {
   const [catalog, setCatalog] = useState(cached);
   useEffect(() => {
     if (cached) return undefined;
@@ -106,5 +109,63 @@ export function usePlans(productKey, defaults) {
     loadPricing().then((c) => { if (alive && c) setCatalog(c); });
     return () => { alive = false; };
   }, []);
+  return catalog;
+}
+
+/**
+ * `const PLANS = usePlans("trademark-application", DEFAULT_PLANS);`
+ *
+ * `productKey` is the same value the component passes to the checkout as `source`.
+ */
+export function usePlans(productKey, defaults) {
+  const catalog = useCatalog();
   return useMemo(() => withLivePrices(defaults, catalog?.[productKey]), [defaults, catalog, productKey]);
+}
+
+/**
+ * #221: a product's one required question — `{ label, options: [{ id, name,
+ * surcharge }] }` — as the catalogue has it, or the component's default until
+ * (and unless) the catalogue arrives. The surcharge shown is only for display:
+ * the page sends the ANSWER's id, and the server adds the surcharge itself.
+ */
+export function useChoice(productKey, defaultChoice) {
+  const catalog = useCatalog();
+  return catalog?.[productKey]?.choice ?? defaultChoice ?? null;
+}
+
+/** #221: what an answer adds to a plan's price, before GST; 0 when there is none. */
+export const surchargeOf = (choice, optionId) => choice?.options?.find((o) => o.id === optionId)?.surcharge ?? 0;
+
+/**
+ * #241: the "starting from" figure on a page's hero — the cheapest plan on sale,
+ * plus the cheapest answer's surcharge when the product asks a question. Pure.
+ * `fallback` when the catalogue has no plans for it (not loaded, or unreachable).
+ * The heroes used to carry this figure typed in, and one had drifted below the
+ * cheapest card (₹4,999 against ₹5,999).
+ */
+export function startingPrice(product, fallback) {
+  const prices = (product?.plans ?? []).map((p) => p.price).filter(Number.isFinite);
+  if (!prices.length) return fallback;
+  const extras = (product.choice?.options ?? []).map((o) => o.surcharge).filter(Number.isFinite);
+  return Math.min(...prices) + (extras.length ? Math.min(...extras) : 0);
+}
+
+/** `const from = useStartingPrice("private-limited-odisha", 5999);` */
+export function useStartingPrice(productKey, fallback) {
+  const catalog = useCatalog();
+  return startingPrice(catalog?.[productKey], fallback);
+}
+
+/**
+ * #241: each plan's live price by id — for text that quotes a plan's price (a
+ * page's terms), so it says what the card says. `fallbacks` is `{ planId: price }`;
+ * a plan the catalogue does not list (off sale) keeps its fallback.
+ */
+export function usePlanPrices(productKey, fallbacks) {
+  const catalog = useCatalog();
+  return useMemo(() => {
+    const out = { ...fallbacks };
+    for (const p of catalog?.[productKey]?.plans ?? []) if (Number.isFinite(p.price)) out[p.id] = p.price;
+    return out;
+  }, [catalog, productKey, fallbacks]);
 }

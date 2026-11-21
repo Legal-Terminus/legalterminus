@@ -27,6 +27,13 @@ test('#77: upload allow-list accepts Excel content types; rejects unknown', asyn
     });
     expect(res.ok(), `${contentType} should be allowed`).toBeTruthy();
   }
+  // #219: data files for GST and accounts work.
+  for (const [fileName, contentType] of [
+    ['sales.csv', 'text/csv'], ['gstr.json', 'application/json'], ['notes.txt', 'text/plain'], ['statements.zip', 'application/zip'],
+  ]) {
+    const res = await api.post(`/api/tasks/${taskId}/documents/signed-upload-url`, { data: { fileName, contentType } });
+    expect(res.ok(), `${contentType} should be allowed`).toBeTruthy();
+  }
   // A disallowed type is rejected.
   const bad = await api.post(`/api/tasks/${taskId}/documents/signed-upload-url`, {
     data: { fileName: 'evil.exe', contentType: 'application/x-msdownload' },

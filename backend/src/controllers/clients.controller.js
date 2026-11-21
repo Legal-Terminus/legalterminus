@@ -24,7 +24,11 @@ import { distinctGroups, clientLabel } from '../services/clientGroupFees.service
  */
 
 const DEFAULT_LIMIT = 25;
-const MAX_LIMIT = 100;
+// #277: the roster builds EVERY client's rollup on every request (it has to, to
+// sort attention-first), then returns a slice. The Clients page now loads the
+// whole roster, so a large page is strictly cheaper than several small ones —
+// each extra page would rebuild every rollup again.
+const MAX_LIMIT = 500;
 
 /** Events shown on the 360's cross-matter activity feed. */
 const ACTIVITY_LIMIT = 25;

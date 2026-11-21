@@ -1,8 +1,12 @@
 import express from "express";
+import { buildSignInProfile } from "../services/signInProfile.js";
 import admin from "firebase-admin";
 import { verifyToken, requireRole } from "../middleware/auth.middleware.js";
 import { getDb } from "../config/firebase.js";
-import { VALID_ROLES, canAssignRole } from "../config/roles.js";
+import { VALID_ROLES, canAssignRole, ACCOUNT_DELETION_ROLES } from "../config/roles.js";
+import { validate } from "../middleware/validate.middleware.js";
+import { deletionRequestSchema } from "../schemas/accountDeletion.schema.js";
+import { requestDeletion } from "../services/accountDeletion.service.js";
 import { logger } from "../config/logger.js";
 import {
   upsertUser,
@@ -10,6 +14,8 @@ import {
   updateUserRole,
   normalizeUserProfile,
 } from "../services/userService.js";
+import { termsAcceptanceFields } from "../services/termsAcceptance.js";
+import { afterClientProfileWrite } from "../services/clientName.service.js";
 
 const router = express.Router();
 
@@ -71,7 +77,7 @@ router.get("/firebase-config", (req, res) => {
  * 3. Admin + Google merge → Link accounts, preserve admin role
  * 
  * Auth: Bearer <firebase_id_token>
- * Body: { fullName, mobile, businessName, state, provider: 'google' | 'email' }
+ * Body: { fullName, mobile, businessName, state, provider: 'google' | 'email', termsAccepted?: true }
  */
 router.post("/register", verifyToken, async (req, res) => {
   try {
@@ -90,16 +96,19 @@ router.post("/register", verifyToken, async (req, res) => {
     // - If new: default to 'client'
     const role = existingUser?.role || 'client';
 
-    // Prepare profile data
-    const profileData = {
-      name: String(fullName || '').slice(0, 200),
-      fullName: String(fullName || '').slice(0, 200),
-      email,
-      mobile: String(mobile || '').replace(/[^0-9+\-() ]/g, '').slice(0, 20),
-      businessName: String(businessName || '').slice(0, 200),
-      state: String(state || '').slice(0, 100),
-      ...(photoURL && provider === 'google' && { profilePictureUrl: photoURL }),
-    };
+    // #35: the first agreement to the Terms & Privacy Policy is kept (see
+    // termsAcceptance.js). The user's own document, read only when they agreed.
+    let terms = {};
+    if (req.body?.termsAccepted === true) {
+      const own = await getDb().collection('users').doc(uid).get();
+      terms = termsAcceptanceFields(req.body, own.exists ? own.data() : null);
+    }
+
+    // #277: see buildSignInProfile — sign-in must not overwrite an existing
+    // profile's name (with the email address) or its contact details (with blanks).
+    const profileData = buildSignInProfile(existingUser, {
+      email, fullName, mobile, businessName, state, provider, photoURL, terms,
+    });
 
     // Call unified upsertUser service
     const result = await upsertUser(
@@ -184,6 +193,8 @@ router.patch("/me", verifyToken, async (req, res) => {
 
     await db.collection('users').doc(uid).set(updates, { merge: true });
     const doc = await db.collection('users').doc(uid).get();
+    // #277: a client renaming themselves renames their existing matters too.
+    if (updates.name !== undefined) await afterClientProfileWrite(db, uid, doc.data());
     res.json({ success: true, user: { uid, ...doc.data() } });
   } catch (error) {
     logger.error({ err: error }, '[PATCH_ME_ERROR]');
@@ -217,6 +228,40 @@ router.get("/me/orders", verifyToken, async (req, res) => {
     res.status(500).json({ success: false, error: "Internal server error" });
   }
 });
+
+/**
+ * POST /api/auth/me/deletion-request — E29-S08.
+ * The signed-in person asks for THEIR OWN account to be deleted (App Store 5.1.1(v)).
+ * The account is the token's (req.user.uid), never a body field. Every role but admin
+ * (ACCOUNT_DELETION_ROLES). Under /api/auth, so the strict rate limiter applies.
+ * Effect: profile marked, sign-in disabled, admins emailed once; an Admin completes the
+ * deletion from Users. 202 every time, including a repeat (idempotent).
+ * Body: { reason?: string (≤500) }
+ */
+router.post(
+  "/me/deletion-request",
+  verifyToken,
+  requireRole(ACCOUNT_DELETION_ROLES),
+  validate(deletionRequestSchema),
+  async (req, res) => {
+    try {
+      await requestDeletion({
+        db: getDb(),
+        auth: admin.auth(),
+        uid: req.user.uid,
+        reason: req.body.reason,
+        log: req.log ?? logger,
+      });
+      res.status(202).json({
+        success: true,
+        message: "Your deletion request was received. The firm will delete your account within 30 days.",
+      });
+    } catch (error) {
+      (req.log ?? logger).error({ err: error }, "[ACCOUNT_DELETION_REQUEST_ERROR]");
+      res.status(500).json({ success: false, error: "Internal server error" });
+    }
+  },
+);
 
 /**
  * PATCH /api/auth/set-role

@@ -16,11 +16,14 @@ import assert from 'node:assert/strict';
 
 import {
   COMMENT_WORD_LIMIT,
+  MESSAGE_WORD_LIMIT,
   RICH_TEXT_MAX_CHARS,
+  MESSAGE_MAX_CHARS,
   countWords,
   prepareRichText,
 } from '../services/richText.service.js';
-import { stepNoteSchema, taskTransitionSchema, messageCreateSchema } from '../schemas/task.schema.js';
+import { stepNoteSchema, taskTransitionSchema, messageCreateSchema, messageUpdateSchema } from '../schemas/task.schema.js';
+import * as sharedLimits from '../../../shared/richText/limits.js';
 
 const VOCAB = ('the registration application requires supporting documents including incorporation '
   + 'certificate director identification and registered office address proof before submission').split(' ');
@@ -59,7 +62,7 @@ for (const what of ['message', 'comment', 'note']) {
 }
 
 test('1,001 words is refused with the real count, and nothing is returned to store', () => {
-  const out = prepareRichText(realisticHtml(1001), { what: 'message' });
+  const out = prepareRichText(realisticHtml(1001), { what: 'comment' });
   assert.equal(out.ok, false);
   assert.equal(out.status, 400);
   assert.equal(out.code, 'WORD_LIMIT_EXCEEDED');
@@ -121,3 +124,45 @@ test('a heavily formatted 1,000-word comment (every word coloured) still fits th
   assert.equal(out.ok, true, out.message);
   assert.equal(countWords(out.html), 1000);
 });
+
+// ── #295: a Chat message may be 5,000 words ─────────────────────────────────
+
+test('#295: the limits come from ONE shared module the Portal reads too', () => {
+  assert.equal(sharedLimits.MESSAGE_WORD_LIMIT, 5000);
+  assert.equal(sharedLimits.COMMENT_WORD_LIMIT, 1000);
+  assert.equal(MESSAGE_WORD_LIMIT, sharedLimits.MESSAGE_WORD_LIMIT, 'the service re-exports, never redefines');
+  assert.equal(COMMENT_WORD_LIMIT, sharedLimits.COMMENT_WORD_LIMIT);
+  assert.equal(sharedLimits.wordLimitFor('message'), 5000);
+  assert.equal(sharedLimits.wordLimitFor('comment'), 1000);
+  assert.equal(sharedLimits.wordLimitFor('note'), 1000);
+});
+
+test('#295: a 5,000-word message is stored whole; 5,001 is refused with the count', () => {
+  const ok = prepareRichText(realisticHtml(5000), { what: 'message' });
+  assert.equal(ok.ok, true, ok.message);
+  assert.equal(countWords(ok.html), 5000);
+  const over = prepareRichText(realisticHtml(5001), { what: 'message' });
+  assert.equal(over.ok, false);
+  assert.equal(over.code, 'WORD_LIMIT_EXCEEDED');
+  assert.match(over.message, /A message may be at most 5000 words \(this one has 5001\)/);
+});
+
+test('#295: comments and notes keep the 1,000-word limit', () => {
+  for (const what of ['comment', 'note']) {
+    assert.equal(prepareRichText(realisticHtml(1001), { what }).code, 'WORD_LIMIT_EXCEEDED', what);
+  }
+  assert.equal(prepareRichText(realisticHtml(1001), { what: 'message' }).ok, true);
+});
+
+test('#295: a heavily formatted 5,000-word message fits the schemas and the size cap', () => {
+  const html = `<p>${Array.from({ length: 5000 }, (_, i) =>
+    `<span style="color: #dc2626">${VOCAB[i % VOCAB.length]}</span>`).join(' ')}</p>`;
+  assert.equal(messageCreateSchema.safeParse({ body: html }).success, true);
+  assert.equal(messageUpdateSchema.safeParse({ body: html }).success, true);
+  const out = prepareRichText(html, { what: 'message' });
+  assert.equal(out.ok, true, out.message);
+  assert.equal(countWords(out.html), 5000);
+  assert.ok(prepareRichText(realisticHtml(5000), { what: 'message' }).html.length * 4 < MESSAGE_MAX_CHARS);
+  assert.ok(RICH_TEXT_MAX_CHARS < MESSAGE_MAX_CHARS);
+});
+

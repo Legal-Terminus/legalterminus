@@ -46,7 +46,9 @@ function notificationCalls(source) {
   return calls;
 }
 
-for (const file of ['controllers/reminders.controller.js', 'controllers/messages.controller.js']) {
+// #297: the chat's notifications moved from messages.controller.js into
+// chatMessageNotify.service.js, shared by a new message and an edited one.
+for (const file of ['controllers/reminders.controller.js', 'services/chatMessageNotify.service.js']) {
   test(`${file}: every notification leaves the email to the template that was already sent`, () => {
     const source = read(file);
     assert.ok(source.includes('sendTemplatedEmail('), 'this controller is expected to send templated emails');

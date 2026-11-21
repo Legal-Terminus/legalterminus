@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { email, phone, CONTACT_DESIGNATIONS } from './user.schema.js';
+import { stripTags } from '../utils/sanitize.js';
 
 /**
  * LT #205 — PUT /api/client-database/:clientUid.
@@ -12,7 +13,7 @@ import { email, phone, CONTACT_DESIGNATIONS } from './user.schema.js';
 
 /** Text with any HTML tags removed, trimmed and length-capped. */
 const plain = (max) => z.string().max(max * 2)
-  .transform((s) => s.replace(/<[^>]*>/g, '').trim())
+  .transform((s) => stripTags(s).trim())
   .pipe(z.string().max(max));
 
 const orEmpty = (schema) => z.union([schema, z.literal('')]);

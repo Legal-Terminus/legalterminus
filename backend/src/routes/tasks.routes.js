@@ -1,14 +1,24 @@
 import { Router } from 'express';
+import rateLimit from 'express-rate-limit';
 import { verifyToken, requireRole, denyReadOnlyRoles } from '../middleware/auth.middleware.js';
 import { validate } from '../middleware/validate.middleware.js';
-import { taskCreateSchema, taskUpdateSchema, taskPaymentUpdateSchema, paymentCreateSchema, paymentUpdateSchema, taskListQuerySchema, taskTransitionSchema, taskRejectSchema, taskStopSchema, signedUploadUrlSchema, confirmUploadSchema, reviewDocumentSchema, documentVisibilitySchema, stepNoteSchema, internalReminderSchema, messageCreateSchema } from '../schemas/task.schema.js';
+import { taskCreateSchema, taskUpdateSchema, taskPaymentUpdateSchema, paymentCreateSchema, paymentUpdateSchema, taskListQuerySchema, taskTransitionSchema, taskRejectSchema, taskStopSchema, signedUploadUrlSchema, confirmUploadSchema, reviewDocumentSchema, documentVisibilitySchema, stepNoteSchema, stepPatchSchema, filedOnCorrectionSchema, internalReminderSchema, messageCreateSchema, messageUpdateSchema } from '../schemas/task.schema.js';
 import { listTasks, getTask, createTask, patchTask, updatePayment, listPayments, createPayment, patchPayment, deletePayment, patchStep, transitionTask, deleteTask, listMySteps, listTaskEvents, approveTask, rejectTask, stopTask, restartTask, archiveTask, reopenStep, postStepNote, listRecurringDue, duplicateTask } from '../controllers/tasks.controller.js';
 import { listDocuments, createSignedUploadUrl, confirmUpload, downloadDocument, reviewDocument, submitDocuments, deleteDocument, setDocumentVisibility } from '../controllers/documents.controller.js';
-import { listMessages, createMessage, listMentionable } from '../controllers/messages.controller.js';
+import { listMessages, createMessage, updateMessage, deleteMessage, listMentionable } from '../controllers/messages.controller.js';
 import { listReminders, sendReminder, listInternalReminders, sendInternalReminder } from '../controllers/reminders.controller.js';
+import { postMatterPayNow } from '../controllers/orders.controller.js';
+import { matterPayNowSchema } from '../schemas/order.schema.js';
+import { listMatterRefunds, createMatterRefund, patchMatterRefund } from '../controllers/refunds.controller.js';
+import { refundCreateSchema, refundUpdateSchema } from '../schemas/refund.schema.js';
+import { paymentRequestCreateSchema, paymentRequestCancelSchema, paymentRequestRecordSchema, paymentRequestPaySchema } from '../schemas/paymentRequest.schema.js';
+import { getPaymentRequests, postPaymentRequest, postCancelPaymentRequest, postRecordPaymentRequest, postPayPaymentRequest } from '../controllers/paymentRequests.controller.js';
 import { getFormStep, saveFormStep } from '../controllers/forms.controller.js';
+import { saveFilingDate } from '../controllers/gstFiling.controller.js';
 import { uploadCommentImage, getCommentImage } from '../controllers/commentImages.controller.js';
 import { commentImageUpload } from '../middleware/commentImageUpload.middleware.js';
+import { listInvoices, createInvoiceUploadUrl, confirmInvoiceUpload, downloadInvoice, deleteInvoice } from '../controllers/invoices.controller.js';
+import { invoiceUploadUrlSchema, invoiceConfirmSchema } from '../schemas/invoice.schema.js';
 
 const router = Router();
 
@@ -42,6 +52,10 @@ router.post('/:taskId/internal-reminders',   requireRole('admin', 'manager', 'te
 // matter ownership; a professional may read but never post.
 router.get('/:taskId/messages',              requireRole('admin', 'manager', 'team_member', 'client', 'professional'), listMessages);
 router.post('/:taskId/messages',             requireRole('admin', 'manager', 'team_member', 'client'), validate(messageCreateSchema), createMessage);
+// Chat: the author (or an admin) may edit or delete a message. Neither sends
+// an email; the controller checks authorship and matter access.
+router.patch('/:taskId/messages/:messageId',  requireRole('admin', 'manager', 'team_member', 'client'), validate(messageUpdateSchema), updateMessage);
+router.delete('/:taskId/messages/:messageId', requireRole('admin', 'manager', 'team_member', 'client'), deleteMessage);
 // #122 follow-up: images in step comments and Discussion messages. Upload is
 // staff + client (role guard BEFORE multer, so a refused caller never streams
 // 5 MB); the controller then checks the client can see THIS matter. Reading
@@ -61,7 +75,45 @@ router.get('/:taskId/payments',              requireRole('admin', 'manager', 'cl
 router.post('/:taskId/payments',             requireRole('admin', 'manager'), validate(paymentCreateSchema), createPayment);
 router.patch('/:taskId/payments/:paymentId', requireRole('admin', 'manager'), validate(paymentUpdateSchema), patchPayment);
 router.delete('/:taskId/payments/:paymentId', requireRole('admin', 'manager'), deletePayment);
-router.patch('/:taskId/steps/:stepId',       patchStep);
+// #240 refund log — admin/manager record and move a refund on BY HAND (no
+// Razorpay refund automation). The client READS their own matter's refunds
+// (the controller answers 404 for anyone else's); team members see no payment
+// data at all (#148), so they are refused here too.
+router.get('/:taskId/refunds',               requireRole('admin', 'manager', 'client'), listMatterRefunds);
+router.post('/:taskId/refunds',              requireRole('admin', 'manager'), validate(refundCreateSchema), createMatterRefund);
+router.patch('/:taskId/refunds/:refundId',   requireRole('admin', 'manager'), validate(refundUpdateSchema), patchMatterRefund);
+// #313 invoices — admin/manager upload (signed PUT URL → confirm, PDF only),
+// replace or delete; the CLIENT lists and downloads their own matter's invoices
+// (the controller answers 404 for anyone else's). Team members and professionals
+// are refused: an invoice is payment information (#148). The download streams
+// through the backend — never a signed URL.
+router.get('/:taskId/invoices',                          requireRole('admin', 'manager', 'client'), listInvoices);
+router.post('/:taskId/invoices/signed-upload-url',       requireRole('admin', 'manager'), validate(invoiceUploadUrlSchema), createInvoiceUploadUrl);
+router.post('/:taskId/invoices/:invoiceId/confirm',      requireRole('admin', 'manager'), validate(invoiceConfirmSchema), confirmInvoiceUpload);
+router.get('/:taskId/invoices/:invoiceId/download',      requireRole('admin', 'manager', 'client'), downloadInvoice);
+router.delete('/:taskId/invoices/:invoiceId',            requireRole('admin', 'manager'), deleteInvoice);
+// #220 Pay Now — the CLIENT pays the amount due on their matter online. Creates
+// an order at the gateway, so it is rate-limited like POST /api/orders.
+const isE2E = String(process.env.EMAIL_DISABLED ?? '').toLowerCase() === 'true' || process.env.NODE_ENV === 'test';
+const payNowLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: isE2E ? 100_000 : 15,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: 'Too many attempts. Please wait a few minutes and try again.' },
+});
+router.post('/:taskId/pay-now', requireRole('client'), payNowLimiter, validate(matterPayNowSchema), postMatterPayNow);
+// #222 Additional payment requests (government fees etc.). Any member of staff
+// raises and sends one; admin / manager cancel one or record it paid by hand;
+// the CLIENT pays one online (amount = the request's server-computed total).
+// Team members may read the requests on a matter (they raise them) but still
+// not its payment history (#148).
+router.get('/:taskId/payment-requests', requireRole('admin', 'manager', 'team_member', 'client'), getPaymentRequests);
+router.post('/:taskId/payment-requests', requireRole('admin', 'manager', 'team_member'), validate(paymentRequestCreateSchema), postPaymentRequest);
+router.post('/:taskId/payment-requests/:requestId/cancel', requireRole('admin', 'manager'), validate(paymentRequestCancelSchema), postCancelPaymentRequest);
+router.post('/:taskId/payment-requests/:requestId/record', requireRole('admin', 'manager'), validate(paymentRequestRecordSchema), postRecordPaymentRequest);
+router.post('/:taskId/payment-requests/:requestId/pay', requireRole('client'), payNowLimiter, validate(paymentRequestPaySchema), postPayPaymentRequest);
+router.patch('/:taskId/steps/:stepId',       requireRole('admin', 'manager'), validate(stepPatchSchema), patchStep);
 router.post('/:taskId/transition',           validate(taskTransitionSchema), transitionTask);
 // Approval chain (E03-S04): admin-only approve / reject of a pending matter.
 router.post('/:taskId/approve',              requireRole('admin'), approveTask);
@@ -74,6 +126,8 @@ router.post('/:taskId/restart',              requireRole('admin'), restartTask);
 router.post('/:taskId/steps/:stepNumber/reopen', requireRole('admin'), reopenStep);
 // #105: staff post a client-visible note onto a step without advancing it.
 router.post('/:taskId/steps/:stepNumber/note', requireRole('admin', 'manager', 'team_member'), validate(stepNoteSchema), postStepNote);
+// #294: staff save (or change, or remove) a GSTR-1 / GSTR-3B filing date (never clients or professionals).
+router.put('/:taskId/steps/:stepNumber/filed-on', requireRole('admin', 'manager', 'team_member'), validate(filedOnCorrectionSchema), saveFilingDate);
 // Archive a matter (non-destructive) — admin-only (#70); the alternative to admin-only delete.
 router.post('/:taskId/archive',              requireRole('admin'), archiveTask);
 

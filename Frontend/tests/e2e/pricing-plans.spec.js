@@ -4,8 +4,8 @@ import { test, expect } from "@playwright/test";
 
 /**
  * #209, the firm on 2 Nov: OPC and Trademark Registration get a fourth plan,
- * "Supreme Plus", as Private Limited has. The Odisha trademark page sells the
- * same product, so it shows the same four.
+ * "Supreme Plus", as Private Limited has. The Odisha trademark page shows the
+ * same four plans (since #241 as its own product, priced separately).
  *
  *   E2E_BASE_URL=http://localhost:5184 npx playwright test pricing-plans
  */

@@ -31,7 +31,7 @@ Workflows are modelled as **XState state machines**. Each workflow service (Comp
 - **Workflow engine**: XState v5 (state machines) — frontend and backend share the same machine config
 - **Backend**: Node.js/Express (ES Modules), Firebase Admin SDK — `backend/`
 - **Database**: Firestore (single source of truth); Firebase Storage for documents
-- **Auth**: Firebase Authentication; role stored in Firestore `/users/{uid}` document. **Auth methods**: Email/password login, Google Sign-In (OAuth), client self-signup (email/password), password reset via email link
+- **Auth**: Firebase Authentication; role stored in Firestore `/users/{uid}` document. **Auth methods**: Email/password login, Google Sign-In (OAuth), Sign in with Apple (E29-S11: iPhone app always, website when `VITE_APPLE_SIGN_IN` is on, not Android), client self-signup (email/password; the password must have 8+ characters with an uppercase letter, a lowercase letter, a number and a special character, shown as a checklist, and the Terms & Conditions and Privacy Policy must be agreed, recorded as `users.termsAcceptedAt` — #35), password reset via email link (same password rules)
 - **Existing public website**: `Frontend/` — unchanged; marketing, blog, Razorpay payments
 
 ### Scope
@@ -55,7 +55,11 @@ Workflows are modelled as **XState state machines**. Each workflow service (Comp
 | Mark step urgent | ✅ | ✅ | ❌ | ❌ |
 | Reassign task steps | ✅ Any | ✅ Any | ✅ To other members | ❌ |
 | Configure email templates | ✅ | ❌ | ❌ | ❌ |
+| Edit the "Explore more services" block on the completion email (#310) | ✅ | ✅ | ❌ | ❌ |
 | Send broadcast notifications | ✅ | ❌ | ❌ | ❌ |
+| Create, edit, switch on/off coupon codes; read the Coupon & Discount report (#256) | ✅ | ✅ | ❌ | ❌ (applies a code at checkout) |
+
+**Matters list (#275):** "All Matters" lists every matter the user may see, whatever its status — completed matters included, however many matters there are. Only deleting a matter removes it. The Status filter (and a dashboard link that opens it, e.g. `/tasks?status=completed`) shows every matter in that status.
 
 ---
 
@@ -203,7 +207,17 @@ The admin has access to a comprehensive reporting dashboard covering 13 distinct
 
 **Website payments (E24-S02 … S05)** — **Given** a signed-in customer chooses a plan on the website and pays, **Then** the amount charged is the plan's price in the catalogue plus GST at 18% (prices are exclusive of GST; the checkout shows the price, the GST and the total); the order is marked paid only on a verified confirmation from the gateway; the customer sees a confirmation with an order reference; and, where the service has a workflow, the order waits for a member of staff — an admin, a manager or a team member — to approve it under **Website Orders**, and on approval a matter is opened for the customer, fully paid and live. Payment alone opens no matter. Where the service has no workflow, the firm's admins are told to open one. A payment confirmed twice, or an order approved by two people at once, opens one matter. A refunded order cannot be approved. A payment for the wrong amount is held for review. Staff see every order under **Website Orders**.
 
-**Website prices (E24-S01)** — **Given** an admin opens Settings → Website Prices and changes a plan's price, **Then** the website shows the new price within a couple of minutes and a payment for that plan is charged that amount. A manager can view prices but not change them. At least one plan of a service stays on sale.
+**Client dashboard before approval (#242)** — **Given** a client paid for a service on the website and the firm has not yet approved it, and the client has no open matter, **Then** their dashboard keeps its layout and four cards but shows **Payment status** (Paid / Under review / Refunded), **Matter status** (Pending approval / Cancelled), **Amount paid** and **Service requests**, with a **Pending approval** notice that the payment was received and the team is reviewing the request. It never shows ₹0 amount due or workflow progress in that state. When the order is approved its matter appears and the usual cards (Needs you, In progress, Amount due, Completed) return on the next refresh. Payment and approval stay separate statuses. A client who already has matters sees the usual cards plus a **Waiting for approval** list of their unapproved requests. A request cancelled and refunded before approval shows as **Refunded** (or Refund in progress) with the amount, status and reason, and the notice reads **Service cancelled**.
+
+**Refund log (#240)** — **Given** an admin or manager opens a matter → Payments → **Refund History** (or a website order not yet approved, under Website Orders → Details), **Then** they can record a refund: reason, refund amount, initiation date, transaction id and status (Initiated, Processing, Successfully Credited, Failed). The client name, matter and the payment amount are taken from the matter or order, not typed. The refund amount, with every refund that has not failed, may not exceed the amount paid. Status is changed **by hand** — Razorpay's refund API is not connected, so the refund itself is made in Razorpay or at the bank. Successfully Credited needs the transaction id; Credited and Failed are final (a retry is a new refund). A refund never changes the payment history: amount paid stays what was received and the log shows **Net received** beside it. A refund recorded on an unapproved order stops it being approved; when refunds credited reach the amount paid the order becomes Refunded. The client sees their own matter's refunds read-only (amount, reason, initiation date, transaction reference, status — not who recorded it), and a fifth **Refund** card on the dashboard (total refunded or on its way, with the latest status and reason) only when they have a refund. Team members do not see refunds. Another client's matter answers "not found".
+
+**Convenience fee (#276, Razorpay Customer Fee Bearer)** — **Given** Razorpay has enabled Customer Fee Bearer on the firm's account, **When** a client pays online (a website order, a cart, Pay Now or a payment request), **Then** Razorpay's checkout shows its convenience fee for the payment method chosen and adds it to what the client pays; the payment is accepted when it is the amount due plus the fee Razorpay reports for that payment, and any other amount is held for review. The fee is recorded on the order and shown to staff in Website Orders as "Convenience fee (paid by client)"; it is not added to the matter's payment history and does not appear on the client's receipts, order history or confirmation emails. Our own prices and totals never include it. Until Razorpay enables it, payments work exactly as before.
+
+**Website cart (#244)** — **Given** a customer adds several services to the cart (from a plan's "Add to Cart" in the checkout), **Then** a cart icon in the header shows how many services it holds; the cart page lists each service with its plan and price, lets the customer change a service's plan or remove it, and shows the price, the GST and the total; and one checkout pays for all of them in a single payment. One plan per service (another plan of a service already in the cart replaces it), at most 10 services. **Quantities (2026-11-14):** each line has − and + to buy several units of the service (e.g. 3 Trademark Registrations) — 1 to 10 of a service, at most 20 in all, enforced by the server too; each unit is a service of its own, and the line total, price, GST, saving and total follow the quantity. Old carts load with 1 of each. The server prices every service from the catalogue — the cart sends only plans. The order waits for ONE approval under **Website Orders**, which opens one matter per service unit (3 units → 3 matters), each fully paid with what was paid for that unit (GST included); approving again never opens more. A service with no workflow is listed for staff to open by hand. The confirmation page, the confirmation email and Website Orders list every service with its quantity and line total. The cart is kept in the browser and is emptied once paid; it is shown only where online payment is switched on.
+
+**Website prices (E24-S01)** — **Given** an admin opens Settings → Website Prices and changes a plan's price, **Then** the website shows the new price within a couple of minutes and a payment for that plan is charged that amount. A manager can change prices too (#241); no other role can view or change them. At least one plan of a service stays on sale. The Odisha landing pages — Company Registration in Odisha and Trademark Registration in Odisha — are priced on their own entries ("… — landing pages" / "… — landing page"), separately from the India pages (#241); their "starting from" figure and the plan prices in the trademark terms always follow the cards.
+
+**Trademark user type (#221)** — **Given** a customer opens Trademark Registration on the website, **Then** above the four plans they must choose **Proposed to be Used** or **Prior User**; nothing is chosen for them, and Buy Now with no choice asks them to choose first. Prior User adds an extra charge (₹2,500 unless the firm changes it under Website Prices — admins and managers) to every plan, before GST and before any coupon; every card's price changes at once, and the checkout shows the user type and the final amount. The server works the amount out from the plan and the user type — the page cannot set it — for Buy Now and for the cart, which keeps and shows the user type and lets it be changed. Website Orders shows the user type, the plan price and the extra charge; the matter opened on approval shows them in its payment note.
 
 ---
 
@@ -224,6 +238,8 @@ Admin can create and manage all user accounts. Managers can create/edit clients 
 5. **Given** a team member leaves, **When** admin triggers reassignment, **Then** all open workflow steps assigned to that uid are bulk-reassigned to a selected new team member; the action is logged in the audit trail.
 6. **Given** the same email address appears in multiple client profiles (multi-email client), **Then** login resolves to the profile where that email is the primary email; if it is a secondary email, the most recently created profile is returned and admin is alerted to resolve the ambiguity.
 7. **Given** a manager creates a client profile, **Then** the profile is immediately active without admin approval — managers have full create/edit rights for clients.
+8. **Given** a client is added, **Then** they appear on the Clients list straight away, however many clients the firm has (#277).
+9. **Given** a client's name is changed (by staff or by the client), **Then** every matter of that client shows the new name — in lists, the matter, reports and later emails (#277).
 
 ---
 
@@ -238,15 +254,22 @@ Every meaningful workflow event triggers an in-app notification and an email to 
 **Acceptance Scenarios**:
 
 1. **Given** a workflow step is completed, **Then** the client receives an in-app notification and email with the step name, service name, and current overall status.
-2. **Given** a payment is due, **Then** automated reminder emails are sent at the configured frequency; the blinking payment indicator appears in both client and team-member views.
+2. **Given** a payment is due, **Then** automated reminder emails are sent at the configured frequency. Since #296 (2026-11-14) the Steps tab shows no payment banner or payment message to anyone — no blinking — and the balance is shown on the Payments tab (Admin, Manager, the client); a team member sees no payment figures anywhere, including the activity history (#293).
 3. **Given** an email fails to deliver (invalid address, full mailbox), **Then** admin and manager receive an in-app alert identifying the client, the email address, and the failure reason.
 4. **Given** admin configures an email template for a step, **Then** all future notifications for that step use the custom template with branding, content, and tone settings.
 5. **Given** a notification pop-up (news/offer/update) is created by admin, **Then** it is shown in-app on next open and optionally sent as email to selected client groups.
-6. **Given** a client sends a message in a matter's Discussion (#200), **Then** the matter's owner and everyone assigned to its current step each receive one notification and one email; if the matter has neither, the admins do.
-7. **Given** staff send a client a reminder, or post a Discussion message visible to the client (#207), **Then** the client receives exactly one email for it, alongside the in-app notification.
-8. **Given** a user writes a step comment, a note to the client or a Discussion message of up to 1,000 words (#194), **Then** it is saved in full and shown folded behind "Read more" when long; **Given** it exceeds 1,000 words, **Then** it is refused with the actual word count and nothing is saved.
+6. **Given** a client sends a message in a matter's Chat (formerly Discussion; #200), **Then** the matter's owner and everyone assigned to its current step each receive one notification and one email; if the matter has neither, the admins do.
+7. **Given** staff send a client a reminder, or post a Chat message visible to the client (#207), **Then** the client receives exactly one email for it, alongside the in-app notification.
+8. **Given** a user writes a step comment or a note to the client of up to 1,000 words, or a Chat message of up to 5,000 words (#194, #295), **Then** it is saved in full and shown folded behind "Read more" when long; **Given** it exceeds its limit, **Then** it is refused with the actual word count and nothing is saved.
+7a. **Given** someone edits their own Chat message (#297), **Then** it is announced exactly like a new one — a staff edit of a message the client can see emails the client, a client's edit emails the matter's owner and the people on its current step — saying the message was edited and giving the new text, once per person; editing an internal staff message tells only colleagues newly @mentioned. **Given** a staff member views a message someone else wrote (a client's included), **Then** there is no Edit option, and the API refuses the edit; an admin may still delete any message.
+8a. **Given** a user types a long Chat message on a phone, in the browser or the mobile app (#295), **Then** the text box stops growing and scrolls inside itself, the bottom navigation steps aside while they type, and the Send button stays on screen.
+8b. **Given** a user has typed a Chat message, or started editing their own message, and not sent or saved it (#297), **When** they open another tab of the matter, or reload the page, and come back, **Then** the unsent text is still there; it is kept per matter and per signed-in user in that browser, and goes only when it is sent or saved, cancelled, or emptied by the user. A restored message is internal until "Visible to client" is ticked again.
+8c. **Given** a user views a matter's Chat (#297), **Then** messages they received sit on a grey bubble clearly darker than the white thread, with all text meeting WCAG AA contrast; their own messages stay green.
+8d. **Given** an image is pasted, dropped or uploaded into Chat (#319), **Then** after sending it displays (not a broken image), and every Chat image is shown in the same box (240 × 180 px, smaller on a narrow phone) with the whole picture fitted inside, whatever its own size or shape; clicking it opens it full size. **Given** the image is smaller than 20 × 20 pixels or larger than 8,000 pixels on either side, **Then** it is not uploaded or inserted, and the user is told its size and the allowed range before anything is sent; the server refuses such an image too. The existing JPEG/PNG/WebP and 5 MB rules still apply. The same size rule applies to images in step comments.
 9. **Given** a user opens a matter from a report, the dashboard, a client's page or search and presses Back (#208), **Then** they return to that page; a report's filters are part of its address and are still applied.
 10. **Given** an admin or manager creates a matter from the Matters page or a client's page (#211), **Then** the new matter opens, and Back returns them to the page they created it from.
+11. **Given** a step becomes someone's to work — when a matter is created already paid, when an admin approves a matter created with no payment (every automatic GST return matter), or when the matter moves on to that step (#293), **Then** every team member assigned to the step receives one notification and one email; if nobody is assigned, the matter's owner does.
+12. **Given** a matter's workflow is completed (#310), **Then** the client's "Your service is complete" email (CC the matter's additional addresses) ends with the firm's "Explore more services" block — one common heading and text for every service, edited by Admin or Manager in Settings → Email Templates, with an on/off switch; **Given** the block is switched off or empty, **Then** the email is sent exactly as before. Stored in `settings/completionMarketing` `{ enabled, heading, body }`; the firm's seed text applies until someone edits it.
 
 ---
 
@@ -338,6 +361,53 @@ Every payment recorded against a task must capture the mode (Bank Transfer, Cash
 
 ---
 
+### User Story 15c — Coupon Codes at the Website Checkout (Priority: P2) — #256, #257, #260
+
+A client lowers what they pay on the website only by entering a valid coupon code. Admins and managers manage the codes; a report records every use. (E-27.)
+
+**Acceptance Scenarios**:
+
+1. **Given** an admin or manager opens Settings → Coupons and creates a coupon, **Then** they choose a unique code (3–30 letters, numbers or hyphens; a code already used is refused), a **discount type** — a percentage (1–100) or a fixed amount in whole rupees — a **coupon type** — General (every service, the whole cart), Specific services (only the services chosen) or Minimum order amount (the whole cart once its price before GST reaches the amount) — and a **validity** — One-time use, or a Time period of 7 days, 30 days or chosen dates (India time, from the start of the first day to the end of the last). They can edit it, switch it off and on, and delete it while nobody has used it. A team member, client or professional cannot reach the screen or the API.
+2. **Given** a signed-in client at checkout on the website enters a code and presses Apply, **Then** the server checks it and the checkout shows the original price, the discount (with the code), the GST and the final amount; Pay charges exactly that. The discount comes off the price **before GST**; GST is worked on the discounted price. A fixed amount is never more than the services it applies to cost, and is shared across them in proportion to price. A code that would leave less than ₹1 to pay is refused.
+3. **Given** a code that cannot be used, **Then** the client is told why: it is not valid (unknown or switched off); it "can be used from" a date; it "expired on" a date; it "has already been used"; it "is being used in another checkout. Try again in a few minutes."; "This code applies only to: <services>."; or "This code needs an order of at least ₹X before GST — add ₹Y more." The client can always remove the code and pay without it.
+4. **Given** a one-time code, **Then** the checkout that applies it holds it for 30 minutes (another person is turned away meanwhile; the same client coming back is not); when that order is paid the code is used up and switched off for everyone. A time-period code can be used by any number of clients until its last day.
+5. **Given** the page sends an amount or a discount, **Then** the order is refused (400); the server prices every order from the plans and the code alone.
+6. **Given** a paid order used a code, **Then** Reports → Coupon & Discount shows that use — code, discount type and value, who created the coupon and when, the client's name and email, the services, the original amount (before GST), the discount, the final amount paid and the date — plus the number of uses per coupon, with a date filter and CSV export. Editing or switching off a coupon later does not change what the report says happened. Website Orders, the payment result page and the confirmation email show the code and the discount.
+
+---
+
+### User Story 15b — Additional Payment Requests with a Fee Breakup (Priority: P2) — #222
+
+Staff ask a matter's client for an additional payment — typically government fees — listed fee by fee, and the client pays the total online.
+
+**Acceptance Scenarios**:
+
+1. **Given** an admin, manager or team member is on a matter's Payments tab, **When** they add one or more fees (name, optional description, amount), add or remove fees and press Send, **Then** the request is stored with a total the SERVER computes from the fees, the total is added to the matter's total cost (so the amount due and payment status include it), and the client is notified in the portal and by email with the breakup.
+2. **Given** the request body carries a `total` or any field other than the fees and an optional note, **Then** it is refused (400). A fee with no name, a non-positive amount or more than two decimals is refused.
+3. **Given** the matter has no total cost, **Then** a request cannot be sent (409 `NO_TOTAL_COST`).
+4. **Given** a client opens their matter's Payments tab, **Then** they see each open or paid request with every fee, its amount and the total, and a "Pay ₹<total>" button on an open one; the amount is the request's stored total. Pay Now offers only the rest of the amount due.
+5. **Given** the gateway confirms the payment, **Then** the request becomes paid and one payment of its total is added to the payment history, once — a repeated confirmation or a second order changes nothing.
+6. **Given** an admin or manager, **Then** they can cancel an unpaid request (its total comes off the total cost) or record it as paid some other way. Team members and clients cannot.
+7. No GST is added to a request: the fees are charged as entered.
+
+---
+
+### User Story 15c — Invoices on a Matter's Payments Tab (Priority: P2) — #313
+
+Admins and managers upload a matter's invoices as PDF files in its Payments tab; the matter's client downloads them.
+
+**Acceptance Scenarios**:
+
+1. **Given** an admin or manager is on a matter's Payments tab, **When** they press Upload invoice and choose a PDF (up to 10 MB), **Then** the invoice is listed with its file name and upload date. A matter can hold several invoices, newest first.
+2. **Given** a file that is not a PDF — by its declared type or by its bytes (a PDF starts `%PDF-`) — or is over 10 MB, **Then** it is refused and nothing is kept.
+3. **Given** an admin or manager presses Replace on an invoice and chooses a PDF, **Then** the new file takes its place (with the new upload date) and the old file is removed. Delete removes an invoice after a confirmation. Each upload, replacement and deletion is on the matter's activity log.
+4. **Given** the matter's client (or an additional client login or matter contact who can see the matter) opens its Payments tab, **Then** they see the invoices with their upload dates and can download each one; they cannot upload, replace or delete, and are not shown which member of staff uploaded it. A client with no invoices sees no Invoices card.
+5. **Given** a client asks for the invoices of a matter that is not theirs, **Then** the answer is 404 — the same as a matter that does not exist.
+6. **Given** a team member or a professional, **Then** they never see invoices: they have no Payments tab and the API refuses them (403), as for every other payment record (#148).
+7. The download streams through the backend after the access check; the browser is never given a storage link.
+
+---
+
 ### User Story 16 — Admin Broadcast Notifications (Priority: P3)
 
 Admin can push a notification (offer, news, alert) to all clients or a filtered group. The notification appears in-app on next open and is optionally sent as email.
@@ -378,9 +448,9 @@ Workflows have two layers: a **code layer** (XState machine topology — step or
 
 ---
 
-### User Story 18 — Trademark Reports and Company Worksheets (Priority: P1) — #210, #217
+### User Story 18 — Trademark Reports and Company Worksheets (Priority: P1) — #210, #217, #280
 
-The firm's Excel registers live in the portal: five **Trademark Reports** (TM Master, Register TM, Opposition Raised, Opposition Received, TM Assignment) at `/reports/trademark`, and thirteen **Worksheets** (Incorporation, Auditor Master, KYC, Annual Filing, ROC Register, Strike Off, Auditor Registration (ADT-3), Startup Odisha, Startup India, GST, Udyam, Professional Tax, FSSAI) at `/worksheets`. Each page has a dropdown of its sheets.
+The firm's Excel registers live in the portal: five **Trademark Reports** (TM Master, Register TM, Opposition Raised, Opposition Received, TM Assignment) at `/reports/trademark`, and fourteen **Worksheets** (Incorporation, Auditor Master, KYC, Annual Filing, ROC Register, Strike Off, Auditor Registration (ADT-3), Startup Odisha, Startup India, GST, TDS, Udyam, Professional Tax, FSSAI) at `/worksheets`. Each page has a dropdown of its sheets.
 
 **Acceptance Scenarios**:
 
@@ -391,6 +461,43 @@ The firm's Excel registers live in the portal: five **Trademark Reports** (TM Ma
 5. **Given** any sheet, **Then** every column can be filtered and sorted both ways, a search highlights and narrows to matching rows, and Download Excel exports the rows on screen.
 6. **Given** a KYC row with a filing date, **Then** Next KYC Due is three years later, and every admin and manager is notified 30 days and 7 days before, and on the day — once each.
 7. **Given** a sheet linked to services, **Then** a record can link to a matter of one of those services and shows a link to it.
+8. **Given** the TDS Sheet (#280), **Then** its columns are the firm's Excel file's, in its order and spelling: Sl. No., Company Name, Assigned to, Checker, Client, TAN NO, USER ID, Traces Password, IT Password, TDS Data Received, Excel Prepared, Final Excel Mail to Client, Challan paid by client, SALARY (Form 138) FILING DATE, NON-SALARY (form 140) FILING DATE, SALARY (Form 138) PR NO, NON-SALARY (form 140) PR NO, STATEMENT STATUS 26Q (Form 140), STATEMENT STATUS 24Q (Form 138). Sl. No. is the row number (shown and downloaded, skipped on upload); an upload matches rows by TAN NO.
+9. **Given** a dropdown column (the yellow columns of the firm's files), **When** an admin, manager or team member adds, renames, re-orders or removes its choices under **Edit dropdowns**, **Then** the new list is offered at once when adding or editing a record, and an upload matches the new spelling. Records keep the value they hold: a renamed or removed choice stays on the rows that use it.
+10. **Given** the TDS Sheet's **Assigned to** or **Checker** (#280, firm 11 Nov), **Then** the choices are the portal's active staff (admin, manager, team member) by name — never clients or professionals — and are not edited under Edit dropdowns; the row records the person picked and the grid, search, filters and Download Excel show their name. A colleague who is deactivated still shows by name on their rows but is not offered for new rows. A name typed before this change shows as written until someone picks the person. **When** an Excel file is uploaded, **Then** each cell is matched to a staff member by name (any case) or email; a cell that matches no one, or two people of the same name, is kept as written and listed in the preview's warnings.
+
+---
+
+### User Story 19 — GST Return Filing sheet under Reports (Priority: P1) — #279
+
+The firm's GST return register at `/reports/gst-returns` (a tile on the Reports hub and on the dashboard of admin, manager and team member): one row per client per return period, with a **Monthly / Quarterly** dropdown at the top, the firm's columns (GST Return Clients, CONSTITUTION, GSTN No, Mail ID for data collection, GST User ID, GST Pswd, Contact No., Assign Person, Current Status, Data Received, Tally/ Excel Prepared, Date of GSTR-1 Filing, GSTR-1 Filed Mail, GSTR_2B Reco Mail to Client, Additional Data or Confirmation Received from Client, Challan Mail to the client, Challan paid by client, Annual Working Sheet Update, Date of GSTR-3B Filing, Completion Check, Remarks), plus Return Period and Matter at the end, and the worksheet features (Add record, Upload Excel, Edit columns, Edit dropdowns, Search, filters, Download Excel).
+
+**Acceptance Scenarios**:
+
+1. **Given** a matter of a linked GST service (by default GST Return Filing monthly and quarterly), **When** the sheet is opened, **Then** the matter has a row in Monthly or Quarterly (the matter's GST period, else the frequency it was created with — Repeats, else the service, else the client's GST return setting) with the client's name, constitution, GSTIN, email and mobile, the period, the current task as Current Status, its assignee as Assign Person, a link to the matter, and — for each column whose task the workflow has (matched by the task's name) — Yes or the completion date once that task is completed; Completion Check is Done when the matter is completed.
+2. **Given** a later change in the matter (a task completed, approval, a stop), **When** the sheet is opened again, **Then** the row shows it. A cell a person typed keeps the typed value until the workflow changes that same cell; then the workflow's value shows (last change wins). GST User ID, GST Pswd and Remarks are never filled from the workflow.
+3. **Given** Monthly and Quarterly, **Then** they show different records: a record is in one of them only, an upload to one never updates the other, and a record of one is not reachable through the other.
+4. **Given** a row typed or uploaded for the same GSTIN and period before the matter existed, **Then** the matter's row is that row (it is linked, not duplicated).
+5. **Given** the yellow columns (CONSTITUTION, Assign Person, the eight Yes/No status columns, and Completion Check — Done / Pending), **Then** an admin, manager or team member edits their choices under Edit dropdowns; Monthly and Quarterly share them. Constitution starts with Company, Partnership, Proprietorship, OPC, LLP, Section 8; Assign Person starts empty.
+6. **Given** a client or professional, **Then** neither the page nor its API is reachable; only an admin changes columns or deletes a record.
+7. **Given** the sheet, **Then** a Return period dropdown filters its rows: Monthly offers "October 2026", "September 2026", …; Quarterly "Q2 26-27 (July–September)", …; it opens on the period being filed now and offers earlier periods and "All periods".
+8. **Given** a row's GST Pswd, **Then** it shows masked; an admin, manager or team member clicks it to log in: the password is copied, the user ID shown, and the GST portal's login page opens in a new tab to paste into (the portal cannot be filled in automatically); they change it through the record's Edit form (an empty box keeps it). Clients and professionals never receive it; no list or download includes it. It is stored as typed (not encrypted).
+
+---
+
+### User Story 20 — Filing Month and filing dates on GST return matters (Priority: P1) — #292, #294
+
+A GST return matter says which return it is for, and when each return was filed, on the matter itself — so the team and the client can tell one month's matter from the next without opening the GST Return Filing sheet.
+
+**Acceptance Scenarios**:
+
+1. **Given** a GST return matter (opened by the GST reminders, or a matter of a service linked to the GST Return Filing sheet), **Then** its header and its row in the matters list (All Matters for staff, My Services for the client) show its **Filing Month** as a tag — "September 2026", or "Q2 2026-27" for a quarterly return — the same period as the sheet's Return Period. Staff and the client both see it. A matter of any other service has no such tag.
+2. **Given** a GST return matter that has reached its GSTR-1 filing task ("GSTR-1 Filed") or its GSTR-3B filing task ("Proceed Towards GSTR-3B Filing"), **When** staff (an admin, manager, or a team member working the matter — its owner, or the holder of one of its tasks) press **Add Filing Date** beside that task (on the current task, or in the matter's header), pick the date the return was actually filed and save, **Then** that task shows "Filed on: 11 November 2026" next to its name and the header shows "GSTR-1 filed on: …" / "GSTR-3B filed on: …", for staff and the client. Staff then complete the task. The two tasks are the ones the sheet's "Date of GSTR-1 Filing" / "Date of GSTR-3B Filing" columns read (matched by the task's name; never the "… filed mail" tasks). (#294, firm 17 Nov 2026.)
+3. **Given** a filing task completed without a saved date, **Then** it shows no date (completing a task never sets one) and staff can still add one from the header. The date must be a real date, not in the future, and not before the 1st of the month after the return's period ended (from 1 October for September or for Q2). A saved date can be changed (pencil) or removed; every save is recorded in the matter's history — who, which return, from what to what (staff only). Clients and professionals cannot save a date.
+4. **Given** a filing task completed BEFORE manual filing dates went live, with no saved date, **Then** it keeps the date it showed until then (its completion day, or the correction made to it); saving a date replaces it.
+5. **Given** a saved filing date, **Then** the GST Return Filing sheet's Date of GSTR-1 / GSTR-3B Filing cell of that matter's row shows it, and follows every change, on the sheet's next opening — matter to sheet only: that cell is not typed over (refused, "change it on the matter") and an Excel upload leaves it as it is; nothing typed in the sheet is written back to a matter. A row with no matter, or whose matter has no date for it, keeps the cell typable.
+6. **Given** a GST return matter, **Then** it only ever updates its own row — the row for its client and return period, in the Monthly or the Quarterly sheet by its frequency. A row's Matter cell can only be set to a matter of that row's client and period, of that sheet's kind, that has no row yet (otherwise refused with the reason); a row already wrongly tied to a matter (another client's or period's, or a second row for the same matter) is released by the next sync, keeps what it shows, and is never written to again. A typed or uploaded row is taken over by a matter only when its GSTIN, period and client name match. (#294.)
+7. **Given** a GST return matter created with **Repeats: Quarterly** (or on a quarterly GST service, or for a client whose GST return filing is Quarterly — in that order after Repeats), **Then** it is quarterly everywhere: its tag shows the quarter and financial year ("Q2 2026-27", titled "Filing quarter"), its first email is the quarterly GST email naming the quarter, and its sheet row is in Quarterly with the quarter as Return Period — never the month. The frequency is kept from creation: changing Repeats or the client's setting later, or the series ending, does not change it; a copy keeps its source's. Repeats: Monthly makes it monthly. (#219, firm 16 Nov 2026.)
+8. **Given** any email about a GST return matter — to the client (first email, reminders and follow-ups, chat replies) or to staff (task assignment, chat messages, internal reminders, approval and every other notification) — **Then** its subject is the first email's: "<Company Name> - GST Return - <Month Year>" (e.g. "ABC PRIVATE LIMITED - GST Return - September 2026") or "<Company Name> - GST Return - <Qn YYYY-YY>" (e.g. "ABC PRIVATE LIMITED - GST Return - Q1 2026-27"), the same for client and staff, following the firm's GST template subject under Settings → Email templates. Emails of other matters keep "[Legal Terminus] Organisation | Service (#id)". (#219, firm 16 Nov 2026.)
 
 ---
 
@@ -564,9 +671,20 @@ parallelGroup?,      // step group ID if this step runs in parallel with others
 branches?,           // branch conditions defined in machine topology
 ```
 
+### `tasks/{taskId}/steps/{n}.filingDate` — #294 the saved GSTR-1 / GSTR-3B filing date
+```
+date,            // 'YYYY-MM-DD', or null once staff removed it — once this field exists it is the only date
+previous,        // the date shown before this save (null if none)
+byUid, byRole, at
+```
+`filedOnCorrection` (`date, forCompletedAt, previous, byUid, byRole, at`) is the pre-17-Nov
+correction of a completion-day date; still read for tasks completed before manual dates went live
+(`system/gstFilingDates.manualFrom`), never written now.
+
 ### `tasks/{taskId}` — workflow instances per client
 ```
 clientUid, workflowId, workflowName,
+clientName,       // copy of the client's profile name; rewritten on every matter when the client is renamed (#277)
 status (pending_manager_approval|pending_admin_approval|active|completed|rejected),
 paymentStatus (not_paid|part_paid|fully_paid),
 amountTotal, amountPaid, amountDue,
@@ -578,12 +696,42 @@ pendingApprovalFrom?: (uid of approver),
 rejectionReason?: string
 ```
 
+### `tasks/{taskId}/refunds/{refundId}` and `paymentOrders/{orderId}/refunds/{refundId}` — refund log (#240)
+```
+refundAmount, paymentAmount (server: amount paid when recorded), reason,
+initiatedAt (YYYY-MM-DD), transactionId?, status (initiated|processing|credited|failed),
+clientUid, clientName, taskId?, orderId?, serviceName,
+recordedBy, recordedByName, recordedAt, updatedAt,
+statusHistory[{ status, at, by, byName }]
+// The parent (task or order) carries refundSummary:
+//   { count, activeTotal, creditedTotal, latest{ status, refundAmount, reason, initiatedAt, transactionId } }
+```
+
+### `tasks/{taskId}/invoices/{invoiceId}` — invoices (#313)
+```
+taskId, fileName, contentType ('application/pdf'), objectPath (bucket: tasks/{taskId}/invoices/{invoiceId}/{fileName}),
+status (awaiting_upload|uploaded), size?, replaces (invoiceId)|null,
+uploadedBy, uploadedByName, createdAt, uploadedAt?
+// Backend-only (firestore.rules: read, write false). Deleting the matter deletes them.
+```
+
 ### `taskSteps/{taskId}/steps/{stepId}`
 ```
-stepNumber, title, assignedTo, status (pending|active|completed|blocked|skipped),
+stepNumber, title, assignedTo, assignedToUids[], status (pending|active|completed|blocked|skipped),
 paymentGated, paymentOverride, isUrgent, startedAt?, completedAt?,
 deadline, delayReason?, completedBy?, auditLog[{action, by, at, note}]
 ```
+
+**Several assignees on one step (#192, reopened and fixed 2026-11-19).** `assignedToUids`
+lists everyone who owns the step; `assignedTo` is its first entry (the primary). Any one of
+them may complete the step, and whoever finishes first moves the matter on. They are set:
+- for new matters, per step of the Service — on the Service page (**Step Settings →
+  Assignee**, tick several people) or in the workflow editor (**Who does this? → Specific
+  people**). Stored on the definition step as `defaultAssigneeUids` + `defaultAssigneeUid`
+  (= first). The list counts only while its first entry equals `defaultAssigneeUid`; a screen
+  that changes only the single field replaces the list.
+- on an existing matter, by an admin or manager: **Step owner** on the current step (tick or
+  untick people; changes apply at once). Only staff (admin, manager, team member) can be owners.
 
 ### `documents/{taskId}/files/{docId}`
 ```
@@ -607,6 +755,73 @@ proofStoragePath?,  // uploaded image/receipt
 notes?, createdAt
 ```
 
+### `tasks/{taskId}/paymentRequests/{requestId}` — additional payment requests (#222)
+```
+lines[{ name, description|null, amount }], total (server sum of lines), note|null,
+status (sent|paid|cancelled), createdBy, createdByName, createdByRole, createdAt,
+totalCostBefore, paidAt|null, paidVia (online|recorded)|null, orderId|null,
+paymentId|null (ledger row `request-<requestId>`),
+cancelledAt?, cancelledBy?, cancelledByName?, cancelReason?
+```
+
+### `paymentOrders/{orderId}` — website orders (E24, #212, #220, #244)
+```
+uid, customer { name, email, phone }, kind? (matter_balance — #220 Pay Now | payment_request — #222, with taskId + requestId),
+productKey, productCode, planId, label, planName, serviceKey,   // null/"N services" on a cart order
+price, gst, gstPercent, amount (= charged: price + GST), currency,
+items?[ { productKey, productCode, planId, label, planName, serviceKey,   // #244: only on a cart order
+          price, gst, gstPercent, amount,
+          quantity?, unitNo?,   // #244 quantities: one item per UNIT; set only on a line of 2+ (missing = 1)
+          matter { state (none|awaiting_approval|created|failed|not_applicable), taskId?, error?, reason? } } ],
+status (created|paid|review|failed|abandoned|refunded), gateway, gatewayOrderId,
+gatewayPaymentId?, method?, amountPaid?, settledBy?, paidAt?, refundedAt?, failureReason?, reviewReason?,
+convenienceFee?, convenienceFeeTax?, gatewayAmount?,   // #276: Razorpay Customer Fee Bearer — the fee the client paid on top; amountPaid stays the order's amount
+matter { state (none|awaiting_approval|pending|created|failed|not_applicable | balance|crediting|credited|credit_failed),
+         taskId?, error?, reason?, approvedBy?, approvedByName?, approvedAt? },
+createdAt, updatedAt
+```
+A one-service order has no `items` and is stored exactly as before #244. On a cart order the
+top-level price / gst / amount are the sums of the lines, and each matter it opens carries
+`websiteOrderId` and `websiteOrderItem` (the item number). A line of quantity N is stored as N
+items (one per unit, each priced on its own), opens N matters, and each such matter also has
+`websiteOrderUnit { no, of }`.
+
+#256 — an order priced with a coupon code also has (an order without one has none of these):
+```
+couponCode, discount (rupees off, before GST — the sum of the lines'), subtotalBeforeDiscount,
+coupon { discountType, discountValue, scope, validity, productKeys?, minAmount?, createdBy, createdAt },  // the terms on the day
+items[].listPrice, items[].discount      // (top level on a one-service order)
+```
+`price`, `gst` and `amount` are AFTER the discount (GST worked on the discounted price).
+
+#221 — an order (or cart line) for a product that asks a question (trademark's user type) also has
+`optionId, optionName, optionLabel, basePrice (the plan's own price), surcharge`; `price` is
+basePrice + surcharge and `planName` names the answer ("Supreme (Prior User)"). The matter it opens
+carries `websiteOrderPlanName` and `websiteOrderOption { label, id, name }`. In
+`pricingCatalog/{productKey}` the question is `choice { label, options[{ id, name, surcharge }] }`.
+
+### `coupons/{CODE}` — coupon codes (#256, #257, #260)
+The document id is the code (upper case, `[A-Z0-9-]{3,30}`), so each is unique. Backend only.
+```
+description, discountType (percent|fixed), discountValue (whole % 1–100 | whole rupees),
+scope (general|services|min_amount), productKeys[] (services), minAmount|null (min_amount, before GST),
+validity (one_time|period), startsAt|null, endsAt|null (period: IST start of first day → IST end of last),
+active, usedCount, lastUsedAt?,
+heldBy { orderId, uid, until }|null      // one_time: a checkout in progress, 30 minutes
+consumedBy { orderId, uid, at }|null     // one_time: the payment that used it
+createdBy { uid, name }, createdAt, updatedAt, updatedBy { uid, name }
+```
+
+### `couponRedemptions/{orderId}` — one per paid order that used a code (#256)
+Written once, in the transaction that marks the order paid. Backend only.
+```
+orderId, code, discountType, discountValue, scope, validity, couponCreatedBy { uid, name }, couponCreatedAt,
+uid, clientName, clientEmail,
+services[ { productKey, label, planName, listPrice, discount, price, gst, amount } ],
+originalAmount (before discount and GST), discount, gst, amountCharged, amountPaid, paidAt, gateway,
+note?   // e.g. a payment that arrived after its one-time code had been used by another order
+```
+
 ### `auditLog/{entryId}`
 ```
 entityType (task|step|document|user|payment), entityId,
@@ -615,18 +830,21 @@ action, performedBy, performedAt, previousValue?, newValue?, note?
 
 ### `worksheetRecords/{id}` — Trademark Reports and Worksheets (#210, #217)
 ```
-module (trademark|company), book, sheets[] (sheet keys the record appears in),
+module (trademark|company|gst_return), book, sheets[] (sheet keys the record appears in),
 values { fieldKey: string|number },  // calculated fields are derived, not stored
 recordKey,            // normalised key fields (Application No.; DIN|FY …), unique per book
 images { fieldKey: { objectPath, contentType, updatedAt } },  // streamed, never signed
 reminderDue?, remindersSent { "<due>:<days>": iso },        // KYC reminders
-createdAt, createdBy, updatedAt, updatedBy, source? ("excel")
+createdAt, createdBy, updatedAt, updatedBy, source? ("excel" | "matter")
+sourceMatterId?,      // #279: the GST return matter a GST Return Filing row comes from
+derived?,             // #279: { field: what the workflow last said } — "last change wins"
 ```
 
 ### `worksheetConfig/{book}` — the firm's column edits
 ```
 customFields[{ key, label, type, options? }],
 sheets { sheetKey: { columns[{ key, label, hidden }], linkedServices[] } },
+optionOverrides { fieldKey: [option] },   // #280: staff-edited dropdown choices (any select)
 updatedAt, updatedBy
 ```
 
@@ -642,7 +860,21 @@ updatedAt, updatedBy
     asks the user to update it). Google sign-in uses the phone's own account picker. Documents,
     exports and images open in the phone's own viewer or share sheet. Emailed sign-in and
     password links open the app. Uploads follow the website's rules (10 MB; PDF, JPG, PNG, DOCX,
-    Excel). Push notifications and iOS are not yet built.
+    Excel). Push notifications are not yet built.
+  - **iPhone app requirements** (E-29): the same roles, screens and permissions from the same code;
+    iOS 15+, iPhone only. Sign-in: email + password, the emailed sign-in link, native Google, and
+    **Sign in with Apple** (App Store rule 4.8; also offered on the website once switched on, never
+    on Android for the first release). Documents open in the system viewer / share sheet; emailed
+    account links open the app (Universal Links).
+  - **Account deletion** (E29-S08, both apps and the website): any signed-in person except an Admin
+    can ask for their own account to be deleted (`/account/delete`). The sign-in is disabled at once,
+    the admins are emailed, the Users page marks the person "Deletion requested", and an Admin
+    completes it with the normal delete within 30 days. Records the firm must keep (matters,
+    invoices, payments, filed documents) are kept.
+  - **Environments** (D7, 2026-11-11, revised 2026-11-19): there is **one app**, "Legal Terminus"
+    (`com.legalterminus.app`), which opens the hosted Portal. It is pointed at QA
+    (`legal-terminus-qa.web.app/portal/`, QA test accounts only) until the owner switches it to
+    production (`legalterminus.com/portal/`) with a new store build.
 - **Phase 1 workflow scope**: Company Incorporation only. All other services (Trademark, GST, UDYAM) follow in Phase 2 as XState config files.
 
 ### Workflow Engine (XState v5)
@@ -653,7 +885,7 @@ updatedAt, updatedBy
 - Frontend uses `useMachine` (or `useSelector` on a service actor) to render the current step reactively.
 
 ### Security & Auth
-- **Authentication**: Email/password + Google Sign-In + one-time email sign-in link (#203) via Firebase Auth; account emails link to the portal's own `/account/action` page, never to Firebase's hosted page; email OTP for first login on mobile (Phase 2)
+- **Authentication**: Email/password + Google Sign-In + Sign in with Apple (iPhone app; website when switched on — E29-S11) + one-time email sign-in link (#203) via Firebase Auth; account emails link to the portal's own `/account/action` page, never to Firebase's hosted page; email OTP for first login on mobile (Phase 2)
 - **Authorisation**: Firebase custom claims (`role`) verified on every protected backend route via `verifyToken` middleware; `requireRole()` enforces per-route permissions
 - **Security**: Signed URLs for document access (TTL: 15 min); no PAN/Aadhaar in list endpoints; input sanitisation on all backend routes (OWASP Top 10)
 
@@ -675,7 +907,7 @@ updatedAt, updatedBy
 - `Portal/` web build → Firebase Hosting (same project as public website)
 - `backend/` → Cloud Run (`asia-south2`, service `legal-terminus-qa`, 0–5 instances, 512Mi)
 - CI/CD via `.github/workflows/firebase-preview-qa.yml`
-- **CORS** (Phase 2): the allowlist is exact, in `backend/src/config/corsOrigins.js`. A native app's origin is added per deployment through `CORS_ORIGINS`: QA has `https://localhost` (Capacitor on Android) and `http://localhost:5173`; production gets the app's origin when a release build is ready.
+- **CORS** (Phase 2): the allowlist is exact, in `backend/src/config/corsOrigins.js`: the firm's own sites only. **No `localhost` origin in any environment** (2026-11-19), and `CORS_ORIGINS` cannot add one. The mobile apps open the hosted Portal, so their origin is the site; local development uses the Vite `/api` proxy.
 
 ## Website redesign in Theme C (#209, E-25)
 

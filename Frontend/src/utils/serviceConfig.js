@@ -109,6 +109,9 @@ export const SERVICE_CONFIG = {
   'trademark-examination-reply':    { displayName: 'Trademark Examination Reply',        category: 'Trademark' },
   'trademark-opposition':           { displayName: 'Trademark Opposition',               category: 'Trademark' },
   'trademark-hearing':              { displayName: 'Trademark Hearing',                  category: 'Trademark' },
+
+  // Technology (delivered by Infynia Labs)
+  'technology-services':            { displayName: 'Technology Services',                category: 'Technology' },
 };
 
 /**

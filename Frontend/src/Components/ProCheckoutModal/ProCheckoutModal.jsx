@@ -8,11 +8,15 @@ import {
 import { doc, setDoc, getDoc } from "firebase/firestore";
 import { getFirebaseDb } from "../../utils/firebase";
 import {
-  startOrder, confirmPayment, reportFailure, simulatePayment, payWithRazorpay, resultUrl,
+  startOrder, startCartOrder, confirmPayment, reportFailure, simulatePayment, payWithRazorpay, resultUrl,
+  quoteOrder, isCouponError,
 } from "../../utils/checkout";
+import { addToCart, clearCart } from "../../utils/cart.js";
 import { getUserProfile, saveUserProfile } from "../../utils/userProfile.js";
-import { withGst, inr } from "../../utils/pricing.js";
+import { withGst, inr, loadPricing } from "../../utils/pricing.js";
 import { registerUser } from "../../utils/registerUser.js";
+import { isStrongPassword, PASSWORD_RULES_MESSAGE } from "../../utils/passwordRules.js";
+import PasswordChecklist, { TermsAgreement, GoogleTermsNote } from "../PasswordChecklist/PasswordChecklist.jsx";
 import {
   startGoogleSignIn, googleSignInMessage, UNSUPPORTED_BROWSER_MESSAGE,
 } from "../../utils/googleSignIn.js";
@@ -112,8 +116,20 @@ function failureKeyFor(err) {
   return "network_error";
 }
 
-const ProCheckoutModal = ({ plan, onClose, source = 'unknown' }) => {
+/**
+ * One checkout for one plan (`plan` + `source`, from a pricing card) or, #244,
+ * for the whole website cart (`cartLines`, from the cart page). Either way the
+ * page sends only plans; the server prices the order.
+ *
+ * #221: `option` is the answer to the product's question ("Prior User"), when
+ * it asks one — `{ id, name, label, surcharge }`. `plan.price` then already
+ * includes the surcharge (for display); the page sends only `option.id`.
+ */
+const ProCheckoutModal = ({ plan, option = null, onClose, source = 'unknown', cartLines = null }) => {
+  const isCart = Array.isArray(cartLines) && cartLines.length > 0;
   const [step, setStep] = useState("order-summary");
+  // #244: "Add to Cart" from a plan's summary — what happened, to say so.
+  const [cartNote, setCartNote] = useState("");
   const [failureReason, setFailureReason] = useState(null);
   // E24-S02: the order the server created for this attempt.
   const [order, setOrderState] = useState(null);
@@ -125,6 +141,7 @@ const ProCheckoutModal = ({ plan, onClose, source = 'unknown' }) => {
   const [authEmail, setAuthEmail] = useState("");
   const [authPassword, setAuthPassword] = useState("");
   const [authName, setAuthName] = useState("");
+  const [authTerms, setAuthTerms] = useState(false); // #35
   const [authError, setAuthError] = useState("");
   const [authLoading, setAuthLoading] = useState(false);
   const [form, setForm] = useState({
@@ -136,6 +153,12 @@ const ProCheckoutModal = ({ plan, onClose, source = 'unknown' }) => {
   });
   const [errors, setErrors] = useState({});
   const [isProcessing, setIsProcessing] = useState(false);
+  // #256: a coupon code. `quote` is the SERVER's price with the code applied —
+  // the page never works a discount out itself — and it is what Pay charges.
+  const [couponInput, setCouponInput] = useState("");
+  const [quote, setQuote] = useState(null);
+  const [couponMsg, setCouponMsg] = useState("");
+  const [couponBusy, setCouponBusy] = useState(false);
   const saveTimerRef = useRef(null);
   const modalRef = useRef(null);
 
@@ -202,7 +225,76 @@ const ProCheckoutModal = ({ plan, onClose, source = 'unknown' }) => {
   // #212: the plan's price is exclusive of GST, which is added here. This is
   // only what is SHOWN before the order exists; the amount charged is the
   // server's (`order.amount`), worked out from the same price and rate.
-  const { gst, gstPercent, total } = withGst(plan.price);
+  // #244: the lines shown — the cart's, or this one plan. Each line's GST is
+  // the same sum the server does; the order total is their sum.
+  // #221: a line names the answer to its question, so the customer sees what they chose.
+  // #244: a cart line of several units is the unit's figures × its quantity —
+  // the server's sum, unit by unit.
+  const r2 = (n) => Math.round(n * 100) / 100;
+  const cartLine = (l) => {
+    const u = withGst(l.price);
+    const q = l.quantity ?? 1;
+    return {
+      key: l.productKey,
+      name: `${l.label} — ${l.planName}${l.optionName ? ` (${l.optionName})` : ""}${q > 1 ? ` × ${q}` : ""}`,
+      quantity: q, gstPercent: u.gstPercent, price: r2(u.price * q), gst: r2(u.gst * q), total: r2(u.total * q),
+    };
+  };
+  const lines = isCart
+    ? cartLines.map(cartLine)
+    : [{ key: source, name: `${plan.name} Plan${option ? ` (${option.name})` : ""}`, price: plan.price, ...withGst(plan.price) }];
+  const sum = (k) => Math.round(lines.reduce((s, l) => s + l[k], 0) * 100) / 100;
+  const gst = sum("gst");
+  const total = sum("total");
+  const { gstPercent } = lines[0];
+
+  // #256: what is being bought, as the server prices it — the plans, never a price.
+  const wanted = isCart ? cartLines : { productKey: source, planId: plan.id, optionId: option?.id };
+
+  const applyCoupon = async () => {
+    const code = couponInput.trim();
+    if (!code || couponBusy) return;
+    setCouponBusy(true);
+    setCouponMsg("");
+    try {
+      setQuote(await quoteOrder(wanted, code));
+    } catch (err) {
+      setQuote(null);
+      setCouponMsg(err?.message || "This code could not be applied.");
+    } finally {
+      setCouponBusy(false);
+    }
+  };
+
+  const removeCoupon = () => {
+    setQuote(null);
+    setCouponInput("");
+    setCouponMsg("");
+  };
+
+  const handleAddToCart = async () => {
+    const catalog = await loadPricing();
+    const result = addToCart({
+      productKey: source, planId: plan.id, planName: plan.name,
+      label: catalog?.[source]?.label || getServiceDisplayName(source),
+      // #221: the cart keeps the answer and the PLAN's own price; the surcharge is
+      // worked out again there, and by the server.
+      price: plan.basePrice ?? plan.price,
+      ...(option ? { optionId: option.id, optionName: option.name, optionSurcharge: option.surcharge } : {}),
+    });
+    setCartNote({
+      added: "Added to your cart.",
+      swapped: `Your cart now has the ${plan.name} plan${option ? ` (${option.name})` : ""} for this service.`,
+      already: "This plan is already in your cart. You can change how many there.",
+      full: "Your cart is full. Pay for it first, or remove a service.",
+    }[result]);
+  };
+
+  /** Off to the result page. A cart that has been paid for is emptied. */
+  const goToResult = (orderId) => {
+    if (isCart) clearCart();
+    window.location.assign(resultUrl(orderId));
+  };
 
   const stepIndex = STEPS.indexOf(step);
   const showProgress = step === "order-summary" || step === "checkout";
@@ -244,13 +336,16 @@ const ProCheckoutModal = ({ plan, onClose, source = 'unknown' }) => {
   };
 
   // After a successful auth inside the modal, fill form and advance
-  const afterAuth = useCallback(async (currentUser, provider = "email") => {
+  // #35: `termsAccepted` — a new account ticked the box, or chose Google with the
+  // agreement line beside the button.
+  const afterAuth = useCallback(async (currentUser, provider = "email", termsAccepted = false) => {
     // Create/sync the Firestore user doc via the backend chokepoint (ISO
     // createdAt, normalized fields, role). Runs for every auth path through the
     // modal — login and signup, email and Google — replacing direct setDoc writes.
     await registerUser(currentUser, {
       provider,
       fullName: currentUser.displayName || "",
+      termsAccepted,
     });
     setLoggedInUser(currentUser);
     await fillFormFromUser(currentUser);
@@ -269,6 +364,14 @@ const ProCheckoutModal = ({ plan, onClose, source = 'unknown' }) => {
       setAuthError("Please enter your name.");
       return;
     }
+    if (authMode === "signup" && !isStrongPassword(authPassword)) {
+      setAuthError(PASSWORD_RULES_MESSAGE);
+      return;
+    }
+    if (authMode === "signup" && !authTerms) {
+      setAuthError("Please agree to the Terms & Conditions and Privacy Policy to continue.");
+      return;
+    }
     setAuthLoading(true);
     const auth = getAuth();
     try {
@@ -282,14 +385,16 @@ const ProCheckoutModal = ({ plan, onClose, source = 'unknown' }) => {
           await updateProfile(userCredential.user, { displayName: authName.trim() });
         }
       }
-      await afterAuth(userCredential.user, "email");
+      await afterAuth(userCredential.user, "email", authMode === "signup");
     } catch (err) {
       const map = {
         "auth/user-not-found":      "No account found with this email.",
         "auth/wrong-password":      "Incorrect password.",
         "auth/invalid-credential": "Incorrect email or password.",
         "auth/email-already-in-use": "An account with this email already exists.",
-        "auth/weak-password":       "Password must be at least 6 characters.",
+        "auth/weak-password":       PASSWORD_RULES_MESSAGE,
+        // From a Firebase password policy, if one is switched on (#35).
+        "auth/password-does-not-meet-requirements": PASSWORD_RULES_MESSAGE,
         "auth/invalid-email":       "Invalid email address.",
         "auth/too-many-requests":   "Too many attempts. Please try again later.",
       };
@@ -314,7 +419,7 @@ const ProCheckoutModal = ({ plan, onClose, source = 'unknown' }) => {
         setAuthError(UNSUPPORTED_BROWSER_MESSAGE);
         return;
       }
-      await afterAuth(result.user, "google");
+      await afterAuth(result.user, "google", true);
     } catch (err) {
       console.error("[google-sign-in]", err?.code, err);
       // null = the user closed the Google window themselves — say nothing.
@@ -377,7 +482,11 @@ const ProCheckoutModal = ({ plan, onClose, source = 'unknown' }) => {
     // server prices the order and says which gateway to open.
     try {
       const customer = { name: form.fullName, phone: form.mobile, businessName: form.businessName, state: form.state };
-      const created = await startOrder(source, plan.id, customer);
+      // #256: only the code is sent; the server checks it and prices the order again.
+      const couponCode = quote?.coupon?.code;
+      const created = isCart
+        ? await startCartOrder(cartLines, customer, couponCode)
+        : await startOrder(source, plan.id, customer, couponCode, option?.id);
       setOrder(created);
 
       if (created.checkout?.gateway === 'simulated') {
@@ -390,10 +499,18 @@ const ProCheckoutModal = ({ plan, onClose, source = 'unknown' }) => {
       setStep('redirecting');
       const result = await payWithRazorpay(created, { name: form.fullName, email: form.email, phone: form.mobile });
       await confirmPayment(created.orderId, result);
-      window.location.assign(resultUrl(created.orderId));
+      goToResult(created.orderId);
     } catch (err) {
       console.error('Payment error:', err);
       setIsProcessing(false);
+      // #256: the code stopped working between Apply and Pay (used up, expired,
+      // switched off). Nothing was charged: say why, drop the code, and let the
+      // customer pay without it — a bad code never blocks paying.
+      if (isCouponError(err) && !orderRef.current) {
+        setQuote(null);
+        setCouponMsg(`${err.message} You can pay without the code.`);
+        return;
+      }
       // Tell the server the attempt ended, so the order does not sit "in progress".
       if (orderRef.current) reportFailure(orderRef.current, err?.message);
       setFailureReason(failureKeyFor(err));
@@ -409,14 +526,14 @@ const ProCheckoutModal = ({ plan, onClose, source = 'unknown' }) => {
       if (outcome === 'success') {
         const result = await simulatePayment(order.orderId, 'success');
         await confirmPayment(order.orderId, result);
-        window.location.assign(resultUrl(order.orderId));
+        goToResult(order.orderId);
         return;
       }
       if (outcome === 'close_tab') {
         // Paid, but the browser never comes back: only the gateway's own message
         // (the webhook) tells the server. The result page shows what it learned.
         await simulatePayment(order.orderId, 'success_webhook');
-        window.location.assign(resultUrl(order.orderId));
+        goToResult(order.orderId);
         return;
       }
       const declined = await simulatePayment(order.orderId, 'failure');
@@ -485,32 +602,43 @@ const ProCheckoutModal = ({ plan, onClose, source = 'unknown' }) => {
           <div className="pco-step">
             <div className="pco-plan-header-row">
               <div className="pco-plan-avatar">👤</div>
-              <h2 className="pco-section-title">Your Selected Plan</h2>
+              <h2 className="pco-section-title">{isCart ? `Your Cart (${lines.reduce((n, l) => n + l.quantity, 0)})` : "Your Selected Plan"}</h2>
             </div>
 
+            {!isCart && (<>
             <div className="pco-selected-plan-box">
               <div className="pco-plan-gift-icon">🎁</div>
               <div>
                 <div className="pco-plan-name-tag">{plan.name} Plan</div>
+                {/* #221: the answer chosen above the plans, and what it added. */}
+                {option && (
+                  <div className="pco-plan-option-tag">
+                    {option.label}: <strong>{option.name}</strong>
+                    {option.surcharge > 0 && <> · includes {inr(option.surcharge)}</>}
+                  </div>
+                )}
                 <div className="pco-plan-price-tag">₹{plan.price.toLocaleString("en-IN")}</div>
               </div>
             </div>
 
             <div className="pco-includes">
               <div className="pco-includes-label">Includes:</div>
-              {plan.services.map((s) => (
+              {(plan.services ?? []).map((s) => (
                 <div key={s} className="pco-include-row">
                   <span className="pco-green-check">✓</span>
                   <span>{s}</span>
                 </div>
               ))}
             </div>
+            </>)}
 
             <div className="pco-summary-box">
-              <div className="pco-summary-row">
-                <span>{plan.name} Plan</span>
-                <span>₹{plan.price.toLocaleString("en-IN")}</span>
-              </div>
+              {lines.map((l) => (
+                <div key={l.key} className="pco-summary-row">
+                  <span>{l.name}</span>
+                  <span>{inr(l.price)}</span>
+                </div>
+              ))}
               <div className="pco-summary-row">
                 <span>GST ({gstPercent}%)</span>
                 <span>{inr(gst)}</span>
@@ -523,8 +651,19 @@ const ProCheckoutModal = ({ plan, onClose, source = 'unknown' }) => {
             </div>
 
             <button className="pco-btn-primary" onClick={handleProceedToCheckout}>
-              Proceed to Checkout
+              {isCart ? "Checkout — pay for all" : "Proceed to Checkout"}
             </button>
+            {/* #244: or keep shopping and pay for several services at once. */}
+            {!isCart && (
+              <button type="button" className="pco-btn-outline pco-btn-mt" onClick={handleAddToCart}>
+                Add to Cart
+              </button>
+            )}
+            {cartNote && (
+              <p role="status" className="pco-cart-note">
+                {cartNote} <a href="/cart">View cart</a>
+              </p>
+            )}
           </div>
         )}
 
@@ -557,6 +696,7 @@ const ProCheckoutModal = ({ plan, onClose, source = 'unknown' }) => {
               <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 6.29C4.672 4.163 6.656 3.58 9 3.58z"/></svg>
               Continue with Google
             </button>
+            <div style={{ marginTop: "-12px", marginBottom: "16px" }}><GoogleTermsNote /></div>
 
             <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "20px" }}>
               <div style={{ flex: 1, height: "1px", background: "#e5e7eb" }} />
@@ -594,12 +734,17 @@ const ProCheckoutModal = ({ plan, onClose, source = 'unknown' }) => {
                 <input
                   className="pco-input"
                   type="password"
-                  placeholder={authMode === "signup" ? "Create a password (min 6 chars)" : "Enter your password"}
+                  placeholder={authMode === "signup" ? "Create a password" : "Enter your password"}
                   value={authPassword}
                   onChange={(e) => { setAuthPassword(e.target.value); setAuthError(""); }}
                   autoComplete={authMode === "signup" ? "new-password" : "current-password"}
+                  aria-describedby={authMode === "signup" ? "pco-password-rules" : undefined}
                 />
+                {authMode === "signup" && <PasswordChecklist password={authPassword} id="pco-password-rules" />}
               </div>
+              {authMode === "signup" && (
+                <TermsAgreement id="pco-terms" checked={authTerms} onChange={(v) => { setAuthTerms(v); setAuthError(""); }} />
+              )}
 
               {authError && (
                 <div style={{ color: "#e53935", fontSize: "13px", marginBottom: "12px", padding: "8px 12px", background: "#fff5f5", borderRadius: "6px", border: "1px solid #ffcdd2" }}>
@@ -720,20 +865,84 @@ const ProCheckoutModal = ({ plan, onClose, source = 'unknown' }) => {
               </div>
             </div>
 
-            <div className="pco-summary-box">
-              <div className="pco-summary-row">
-                <span>{plan.name} Plan</span>
-                <span>₹{plan.price.toLocaleString("en-IN")}</span>
-              </div>
-              <div className="pco-summary-row">
-                <span>GST ({gstPercent}%)</span>
-                <span>{inr(gst)}</span>
-              </div>
-              <div className="pco-summary-divider" />
-              <div className="pco-summary-total-row">
-                <span>Total Amount</span>
-                <span className="pco-total-amount">{inr(total)}</span>
-              </div>
+            {/* #256: a coupon code, checked and priced by the server. */}
+            <div className="pco-coupon">
+              {quote?.coupon ? (
+                <>
+                  <p className="pco-field-label">Coupon code</p>
+                  <div className="pco-coupon-applied" role="status">
+                    <span><strong>{quote.coupon.code}</strong> applied · {quote.coupon.label}</span>
+                    <button type="button" className="pco-coupon-btn pco-coupon-remove" onClick={removeCoupon}
+                      aria-label={`Remove coupon ${quote.coupon.code}`}>
+                      Remove
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <label htmlFor="pco-coupon-input" className="pco-field-label">Have a coupon code?</label>
+                  <div className="pco-coupon-row">
+                    <input
+                      id="pco-coupon-input"
+                      className="pco-input pco-coupon-input"
+                      type="text"
+                      placeholder="Enter code"
+                      autoComplete="off"
+                      autoCapitalize="characters"
+                      spellCheck={false}
+                      maxLength={30}
+                      value={couponInput}
+                      onChange={(e) => { setCouponInput(e.target.value.toUpperCase()); setCouponMsg(""); }}
+                      onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); applyCoupon(); } }}
+                    />
+                    <button type="button" className="pco-coupon-btn" onClick={applyCoupon} disabled={couponBusy || !couponInput.trim()}>
+                      {couponBusy ? "Checking…" : "Apply"}
+                    </button>
+                  </div>
+                </>
+              )}
+              {couponMsg && <p className="pco-coupon-error" role="alert">{couponMsg}</p>}
+            </div>
+
+            <div className="pco-summary-box" aria-label="Amount to pay">
+              {quote ? (<>
+                {quote.lines.map((l) => (
+                  <div key={l.productKey} className="pco-summary-row">
+                    <span>{l.label} — {l.planName}{l.quantity > 1 ? ` × ${l.quantity}` : ""}</span>
+                    <span>{inr(l.listPrice)}</span>
+                  </div>
+                ))}
+                <div className="pco-summary-row pco-summary-discount">
+                  <span>Discount ({quote.coupon.code})</span>
+                  <span>−{inr(quote.discount)}</span>
+                </div>
+                <div className="pco-summary-row">
+                  <span>GST ({quote.gstPercent}%)</span>
+                  <span>{inr(quote.gst)}</span>
+                </div>
+                <div className="pco-summary-divider" />
+                <div className="pco-summary-total-row">
+                  <span>Total Amount</span>
+                  <span className="pco-total-amount">{inr(quote.amount)}</span>
+                </div>
+                <p className="pco-summary-saved">Was {inr(total)} with GST — you save {inr(Math.round((total - quote.amount) * 100) / 100)}</p>
+              </>) : (<>
+                {lines.map((l) => (
+                  <div key={l.key} className="pco-summary-row">
+                    <span>{l.name}</span>
+                    <span>{inr(l.price)}</span>
+                  </div>
+                ))}
+                <div className="pco-summary-row">
+                  <span>GST ({gstPercent}%)</span>
+                  <span>{inr(gst)}</span>
+                </div>
+                <div className="pco-summary-divider" />
+                <div className="pco-summary-total-row">
+                  <span>Total Amount</span>
+                  <span className="pco-total-amount">{inr(total)}</span>
+                </div>
+              </>)}
             </div>
 
             <button
@@ -813,7 +1022,7 @@ const ProCheckoutModal = ({ plan, onClose, source = 'unknown' }) => {
 
             <div className="pco-services-box">
               <div className="pco-services-title">Services Purchased</div>
-              {plan.services.map((s) => (
+              {(isCart ? [] : plan.services ?? []).map((s) => (
                 <div key={s} className="pco-service-row">
                   <span className="pco-green-check">✓</span>
                   <span>{s}</span>

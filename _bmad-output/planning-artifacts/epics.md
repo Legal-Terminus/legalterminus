@@ -81,7 +81,7 @@ split dashboard tiles.
 | E-15 | Document Naming & Step Configuration (Visibility, Status/Notes, Descriptions) | Phase 2 | E15-S01 – E15-S04 |
 | E-16 | Comment Draft Autosave | Phase 2 | E16-S01 |
 | E-17 | Professional Assignment on Matters | Phase 2 | E17-S01 |
-| E-18 | Centralized Reporting Module | Phase 2 | E18-S01 – E18-S09 |
+| E-18 | Centralized Reporting Module | Phase 2 | E18-S01 – E18-S11 |
 | E-19 | Client 360 (Per-Client Status for Staff) | Phase 2 | E19-S01 – E19-S03 |
 | E-20 | Dashboard Cockpits | Phase 2 | E20-S01 – E20-S02 |
 | E-21 | Public API v1 & Webhooks | Phase 2 | E21-S01 – E21-S04 |
@@ -2810,7 +2810,7 @@ before it breaches — depends on the notification/email subsystem (E-07).
 
 ---
 
-### E18-S08 — Trademark Reports on a shared worksheet engine (#210) [Phase 2] 🔄 In Progress
+### E18-S08 — Trademark Reports on a shared worksheet engine (#210) [Phase 2] ✅ Released in v1.6.0-lt.9
 
 **Priority**: P1 | **Complexity**: L | **Dependencies**: E18-S06
 
@@ -2831,7 +2831,7 @@ before it breaches — depends on the notification/email subsystem (E-07).
 
 ---
 
-### E18-S09 — Company Worksheets with KYC reminders (#217) [Phase 2] 🔄 In Progress
+### E18-S09 — Company Worksheets with KYC reminders (#217) [Phase 2] ✅ Released in v1.6.0-lt.9
 
 **Priority**: P1 | **Complexity**: M | **Dependencies**: E18-S08 (same engine)
 
@@ -2844,6 +2844,75 @@ before it breaches — depends on the notification/email subsystem (E-07).
 - KYC: *Next KYC Due* = filing date + 3 years (calculated). Admins and managers are notified 30 days and 7 days before, and on the day — once per milestone.
 
 **e2e**: `Portal/e2e/worksheets.spec.ts`.
+
+---
+
+### E18-S10 — TDS Sheet in Worksheets, with editable dropdowns (#280) [Phase 2] 🔄 In review
+
+**Priority**: P1 | **Complexity**: S | **Dependencies**: E18-S09 (same engine)
+
+**Rationale**: The firm keeps its TDS register in Excel and asked for it in Worksheets, in its own
+layout, with the yellow columns as dropdowns whose choices staff manage.
+
+**Acceptance Criteria**:
+- "TDS Sheet" in the Worksheets dropdown, after GST Sheet, with the columns of the firm's file in its
+  order and spelling (see the 2026-11-10 change-log entry); "Sl. No." is the row number.
+- Add record, Upload Excel (matched by TAN NO), Edit columns (admin), Search, Download Excel — as every sheet.
+- **Edit dropdowns** (admin, manager, team member) for every dropdown column of every worksheet and report.
+- **Assigned to** and **Checker** list the portal's staff (admin, manager, team member) by name, not a
+  typed list (firm, 11 Nov — see the 2026-11-19 change-log entry).
+
+**e2e**: `Portal/e2e/worksheets.spec.ts` (#280 tests).
+
+---
+
+### E18-S11 — GST Return Filing sheet under Reports, fed by the GST matters (#279) [Phase 2] 🔄 In review
+
+**Priority**: P1 | **Complexity**: M | **Dependencies**: E18-S10 (editable dropdowns), #219 (GST return matters)
+
+**Rationale**: The firm tracks every client's monthly and quarterly GST return in one Excel register.
+It asked for it under Reports, filled from the GST workflows, with a Monthly / Quarterly dropdown
+whose two views never mix.
+
+**Acceptance Criteria**:
+- `/reports/gst-returns` (Reports hub tile; dashboard tile for admin, manager, team member) with a
+  Monthly / Quarterly dropdown over the firm's columns plus Return Period and Matter.
+- Rows of GST return matters are created and kept up to date from the workflow when the sheet is
+  opened; staff add rows and edit any cell; last change wins per cell.
+- Monthly and Quarterly never share or reach each other's records; columns and dropdowns are shared.
+
+**e2e**: `Portal/e2e/gst-return-filing.spec.ts`.
+
+---
+
+### E18-S12 — Filing Month and filing dates on GST return matters (#292, #294) [Phase 2] 🔄 In review
+
+**Priority**: P1 | **Complexity**: S | **Dependencies**: E18-S11 (#279 sheet rules), #219 (GST return matters)
+
+**Rationale**: GST return matters for the same client look alike month after month; the team
+and the client asked to see which month a matter is for, and when GSTR-1 and GSTR-3B were
+actually filed, on the matter itself.
+
+**Acceptance Criteria**:
+- A GST return matter (sweep-opened, or of a service linked to the GST Return Filing sheet) shows
+  its Filing Month ("September 2026" / "Q2 2026-27") as a tag in its header and in the matters
+  list, for staff and the client; other matters do not.
+- ~~The GSTR-1 and GSTR-3B filing tasks, once completed, show "Filed on: <date>" with their
+  completion date~~ — superseded 2026-11-19 (firm, 17 Nov): when the matter reaches the GSTR-1 or
+  GSTR-3B filing task, staff (admin, manager, a team member working the matter) press **Add
+  Filing Date** beside it, save the actual filing date, then complete the task. Completing never
+  sets a date; completing without one is allowed (no date shown, still addable from the header).
+  The saved date shows next to the task and in the header, for staff and the client; it can be
+  changed or removed — a real date, not in the future, not before the period ended — and every
+  save is in the matter's history; clients and professionals cannot.
+- Tasks completed before manual dates went live keep the date they showed.
+- The period and the tasks are identified by the sheet's rules (no second rule); the sheet's date
+  column shows the saved date (one reader, `filedOnDateOf`), matter → sheet only.
+- A matter updates only its own row (its client and return period, Monthly or Quarterly); the
+  Matter cell cannot tie a matter to another client's or period's row or to a second row, and the
+  sync releases such links instead of writing to them (#294 wrong-record fix).
+
+**e2e**: `Portal/e2e/gst-return-filing.spec.ts` (#292 / #294 tests).
 
 ---
 
@@ -3261,7 +3330,7 @@ if the customer's browser returns, and creates nothing in the portal.
 
 ---
 
-### E24-S00 — A parallel QA deployment [Phase 2] 🔄 In Progress
+### E24-S00 — A parallel QA deployment [Phase 2] ✅ Done — QA runs at https://legal-terminus-qa.web.app (deploy-qa on every merge to `main`)
 
 > **Decided 2026-10-03 (product owner): a TEMPORARY environment in the SAME project**, no
 > custom domain, no CI — deployed by hand with `scripts/deploy-qa.sh` from the `qa` branch.
@@ -3308,7 +3377,7 @@ payment integration cannot be developed against live customers.
 
 ---
 
-### E24-S01 — Prices come from the server [Phase 2] 🔄 In Progress
+### E24-S01 — Prices come from the server [Phase 2] ✅ Released in v1.6.0-lt.8
 
 > **Built on the `qa` branch (2026-10-03), deployed to QA only.**
 > - `shared/pricing/catalog.json` — 61 products, 195 plans — generated from the 62 pricing
@@ -3366,7 +3435,7 @@ payment integration cannot be developed against live customers.
 
 ---
 
-### E24-S02 — Pay with Razorpay [Phase 2] 🔄 In Progress — built against a SIMULATED gateway
+### E24-S02 — Pay with Razorpay [Phase 2] ✅ Released in v1.6.0-lt.13
 
 > **Built 2026-10-04, on QA only.** Razorpay keys are not available, so the gateway is simulated
 > (`paymentGateway.service.js`): it signs and verifies as Razorpay does and speaks its webhook
@@ -3518,6 +3587,48 @@ Every failure below must leave a record the firm can act on, and a truthful scre
   variables are removed; the unused Razorpay stub in the checkout modal is replaced by the real flow.
 - The rules file's list of public endpoints names the Razorpay webhook and nothing that no longer
   exists.
+
+---
+
+### E24-S07 — Trademark user type: "Proposed to be Used" or "Prior User" (#221) [Phase 2] 🔄 In Progress — PR open, not yet on QA
+
+> **Built 2026-11-06 on `feat/221-trademark-user-type`.** A product in the price catalogue may
+> now ask ONE required question whose answer adds a surcharge to every plan (`choice` on the
+> product; design in architecture.md, "Website orders and payments" → "A required question
+> that changes the price"). Trademark Registration (`trademark-application`, both pages that
+> sell it) is the only product that asks one: **User type — Proposed to be Used (₹0) / Prior
+> User (₹2,500 by default)**, on all four plans (Elemental, Enriched, Supreme, Supreme Plus).
+> - Website: the question sits above the cards; nothing is chosen at first, Buy Now asks for an
+>   answer, and every card's price changes at once ("Includes ₹2,500 for Prior User"). The
+>   checkout shows "User type: Prior User" and the final price with GST. The cart keeps the
+>   answer, shows it as a dropdown that can be changed, and blocks paying until a line that
+>   needs one has one.
+> - Server: the page sends `optionId` with the plan (one plan or a cart line), never a price.
+>   `findPlan` adds the answer's surcharge before GST and before any coupon; a missing or
+>   unknown answer is a 400 in words. The order records `optionId/optionName/optionLabel`,
+>   `basePrice`, `surcharge`, and `planName` becomes "Supreme (Prior User)".
+> - Portal: Website Prices shows each answer's extra charge, editable by admins and managers.
+>   Website Orders shows the user type, the plan price and the extra. The matter opened on
+>   approval carries it in its payment note and in `websiteOrderPlanName` / `websiteOrderOption`.
+> - Tests: `backend/src/__tests__/productChoice.test.js` (both user types, unknown/missing,
+>   cart line, coupon, edit, seed merge); `Portal/e2e/pricing.spec.ts` "#221"; the order and
+>   coupon specs skip products that ask a question; `Frontend/tests/e2e/trademark-user-type.spec.js`.
+>
+> **Open for the firm:** the Elemental card's badge still reads "★ PROPOSED-TO-BE-USED", which
+> now reads oddly beside a "Prior User" choice — left unchanged pending the firm's wording.
+> The hints under each answer ("You have not started using this trademark yet." / "You are
+> already using this trademark for your goods or services.") are ours, for the firm to confirm.
+
+**Priority**: P1 | **Complexity**: M | **Dependencies**: E24-S01, #244 (cart), #256 (coupons)
+
+**Acceptance Criteria**:
+- A required choice above the trademark plans; Buy Now / Add to Cart with nothing chosen asks the
+  customer to choose (no silent default).
+- Prior User adds the firm's surcharge (default ₹2,500, editable under Website Prices) to every
+  plan; prices update on change and the final price is shown before paying.
+- The amount is computed on the server from the plan id and the answer id, for one plan and for a
+  cart line, with coupons and GST on the surcharged amount; an unknown answer is a 400.
+- Staff see the user type on the order and on the matter it opens.
 
 ---
 
@@ -3881,7 +3992,7 @@ and the old CSS the switch was protecting; close #209; release by tag per `docs/
 
 ---
 
-## E-26 — Android App (Capacitor wrapper of the Portal) (#TBD) [Phase 2]
+## E-26 — Android App (Capacitor wrapper of the Portal) (#267) [Phase 2]
 
 **Goal**: The Portal runs as an Android app from the same code as the website, for the same
 four roles, installable from Google Play. The website must not change in any way.
@@ -3916,6 +4027,945 @@ Google sign-in, push, a real device, Android 7 on a real WebView, signed product
 **Known open points**: minimum Android version (24) vs WebView 111 is undecided until Play
 shows which devices are excluded; the Master Sheet step number differs from the matter page
 (website too); "created by a manager" wording on an Admin-created matter.
+
+---
+
+## E-27 — Coupon Codes at the Website Checkout (#256, #257, #260) [Phase 2]
+
+**Goal**: A client can lower what they pay on the website only by typing a valid coupon code at
+checkout. Admins and managers create and control the codes, and a report shows every use.
+
+**Why this is an epic.** Raised by the firm on 2026-11-06 as three issues that only make sense
+together: #256 (discounts by code, management, the report), #257 (one-time or time-based
+validity) and #260 (general, specific-service or minimum-amount codes). A discount changes the
+amount charged, which E-24 deliberately keeps on the server; it therefore touches the price
+rule, the order lifecycle, the payment transaction, both apps and a new report. Design in
+architecture.md, "Website orders and payments" → "Coupon codes".
+
+**Constraints**: the amount is still the server's — the page sends a code, never a price or a
+discount (Security Standard §2); a payment settles once, so a code is counted once; a bad code
+never stops a client paying without it.
+
+| Story | What | Status |
+|---|---|---|
+| E27-S01 | Coupons and their rules: `coupons/{CODE}` (unique by construction), percent or fixed, general / services / minimum amount, one-time or a period of IST days; admin and manager create, edit, switch on/off, delete an unused one (`/api/coupons`, `COUPON_MANAGER_ROLES`) | ✅ Released in v1.6.0-lt.19 |
+| E27-S02 | Pricing with a code: the discount comes off before GST, GST re-worked per line; fixed amounts capped and split by price; under ₹1 refused; `POST /api/orders/quote`; `POST /api/orders` takes `couponCode` | ✅ Released in v1.6.0-lt.19 |
+| E27-S03 | One-time codes: held 30 minutes by the checkout that took them, used up by its payment inside `settlePaid`, then refused to everyone; a late payment is honoured and noted | ✅ Released in v1.6.0-lt.19 |
+| E27-S04 | Coupon & Discount report: each use (`couponRedemptions/{orderId}`) with its own figures, uses per coupon, IST date filter, CSV | ✅ Released in v1.6.0-lt.19 |
+| E27-S05 | Screens: Portal Settings → Coupons (list + full-page forms), Reports → Coupon & Discount, discount on Website Orders; website checkout "Have a coupon code?", the cart's note, the result page and the email | ✅ Released in v1.6.0-lt.19 |
+
+**Acceptance Criteria**
+- Only admin and manager can create, edit, switch on or off and delete coupons, and read the
+  report — on the screen and on the API (team member, client, professional: refused).
+- Each code is unique; creating a second with the same code is refused in words.
+- Discount types: a percentage (1–100) or a fixed amount in rupees.
+- Coupon types: **General** (every service, the whole cart); **Specific services** (only the
+  services chosen; the others in the cart pay full price); **Minimum order amount** (the whole
+  cart, once its price before GST reaches the amount).
+- Validity: **One-time use** — one successful payment, then inactive for everyone; **Time period**
+  — 7 days, 30 days or chosen dates (India time, first to last day inclusive), any number of
+  clients, inactive after.
+- At checkout the client sees the original price, the discount with the code, the GST and the
+  final payable amount, and pays exactly that; the server prices the order again from the code.
+- Clear messages: not valid; not started yet ("can be used from …"); expired ("expired on …");
+  already used; in another checkout ("Try again in a few minutes"); "This code applies only to:
+  …"; "This code needs an order of at least ₹X before GST — add ₹Y more."; below ₹1 refused.
+- The report shows, per use: code, discount type and value, created by, coupon creation date,
+  client name and email, services, original amount, discount, final paid amount, date used;
+  and the number of uses per coupon. CSV export. Editing a coupon later does not change it.
+
+**Tests**: `backend/src/__tests__/coupons.test.js` (22: pricing, every validity case, hold and
+consume, redemption figures, schemas); `Portal/e2e/coupons.spec.ts` (6: each type created on the
+screen, manager allowed and team/client refused, server pricing and every refusal message, a
+tampered amount refused, one-time hold → payment → used, the report and CSV, switching off);
+`auth-rbac.spec.ts` (coupons refused to team and client); `Frontend/tests/e2e/cart.spec.js`
+(the cart's note).
+
+**Open / not done**
+- The website checkout's coupon field has no automated browser test: it needs a signed-in
+  website session, which the website suite cannot stub. Its server side is covered above.
+- A payment held for **review** (wrong amount received) does not use up its code; staff settle
+  such an order by hand.
+- One code per order; codes do not stack. No per-client limit on a period code.
+
+---
+
+## E-28 — Sign-up: Password Rules and Terms Agreement (#35) [Phase 2]
+
+**Goal**: Everyone who makes an account chooses a strong password, sees the rules while typing it,
+and agrees to the Terms & Conditions and Privacy Policy before the account exists, with the date
+they agreed recorded.
+
+**Why this is an epic.** #35 (raised 2026-06-01) touches every place a person chooses their own
+password: three sign-up forms (the website's Sign Up page, the website checkout's "Create your
+account", the Portal's sign-up, which the Android app also shows) and the Portal's
+create/reset-password page from an emailed link. It also adds a recorded agreement to the
+account. It fits no existing epic. Design in architecture.md, "Sign-up: password rules and terms
+(#35)".
+
+**Constraints**: the rules hold with no Firebase password policy configured (that is a console
+setting on the shared sign-in project, the owner's decision); the website keeps its own copy of
+the rules because it is built and deployed from `Frontend/` alone; `POST /api/auth/register`
+runs on every sign-in and the Android build in review sends the old body, so a missing agreement
+is never refused there.
+
+| Story | What | Status |
+|---|---|---|
+| E28-S01 | One rule set (`shared/auth/passwordRules.js`, twin `Frontend/src/utils/passwordRules.js`, a unit test keeps them equal): 8+ characters, upper, lower, number, special character | 🔄 In review |
+| E28-S02 | A live checklist under the password field on every form above; a weak password is refused in words before Firebase is called; Firebase's `auth/weak-password` and `auth/password-does-not-meet-requirements` become the same sentence | 🔄 In review |
+| E28-S03 | A required "I agree to the Terms & Conditions and Privacy Policy" box on the email sign-up forms; "By continuing with Google you agree…" beside every Google button | 🔄 In review |
+| E28-S04 | `termsAccepted: true` on `POST /api/auth/register` records `users.termsAcceptedAt` (ISO time) the first time; later sign-ins do not move it | 🔄 In review |
+
+**Acceptance Criteria**
+- The rules show under the password field and tick one by one as they are met; the state is told
+  by a tick and words, not colour alone.
+- Sign-up with a password missing any rule, or with the Terms box unticked, does not create an
+  account and says why.
+- The Terms and Privacy links open the website's policy pages in a new tab (in the app, on the
+  website's address).
+- A new account's profile carries the time its owner agreed.
+
+**Tests**: `backend/src/__tests__/passwordRules.test.js` (the rules, the website copy equal to the
+shared one, the agreement record); `Frontend/tests/e2e/signup.spec.js` (checklist, weak password
+and unticked box stop the form, links, the Google line on sign-up and sign-in, a 360px phone);
+`Portal/e2e/signup-rules.spec.ts` (the same on the Portal sign-up, the Google line on sign-in).
+Firebase's sign-up call is answered by the specs, so no account is created.
+
+**Open / not done**
+- Firebase still accepts a 6-character password from any client that skips these forms (an old
+  app build, a script). Switching on the project's password policy with the same rules (Firebase
+  console → Authentication → Settings → Password policy, "Notify" mode first so existing users
+  can still sign in) closes that; it is the owner's decision on the shared sign-in project.
+- Staff-created employee passwords (`employeeCreateSchema`, minimum 6) are set by staff, not by
+  the person, and were left as they are.
+- Accounts made before this change have no `termsAcceptedAt`.
+
+---
+
+## E-29 — iOS App (Capacitor wrapper of the Portal, App Store) (#268) [Phase 2]
+
+**Goal**: The Portal runs as an iPhone app from the same `MobileApp/` shell as the Android app
+(E-26), for the same roles, installable from the App Store in India. The website must not change
+in any way, and nothing on the live site may point at the app until its launch is approved.
+
+**Status (2026-11-19)**: 🔄 In progress. **Redesigned to one app on the hosted Portal (D7, owner
+2026-11-19, story E29-S13).** Both apps are `com.legalterminus.app`, "Legal Terminus", and open
+`https://legal-terminus-qa.web.app/portal/` until they are switched to
+`https://legalterminus.com/portal/`. Nothing of the Portal is bundled; no localhost or
+`capacitor://` origin is allowed anywhere. The QA app `com.legalterminus.app.qa` (TestFlight builds
+5–7) and the split into `iOSApp/` / `iOSAppProd/` (branch `feat/ios-android-app-split`, not merged)
+are retired. Everything that needs the firm's Apple Developer account, Firebase registrations or a
+real iPhone is open — the owner checklist is in `docs/mobile-release.md`. **Next steps for Akash:
+E29-S13 below.**
+
+**Why this is an epic.** It is the Android epic again on a second platform, but four things are
+different enough to be their own stories: the iOS WebView served a bundled app from
+`capacitor://localhost`, which the API's allowlist refused by name (resolved 2026-11-19 by not
+bundling at all: the app opens the hosted Portal, D7); App Store rules force a
+decision on sign-in (guideline 4.8) and require that account deletion can be *started inside the
+app* (5.1.1(v)) — which Android's open point D2 also needs, so it is built once here; emailed links
+need Apple's Universal Links instead of Android's App Links; and the build is made on a Mac in
+Xcode, so the release process has to be written down rather than automated.
+
+**How the two apps are built and released** — `docs/mobile-release.md` (new in this epic, story
+E29-S09). The rule, taken from the BeatMyEMI apps: **Android is built and signed by the GitHub
+pipeline on a release and attached to a GitHub Release "vX.Y.Z (Build N)"; iOS is archived and
+uploaded to App Store Connect from Xcode on the Mac.** One version name and one build number for
+both platforms per release; the build number only ever goes up; secrets never in the repo.
+
+**Code guidance per story** — `docs/ios-app-implementation-guide.md`: the config blocks, the
+`corsOrigins.js` change and its tests, the CSS hooks, the entitlements and AASA, the deletion
+endpoint's shape, the guard script and the Android job. Read it with the story.
+
+**Prerequisites that are a person's, not code** (E29-S01): an Apple Developer **organisation** (the firm is getting it, 2026-11-10)
+account for LEGAL TERMINUS PRIVATE LIMITED (needs a D-U-N-S number; US$99 a year), a Mac with
+Xcode 16, a real iPhone, and the decisions below.
+
+**Decisions (all recorded 2026-11-10)**
+
+| # | Decision | Recommendation |
+|---|---|---|
+| D1 | **Sign-in on iOS.** Google is the primary sign-in method and must work in the iOS app. Guideline 4.8: an app that offers Google sign-in must also offer Sign in with Apple. | **Decided 2026-11-10: native Google sign-in on iOS, same as Android, plus Sign in with Apple in the same build** (E29-S04 and E29-S11 ship together). BeatMyEMI shipped exactly this pair. Email + password and the sign-in link stay. |
+| D2 | **Account deletion.** 5.1.1(v): deletion must be startable in the app; a web link alone is refused. Play's Data safety form already says users can request deletion. | A **deletion request** from the app (E29-S08): the person confirms, the account is signed out and disabled, the firm is told, an Admin completes it with the existing delete. Matter records the firm must keep by law are kept and the privacy policy says so (PR #223). |
+| D3 | **Minimum iOS version.** | **Decided 2026-11-10: Capacitor 8's own minimum** (check the generated `ios/App/Podfile` when `cap add ios` runs; expected iOS 15). The Portal's Safari target is the same as the web build's. |
+| D4 | **First release scope.** | **Decided 2026-11-10:** same as Android: no push notifications (E29-S12 = E26-S06), iPhone only (no iPad layout work; `preferredContentMode: 'mobile'`). |
+| D5 | **Bundle id.** | **Decided 2026-11-10: `com.legalterminus.app`**, the same as Android, if it is free in the Apple portal. If not, `com.legalterminus.ios` — record it here; it cannot change after the first upload. |
+| D6 | **Apple sign-in on the website and Android.** Only the iOS app is required to offer it. | **Decided 2026-11-10: on the website, yes** — someone who signed up with Apple on an iPhone (possibly with "Hide my email", so no password and an address they never see) must be able to sign in on legalterminus.com too. **On Android, hidden** for the first release. |
+| D7 | **Which environment the apps talk to, and how.** | **Owner, 2026-11-11 and 2026-11-19: ONE app, pointed at QA first, then switched to production; it opens the hosted Portal.** The app (`com.legalterminus.app`, "Legal Terminus", D5) loads `https://legal-terminus-qa.web.app/portal/` or `https://legalterminus.com/portal/` (`server.url`); one build-time switch, `LT_APP_ENV`, picks which, from `MobileApp/environments.json`. No Portal bundle, no bundle guard, no app origin: the page is the site, so CORS is not involved, and `localhost` is removed from every allowlist (API and both buckets). **Reverted 2026-11-19:** the separate QA app `com.legalterminus.app.qa` "Legal Terminus QA" (built 2026-11-11), the bundled Portal (`vite build --mode mobile`, `check-bundle.mjs`), the `capacitor://localhost` / `https://localhost` origins, and the `iOSApp/` + `iOSAppProd/` + iPad work on `feat/ios-android-app-split` — each went against the instruction of one app that is switched. BeatMyEMI's app (`server.url = https://app.beatmyemi.com`) passed App Store review with this design. |
+
+| Story | What | Status |
+|---|---|---|
+| E29-S01 | Accounts and decisions: Apple Developer org account, App Store Connect access, D1–D5 recorded, GitHub issue numbers | ⏳ Not started (👤) — D7 recorded 2026-11-11 |
+| E29-S02 | iOS platform in `MobileApp/`: `cap add ios`, bundle id, signing, `GoogleService-Info.plist` ignored, usage strings, scripts, QA build runs on the simulator | 🔄 Code done (simulator build); signing waits on S01 |
+| E29-S03 | ~~The app's origin on the API and the buckets~~ — **superseded by D7 (2026-11-19)**: the app opens the hosted Portal, so it has no origin of its own. Replaced by "no localhost anywhere" in E29-S13 | ✅ Superseded |
+| E29-S04 | Sign-in on iOS: native Google (same flow as Android, iOS plugin set-up), email, sign-in link; session survives restart; offline "try again"; refused-account message | 🔄 Project set-up done; needs the plist (S01) and the device checklist |
+| E29-S05 | Files on iOS: View and share, uploads from Files / Photos / Camera, exports, image zoom | 🔄 Audit done, no code needed; device checklist open |
+| E29-S06 | Shell behaviour: safe areas, keyboard, status bar, overscroll, swipe back, external links in Safari, Razorpay inside WKWebView, icon and splash | 🔄 Code done; device checklist open |
+| E29-S07 | Emailed links open the app: `apple-app-site-association`, Associated Domains; QA host only until launch | 🔄 Code done (per-environment host); needs Team ID + fingerprints |
+| E29-S08 | Account deletion started in the app (closes Android D2 too) | 🔄 Code + tests done; Playwright spec written, not yet run |
+| E29-S09 | `docs/mobile-release.md` + the Android build job in GitHub Actions (the bundle guard is gone with the bundle, D7; the job now checks the synced app opens the production Portal) | 🔄 Switch and job done; secrets and the dry run are the owner's |
+| E29-S10 | App Store Connect: listing, privacy labels, age rating, reviewer account, screenshots, review notes; TestFlight on QA values; submission; phased release | ⏳ Not started (👤 for the console) |
+| E29-S11 | Sign in with Apple: required by guideline 4.8 because Google is offered; Firebase provider, Apple key, name-on-first-sign-in and "Hide my email" handling; the website offers it too (parity) | 🔄 Code done (web switched off until the provider exists); Apple portal + Firebase are the owner's |
+| E29-S12 | Push notifications (= E26-S06, both platforms) | ⏸ Deferred |
+| E29-S13 | **One app on the hosted Portal** (D7, 2026-11-19): `server.url`, one id, no bundle, no localhost in any allowlist; Akash's Portal fixes kept; QA-pointed build 8 on TestFlight and Internal testing | 🔄 Code done on `fix/mobile-hosted-portal`; Akash's steps below |
+
+**Order.** S13 first (it changes what every other story runs on). Then S01 → S04 + S11 together, S05, S06 in any order → S07 → S08 → S09 → S10.
+S08 and S09 touch Android too and can be done by someone else in parallel from S03 on.
+
+### E29-S13 — One app on the hosted Portal (owner decision 2026-11-19)
+
+**Why.** The owner asked for one app that is pointed at QA first and then switched to production.
+What was built instead was a separate QA app (`com.legalterminus.app.qa`), a Portal bundled into the
+app (which needed `capacitor://localhost` and `https://localhost` on the API and the buckets, and a
+bundle guard), and — on Akash's branch — two app folders (`iOSApp/` QA, `iOSAppProd/` production)
+plus an iPad layout (against D4). Uploads in the iPhone app failed (Akash's D-5) because the QA
+bucket had no `capacitor://localhost` entry: a symptom of the bundled design, not of the bucket.
+
+**What changed (branch `fix/mobile-hosted-portal`)**
+- `MobileApp/capacitor.config.ts`: `server.url` = the environment's Portal, `allowNavigation` = its
+  host only, `webDir: 'web'` (just `error.html` and a placeholder `index.html`), `errorPath:
+  'error.html'` (no connection; Android WebView < 111). One `appId` / `appName` for both environments.
+- `MobileApp/environments.json`: `appId`, `appName`, and per environment only `host` + `portalUrl`.
+- `scripts/app-env.mjs`: no Portal values any more; writes `web/app-env.js` for "Try again".
+  `scripts/check-bundle.mjs` and its fixtures deleted. Gradle: no `applicationIdSuffix`.
+- Portal: `vite build --mode mobile` and `build:mobile` removed (the app opens the normal build);
+  `viewport-fit=cover` is set at runtime inside the app only (`initNative`); policy links are plain
+  relative links. Kept from Akash's branch: 16px fields on iOS (no focus-zoom), the account
+  button's accessible name, Chat Send above the keyboard, the friendly upload error, the phone-width
+  Playwright adjustments, `contentInset: 'never'` and `Keyboard.resize: 'native'`.
+- **No localhost in any allowlist.** `corsOrigins.js` allows no `localhost` / loopback origin in
+  any environment and refuses one in `CORS_ORIGINS`; the `capacitor://` exception is gone; both
+  deploy workflows stop setting `CORS_ORIGINS`. Local development calls the API same-origin through
+  the Vite `/api` proxy (`VITE_API_BASE_URL` empty). `storage-cors.json` (production bucket) and
+  the new `storage-cors.qa.json` (QA bucket) list only the sites' own origins.
+
+**Akash — what to do next, in order**
+1. **Stop using `feat/ios-android-app-split` and the "Legal Terminus QA" app.** Do not merge the
+   branch; its Portal fixes are already on `main` with this story. Keep your QA reports there for
+   reference; the defects they list (D-1 to D-6) are re-checked under the new design in step 5.
+2. Pull `main`, then `cd MobileApp && npm ci && npm run sync` (QA is the default). Open the iOS
+   project (`npm run open:ios`); Bundle Identifier must read `com.legalterminus.app`, Display Name
+   "Legal Terminus". The app must open `https://legal-terminus-qa.web.app/portal/login`.
+3. **Port your XCUITests** (`iOSApp/ios/App/AppUITests/LaunchAndSignInUITests.swift`) into
+   `MobileApp/ios/App` as a UI-test target, without the iPad window code. They now drive the hosted
+   QA Portal; the QA accounts (`qa-*@legalterminus.test`) are unchanged.
+4. **Firebase:** the iOS app is `com.legalterminus.app` only. Put its `GoogleService-Info.plist` in
+   `~/lt-android-release/keys/qa/` (and `production/`, the same file). `app-env.mjs` refuses a
+   plist for any other bundle id, including the old `.qa` one.
+5. **Re-run your QA rounds on the simulator and a real iPhone, QA-pointed build:** sign-in for all
+   five roles, Google prompt, session after restart, offline start (the app must show
+   `error.html`, and "Try again" must reopen the Portal), Chat Send with the keyboard open, form
+   fields not zooming, header spacing (no doubled safe area), **upload from Photos and Files — D-5
+   must now pass with no bucket change**, View and share a document, the Razorpay checkout and a
+   UPI hand-off (they must open outside the app). Record results in this story.
+6. **Build 8** (the next number for both platforms): iOS → TestFlight of the app "Legal Terminus"
+   (`com.legalterminus.app`) once its App Store Connect record exists (owner checklist 4);
+   Android → `npm run sync:android`, `./gradlew bundleRelease`, upload to the **Internal testing**
+   track of the existing Play app. Neither is sent for review.
+7. **Never publish Android version code 3** (bundled, runs at `https://localhost`, now refused by
+   production). When the owner says to switch to production: `LT_APP_ENV=production npm run sync`,
+   the next build number, and that build replaces version code 3 in the Play Production release
+   and goes to App Store review.
+8. Any Portal change you need for the app: make it in the Portal, guarded by
+   `Capacitor.isNativePlatform()`; it reaches the QA app when it merges, without a new app build.
+   A new **native plugin** needs a new app build, and the Portal must check
+   `Capacitor.isPluginAvailable()` before using it.
+
+**Acceptance criteria**
+- One app id (`com.legalterminus.app`) and one name everywhere; no `.qa` id in code or config.
+- A QA-pointed build opens `https://legal-terminus-qa.web.app/portal/`; a production-pointed build
+  opens `https://legalterminus.com/portal/`; the switch is only `LT_APP_ENV`.
+- No `localhost`, `127.0.0.1` or `capacitor://` origin is allowed by the QA or production API, or by
+  either bucket (checked with preflights), and `corsOrigins.js` cannot be configured to allow one.
+- On a real iPhone, a QA-pointed build uploads a document from Photos (D-5 closed).
+
+**Implementation record (2026-11-11, branch `feat/ios-app`, #268 iOS / #267 Android).** Per story:
+what was built, what is verified, and what is still open. LT keeps story status here, not in
+separate story files. The owner checklist (every Apple / Firebase / Play / GitHub / Cloud step) is
+`docs/mobile-release.md` → "Owner checklist".
+
+> **Superseded 2026-11-19 (E29-S13):** the paragraphs below describe the bundled design (a `.qa`
+> app, `Portal/.env.mobile.local`, the bundle guard, `capacitor://localhost` on the API). They are
+> kept as the record of what was built on 2026-11-11; the current design is E29-S13 and
+> `docs/mobile-release.md`.
+
+*The environment switch (D7, all stories).* `MobileApp/environments.json` describes QA and
+production (app id suffix, name, host, the Portal values that define the environment, the guard's
+patterns, app-link inputs). `LT_APP_ENV` picks one; `MobileApp/scripts/app-env.mjs` runs first in
+every `npm run sync:*` and writes `MobileApp/.app-env.json`, `Portal/.env.mobile.local` (outranks
+`.env.local` in Vite), `ios/App/Config/Environment.xcconfig`, and copies/validates the
+environment's Firebase files. `capacitor.config.ts`, `android/app/build.gradle` (`applicationIdSuffix`,
+`app_name`, `linkHost`) and the Xcode project (`Config/Debug|Release.xcconfig` include the
+generated file) read it. Gradle refuses a `-PappEnv` that differs from what was synced; Xcode
+refuses to build before a sync.
+- Risks: the QA Android app is now `com.legalterminus.app.qa`, so QA builds can no longer use the
+  production app's Play Internal testing track (builds 1–2 did). A stale Firebase file for the
+  other app fails the sync loudly — intended.
+- Open: owner registers the `.qa` apps in Firebase/Apple/Play (checklist 3, 4, 8, 9, 12).
+
+*E29-S02 — iOS platform.* `npx cap add ios --packagemanager CocoaPods` (the guide's Podfile path;
+Capacitor 8 now defaults to SPM). Committed: `MobileApp/ios/` minus Pods/public/generated config;
+`Podfile` with the Google subspec; `Podfile.lock`; `ExportOptions.plist` (`TEAMID` placeholder,
+method `app-store-connect`, Xcode's current name for `app-store`); `Config/*.xcconfig`;
+`App.entitlements`; `Info.plist` with the three usage strings, `ITSAppUsesNonExemptEncryption = false`,
+display name and Google URL scheme from the switch. Deployment target iOS 15.0 (D3, Capacitor 8's
+minimum). iPhone only (`TARGETED_DEVICE_FAMILY = 1`, D4). Version 1.0.0 / 1 in `Shared.xcconfig`.
+Ignore lines added at the root and the Android `*.jks`/`*.keystore` lines uncommented. Scripts:
+`sync:android`, `sync:ios`, `sync` (both), `open:ios`, `run:ios`, `check:bundle`, `test`.
+- Verified: `xcodebuild … -sdk iphonesimulator CODE_SIGNING_ALLOWED=NO build` succeeds and the app
+  opens on the sign-in page in the simulator (change log entry 2026-11-11); web build unchanged (`viewport-fit` and `data-native` are mobile-only).
+- Risks: Firebase stops publishing CocoaPods releases after October 2026 (pod install warns) — a
+  move to SPM is a later story. `UIRequiredDeviceCapabilities` keeps the template's `armv7`.
+- Open: Team ID in `Shared.xcconfig`/`ExportOptions.plist` (checklist 2); signing on the release Mac.
+
+*E29-S03 — the origin.* `corsOrigins.js` accepts exactly `capacitor://localhost` from
+`CORS_ORIGINS` (exported `IOS_APP_ORIGIN`); tests for the near-misses (`:8080`, trailing `/`,
+`capacitor://evil`, `ionic://`, `capacitor://localhost.evil.test`, upper case) and for nothing on
+the scheme surviving. `deploy-qa.yml` → `CORS_ORIGINS=https://localhost,capacitor://localhost,http://localhost:5173`
+(security change: one exact origin, the iOS app's). `storage-cors.json` carries it.
+- Not done on purpose: `deploy-production.yml`'s `CORS_ORIGINS` stays `https://localhost` until the
+  first production iOS build (owner approval, `docs/mobile-release.md` "Before any production build").
+- Open: apply `storage-cors.json` to the QA bucket (checklist 15); the two `curl` checks after the
+  QA deploy.
+
+*E29-S04 — Google sign-in on iOS.* No sign-in code: the native branch already covers iOS. Podfile
+Google subspec; `CFBundleURLSchemes = $(LT_GOOGLE_REVERSED_CLIENT_ID)`, read by `app-env.mjs` from
+the environment's `GoogleService-Info.plist` (which it also checks belongs to this bundle id).
+`providers: ['google.com', 'apple.com']`.
+- Open: the plists (checklist 8); the device checklist in the story (five roles, restart,
+  airplane mode, refused account) on a real iPhone; session-eviction check (task 3).
+
+*E29-S05 — files.* Audit: every `createObjectURL` / `download` / `window.open` site goes through
+`openBlobNative` / `shareBlobNative` (documents View and zip, `exportToXlsx` incl. Worksheets and
+client exports, Master Sheet and coupon CSVs, comment-image zoom); `WorksheetImage` and
+`commentImages` only build `<img>` sources. `EXTENSIONS` covers pdf, jpg, png, zip, csv, docx, xlsx,
+xls (+ json, txt). No code change. Found and fixed: Website Prices' "Sold on" links used
+`window.location.origin`, which inside either app is `https://localhost` / `capacitor://localhost`;
+now `siteOrigin()` (the environment's host).
+- Open: the device checklist (Files / Photos / camera / 3 files / oversize / zip / exports / zoom).
+
+*E29-S06 — shell.* `initNative` sets `html[data-native=<platform>]`; iOS status bar `Style.Light`
+(dark text). CSS hooks in `index.css`: `.app-topbar`, `.app-sidebar`, `.app-bottombar`, `.app-main`,
+`.app-safe-page` pad with `env(safe-area-inset-*)` under `html[data-native]` only; overscroll off.
+`viewport-fit=cover` is added by a mobile-build-only Vite plugin, so the website's HTML is
+unchanged. Icon (1024×1024, no alpha) and splash generated from `MobileApp/assets/` with
+`npx @capacitor/assets generate --ios`. Keyboard plugin `resize: 'body'`. External links: Capacitor iOS already opens any
+other host (and `window.open`, `mailto:`, `tel:`, `upi://`) with the system
+(`WebViewDelegationHandler`), so no `openExternal()` helper or `@capacitor/browser` was added; no
+`allowNavigation` list. Web Inspector stays Capacitor's default (Debug builds only).
+- Open: the device checklist (notch/Dynamic Island screens, keyboard on Login/New Matter/Chat,
+  rotation, links leave the app, Razorpay card + UPI hand-off — add `LSApplicationQueriesSchemes`
+  only if a UPI app does not open);
+  `contentInset: 'automatic'` vs the CSS padding must be checked for double insets on a device.
+
+*E29-S07 — Universal Links.* `App.entitlements`: `applinks:$(LT_LINK_HOST)` — the environment's host,
+so a QA build never claims `legalterminus.com`. Android's `linkHost` now comes from the same switch
+(the `-PlinkHost` property is gone). `MobileApp/scripts/app-links.mjs` writes the AASA and
+`assetlinks.json` for one environment's app from `environments.json` → `appLinks`; `deploy-qa.yml`
+runs it for the QA site (and `firebase.qa.json` now deploys `.well-known` and serves the AASA as
+JSON). It writes nothing while the Team ID and fingerprints are empty. Production is not wired —
+launch gate. `accountLinkPath` extracted to `lib/nativeRules.ts` and unit-tested (https only; exact
+`/portal/account/action` path).
+- Decision (architecture.md): the per-host files come from the repo, not from Firebase, because
+  Firebase generates ONE pair per project and serves it on every site — it cannot keep a QA app off
+  the live host. Production may still use Firebase's at launch.
+- Risks: whether a Hosting file wins over Firebase's generated one is to be confirmed with `curl`
+  after the first QA deploy with values. Filling the Team ID in Firebase's iOS app settings would
+  publish an AASA on `legalterminus.com` too (checklist 11).
+- Open: checklist 2, 16; the TestFlight device test.
+
+*E29-S08 — account deletion.* `POST /api/auth/me/deletion-request` (`verifyToken`,
+`requireRole(ACCOUNT_DELETION_ROLES)` = every role but admin, Zod `.strict()` `{ reason? ≤500 }`,
+strict `/api/auth` rate limit, generic 500). `services/accountDeletion.service.js`: transaction marks
+`deletionRequestedAt`, `deletionReason`, `status: 'deletion_requested'`; Auth user disabled and refresh
+tokens revoked; structured log `account_deletion_requested`; one email to the admins ("Open Users");
+idempotent. Portal: `/account/delete` (`DeleteAccountPage`, `PageShell`, confirm box, `btn-danger`)
+→ sign out → `/login?notice=deletion-requested`; entry in the account menu and on My Profile, hidden
+for admin; Users page "Deletion requested" tab (only while someone is waiting) and amber badge;
+`auth/user-disabled` → "This account has been disabled. Contact your firm." Unit tests: schema,
+role group, service (marking, disable, one email, repeat, failed email). Playwright
+`account-deletion.spec.ts` (throwaway client — never the seeded one).
+- Deviation: the "audit entry" is the structured log line plus the fields kept on the profile; LT
+  has no account-level audit collection (matter events are per matter).
+- Risks: an ID token issued before the request stays valid for up to an hour (refresh is revoked;
+  the app signs out at once). The existing delete still refuses a client who owns matters (409) —
+  the admin must close or handle those first; the store wording says "within 30 days".
+- Open: run the Playwright spec (not run here: the shared ports were in use); privacy-policy wording
+  for the in-app path (website, PR #223 follow-up).
+
+*E29-S09 — release, guard, Android job.* `docs/mobile-release.md` rewritten around the switch;
+`MobileApp/scripts/check-bundle.mjs` (forbidden and required patterns from `environments.json`;
+unit-tested against a QA and a production fixture bundle; runs inside every sync). The production
+bundle built on this Mac passes; the same bundle checked as QA fails, as it should.
+`deploy-production.yml`: inputs `build_android`, `android_format`, `version_name`, `build_number`;
+job `build-android` (tag refs only, `production` environment, `contents: write`) — writes the Portal
+values from the existing secrets, `LT_APP_ENV=production npm run sync:android`, keystore and
+`google-services.json` from secrets, version, gradle, signer check against the variable
+`ANDROID_UPLOAD_KEY_SHA1`, artifacts, GitHub Release. The web job is skipped on an Android run.
+`build.gradle` reads `key.properties` into `signingConfigs.release` (debug key when absent) and
+turns `minifyEnabled` on. `env.sh` became `app-env.mjs` (one script for both platforms).
+- Risks: the job has not run (needs the secrets); the first minified release APK must be tried on a
+  phone before upload (a local minified build succeeds after `-dontwarn com.facebook.**`).
+- Open: checklist 13, 14; link from `docs/delivery.md` (done) and retire `android-release-plan.md`
+  (history note added).
+
+*E29-S11 — Sign in with Apple.* `lib/appleSignIn.ts` (native: plugin `signInWithApple` →
+`OAuthProvider('apple.com').credential({ idToken, rawNonce })` → web SDK; web: pop-up) and the pure
+rules in `lib/nativeRules.ts` (`showAppleSignIn`, `appleSignInMessage`, `appleFullName`).
+`LoginPage`: black "Sign in with Apple" button under Google with the hidden-email hint;
+`completeProviderSignIn(user, 'apple', name)` sends the first-sign-in name to `/api/auth/register`
+(no backend change: `register` already takes any `provider` and `fullName`; a relay address is a
+new Client, as decided). Shown always on iOS, never on Android (D6), on the web only with
+`VITE_APPLE_SIGN_IN=true` — off until the provider exists, so `main` stays safe to release.
+`App.entitlements` has the capability. Unit tests + Playwright `apple-sign-in.spec.ts`.
+- Risks: the native name arrives in the plugin result (`user.displayName`), not in the ID token —
+  handled; a person who cancels on the first sign-in and retries loses the name (Apple's rule).
+- Open: checklist 5, 6, 7; the TestFlight test with a dedicated Apple ID.
+
+### E29-S14 — Main made ready to test; Akash only tests (owner decision 2026-11-21) 🔄 In review
+
+**Why.** On 21 Nov Akash was still on `feat/ios-android-app-split` (three app folders, a separate
+`.qa` iPhone app, the Portal bundled into the iPhone apps). The owner: "I can't expect him to do
+it properly. We will just ask him to test both the apps", with **BeatMyEMI as the model code**.
+So S13's steps 1–4 and 8 (his porting work) are done on `main` instead; he does step 5 (testing),
+from `docs/mobile-testing.md`.
+
+**Compared with BeatMyEMI** (`docs/mobile-release.md`, last section): main already matched it on
+one app id, one `capacitor.config.ts` with `server.url` = the hosted site for both platforms
+(checked by syncing both, QA and production), native Google/Apple sign-in handed to
+`signInWithCredential`, ignored Firebase files and base64 secrets, Android by the pipeline into a
+Release "X (Build N)", iOS from Xcode, and one version/build number for both. Three gaps, closed
+here or found not to be gaps:
+- **Build number** — BeatMyEMI's pipeline takes the last Release's "Build N" + 1; LT's had to be
+  typed (and version code 3 had been reused once). Now worked out by the job, never below 8, a
+  typed one refused unless higher.
+- **Team ID** — filled in: `LMD2KSCQZX` (it signed the TestFlight builds of 16–20 Nov).
+- **`FirebaseApp.configure()` in `AppDelegate`** (BeatMyEMI) — not needed: the sign-in plugin
+  configures Firebase when it loads, and skips it safely when the plist is missing.
+
+**Taken from Akash's branch**
+- The iPhone UI tests (`MobileApp/ios/App/AppUITests/`, target `AppUITests`, shared scheme), with
+  the D-5 upload test turned from "expected to fail" into "must reach storage", and the test target
+  iPhone only (D4).
+- The reload after a website deploy (`native.ts` `watchForNewWebsiteVersion`, `nativeRules.ts`
+  `entryScriptOf` / `shouldReloadForUpdate`, `updateGuard.ts`, `uploadDocument` held as busy),
+  without its bundled-app branches. Unit tests in `Portal/tests/nativeRules.test.ts`.
+- His QA reports, in `docs/mobile-qa/` (without the screenshots).
+
+**Not taken:** the three folders, the `.qa` app, the bundled Portal (`build:mobile`, `dist-mobile`,
+the mobile Vite mode, a `siteOrigin` that switches), the workflows pointed at `AndroidApp/`, and
+iPad.
+
+**Also:** build 8 on both platforms; `environments.json` → `appLinks.appleTeamId`, so the QA site
+publishes its `apple-app-site-association` and emailed QA links open the iPhone app.
+
+**Verified:** both apps build from `main` on the Mac (Android `assembleDebug`; iOS simulator build
+and `build-for-testing` with the UI-test target); synced for QA and for production, the Android and
+iOS configs open the same Portal URL. Portal `npm test` and `npm run build`; MobileApp `npm test`.
+
+**Still the owner's:** the Firebase iOS app `com.legalterminus.app` and its plist (Google sign-in on
+iPhone); the App Store Connect record; retiring the `.qa` app; never publishing Android version
+code 3.
+
+**Rules that apply to every story**
+- Native code stays in `Portal/src/lib/native.ts` (plus the sign-in branch in `googleSignIn.ts`
+  and persistence in `firebase.ts`), guarded by `Capacitor.isNativePlatform()`, plugins loaded by
+  dynamic `import()`. Platform differences use `Capacitor.getPlatform() === 'ios'`. **The web build
+  takes the old path unchanged**, and the full Playwright suite proves it before each merge.
+- Anything with a pure branch (which flow, which message, which origin) gets a unit or Playwright
+  test. Device behaviour gets a written checklist in the story, run on a real iPhone, with the
+  result recorded in the story's status.
+- Never commit `GoogleService-Info.plist`, `.p8`, `.p12`, `.mobileprovision`, `*.keystore`,
+  `*.jks`, `key.properties`, `ios/App/Pods/`, `xcuserdata/`. E29-S02 adds the ignore lines; the
+  Android `*.jks` / `*.keystore` lines are still commented out in `MobileApp/android/.gitignore`
+  and get fixed in the same change.
+- Production is touched only with the user's explicit "yes" per step (`docs/delivery.md`), and the
+  live site shows nothing of the app until launch is approved (2026-11-03 rule).
+
+---
+
+### E29-S01 — Accounts and decisions (👤)
+
+**As** the firm, **I want** the accounts and decisions in place **so that** a developer can start
+without waiting on anyone mid-story.
+
+**Tasks**
+1. Apple Developer Program, **organisation** enrolment, LEGAL TERMINUS PRIVATE LIMITED. Needs a
+   D-U-N-S number (free from Dun & Bradstreet; 1–2 weeks). Record who is Account Holder and who
+   has App Store Connect "App Manager" access (the developer needs at least that).
+2. In the portal: App ID for the bundle id (D5) with no extra capabilities for now (Associated
+   Domains is added in S07; Sign in with Apple only in S11).
+3. Firebase: register an **iOS app** on project `legal-terminus-web` with the bundle id. Download
+   `GoogleService-Info.plist`; it goes to the developer out of band, never in git.
+4. Record D1–D5 in the table above, with the date.
+5. Replace `#268` where needed; create one GitHub issue per story if the team wants per-story
+   tracking, else all commits reference #268.
+
+**Done when** the table has answers, the developer can sign in to App Store Connect, and the
+plist exists.
+
+---
+
+### E29-S02 — The iOS platform in `MobileApp/`
+
+**As** a developer, **I want** `MobileApp/ios/` generated and building on the simulator against
+QA **so that** every later story has something to run.
+
+**Context.** `MobileApp/capacitor.config.ts` already carries the app id, `webDir`
+`../Portal/dist-mobile`, `minWebViewVersion` (Android only), `FirebaseAuthentication` and
+`SplashScreen` plugin settings. `npm run build:mobile` in `Portal/` builds the bundle; `vite
+build --mode mobile` also emits the app-only pages (`appOnlyPages()` in `Portal/vite.config.ts`).
+
+**Tasks**
+1. `cd MobileApp && npx cap add ios` (Capacitor 8; CocoaPods installed — `brew install cocoapods`).
+   Commit the generated `ios/` **except** what the ignore list below excludes.
+2. `.gitignore` (repo root, under the existing `MobileApp/` entries):
+   `MobileApp/ios/App/Pods/`, `MobileApp/ios/App/build/`, `MobileApp/ios/App/public/`,
+   `MobileApp/ios/App/App/capacitor.config.json`, `MobileApp/ios/App/App/config.xml`,
+   `MobileApp/ios/**/xcuserdata/`, `MobileApp/ios/**/GoogleService-Info*.plist`, `*.mobileprovision`,
+   `*.p8`, `*.jks`, `*.keystore`, `key.properties`, `MobileApp/ios/ExportOptions.plist` is **kept**
+   (no secret in it; the team id is not a secret). Uncomment `*.jks` / `*.keystore` in
+   `MobileApp/android/.gitignore`. Keep `Podfile.lock` tracked (reproducible pods).
+3. `MobileApp/package.json`: add `sync:ios` (`npm run build:web && cap sync ios`), `open:ios`,
+   `run:ios`; rename the existing `sync` to `sync:android` and make `sync` run both.
+4. `capacitor.config.ts`: add
+   ```ts
+   ios: { contentInset: 'automatic', preferredContentMode: 'mobile', allowsLinkPreview: false,
+          scrollEnabled: true, limitsNavigationsToAppBoundDomains: false },
+   ```
+   and keep `server.androidScheme`; **do not set `server.iosScheme` to `https`** — WKWebView
+   does not allow it; the iOS origin is `capacitor://localhost` (S03). Also set
+   `server.errorPath` only for Android — iOS has no "old WebView" case (Safari is the OS's).
+5. Xcode (`MobileApp/ios/App/App.xcworkspace`, never the `.xcodeproj`): Team = the firm's team;
+   bundle id per D5; Display Name "Legal Terminus"; deployment target per D3; Automatic signing
+   for Debug and Release (the Mac that releases signs with the account holder's login — see
+   `docs/mobile-release.md`).
+6. `Info.plist` usage strings, required or the upload is rejected the moment a file input can
+   reach the camera: `NSCameraUsageDescription` ("To photograph a document for your matter"),
+   `NSPhotoLibraryUsageDescription` ("To upload a document or image from your photos"),
+   `NSPhotoLibraryAddUsageDescription` ("To save a document you download"). Also
+   `ITSAppUsesNonExemptEncryption = false` (HTTPS only; saves a question per TestFlight build).
+7. Version: `MARKETING_VERSION` and `CURRENT_PROJECT_VERSION` in the project are the version
+   name and build number; S09 says how they move. Start at `1.0.0` / `1`.
+8. Build on the simulator with QA values: `cd Portal && npm run build:mobile` (QA `.env.local`),
+   `cd ../MobileApp && npm run sync:ios && npm run run:ios`. Expected right now: the app loads,
+   the login page shows, and sign-in **fails with a CORS error** in Safari's Web Inspector
+   (Develop → Simulator) until S03 — record that it is the expected failure.
+
+**Acceptance criteria**
+- `git status` after a full build shows no untracked file under `MobileApp/ios/` — everything
+  generated is ignored or committed on purpose; `git ls-files MobileApp | grep -iE 'plist$|p8|p12|mobileprovision|keystore|jks'` lists only `Info.plist` files.
+- `npm run sync:ios` from a clean checkout (`npm ci` in `MobileApp/`) succeeds.
+- The web build (`cd Portal && npm run build`) is byte-identical to before this story
+  (compare `dist/` hashes) — the iOS platform adds nothing to the website.
+
+**Tests**: the Playwright suite (unchanged); the simulator run above with its expected failure.
+
+---
+
+### E29-S03 — The app's origin on the API and the buckets (security change)
+
+**As** the app, **I want** `capacitor://localhost` accepted by the API and the storage buckets
+**so that** every screen loads and uploads work.
+
+**Context.** `backend/src/config/corsOrigins.js` takes deployment-specific origins from
+`CORS_ORIGINS` but `isExactOrigin` accepts only `http(s)://…`, so `capacitor://localhost` in the
+env is **silently dropped**. The Android origin `https://localhost` is already set in
+`.github/workflows/deploy-qa.yml` and `deploy-production.yml` and in `storage-cors.json`.
+The architecture note of 2026-10 says `capacitor://localhost` "is no longer allowed" — that was
+the unanchored-regex clean-up; this story allows it again *exactly*.
+
+**Tasks**
+1. `corsOrigins.js`: let `isExactOrigin` accept the one additional form `capacitor://localhost`
+   (no port, no path, nothing else on the `capacitor` scheme). Update the file comment.
+2. `backend/src/config/corsOrigins.test.js` (or the existing test file): `capacitor://localhost`
+   allowed when listed; `capacitor://localhost:8080`, `capacitor://evil`, `capacitor://localhost/`
+   and `ionic://localhost` refused; nothing allowed when `CORS_ORIGINS` is empty.
+3. `deploy-qa.yml`: `CORS_ORIGINS=https://localhost,capacitor://localhost,http://localhost:5173`.
+   `deploy-production.yml`: `CORS_ORIGINS=https://localhost,capacitor://localhost`. Both PRs need
+   the code owner (`.github/` rule) and say **"security change: widens the API origin allowlist by
+   one exact origin, the iOS app's"** in the body.
+4. `storage-cors.json`: add `capacitor://localhost`. Apply to the QA bucket
+   `legal-terminus-web-qa` now (`gcloud storage buckets update gs://legal-terminus-web-qa
+   --cors-file=storage-cors.json`); the production bucket only with explicit approval, at release
+   (the Android plan step 10 did it by code with the service account — same here).
+5. Firebase Auth → Settings → Authorized domains: `localhost` is there by default; nothing to add.
+
+**Acceptance criteria**
+- Preflight `OPTIONS https://legal-terminus-qa.web.app/api/auth/me` with
+  `Origin: capacitor://localhost` returns `access-control-allow-origin: capacitor://localhost`;
+  with `Origin: capacitor://localhost:1` or `capacitor://evil` returns none.
+- The QA bucket preflight (`OPTIONS https://storage.googleapis.com/legal-terminus-web-qa/x`,
+  method `PUT`) echoes `capacitor://localhost`.
+- The simulator build from S02 signs in as a QA admin and lists matters.
+- The website's own origin and the Android origin behave exactly as before.
+
+**Tests**: the unit tests in task 2; the two `curl` checks recorded in the PR.
+
+---
+
+### E29-S04 — Sign-in on iOS
+
+**As** any role, **I want** to sign in on the iPhone app and stay signed in **so that** the app is
+usable at all.
+
+**Context.** `Portal/src/lib/googleSignIn.ts` already calls the native Google plugin on any
+native platform (`signInWithNativeGoogle`, `skipNativeAuth: true`, ID token into the web SDK), so
+iOS needs the plugin's iOS set-up, not new sign-in code. `lib/firebase.ts` pins `indexedDBLocalPersistence` under Capacitor; WKWebView supports
+IndexedDB, but iOS may evict a site's storage after 7 days of non-use when the app is not opened
+(ITP applies to WKWebView content served from a custom scheme in some versions) — test for it.
+`useAuth.ts` reads the role after the token; offline shows `RoleUnavailable`. The QA API accepts
+only `@legalterminus.test` accounts (`docs/qa-environment.md`), by design.
+
+**Tasks**
+1. Native Google on iOS (`@capacitor-firebase/authentication`, iOS section of its README):
+   `GoogleService-Info.plist` in the Xcode target (ignored by git); the `REVERSED_CLIENT_ID`
+   from that plist as a `CFBundleURLSchemes` entry in `Info.plist` (the Google picker returns
+   to the app through it); `Podfile` gets `pod 'CapacitorFirebaseAuthentication/Google'`
+   (`npx cap sync ios` writes the base pod; the `/Google` subspec is added by hand — see the
+   guide); `FirebaseAuthentication` stays `skipNativeAuth: true`. The Firebase iOS app's OAuth
+   client is created by Firebase when the iOS app is registered (E29-S01).
+2. Sign in with Apple is E29-S11 and ships in the same build; the Google button on iOS must
+   not appear in a TestFlight build that lacks the Apple button (4.8 is checked at review).
+3. Session: confirm `indexedDBLocalPersistence` survives force-quit and relaunch, and a reboot.
+   If it does not on a real device, switch the native build to the plugin's native persistence
+   (`skipNativeAuth: false` + `FirebaseAuthentication.getIdToken()` feeding the web SDK) — that
+   is a design change; write it to `architecture.md` before doing it.
+4. The emailed **sign-in link** on iOS opens the app only after S07; until then it opens Safari
+   and signs the person in on the website — acceptable on QA, say so in the test notes.
+5. Refused account (QA guard, production test-account guard): the message from the API shows,
+   and the app signs out (E26-S08 logic, already shared).
+
+**Acceptance criteria**
+- iOS app on QA: each of Admin / Manager / Team Member / Client / Professional signs in with
+  email + password and lands on their home; force-quit → relaunch stays signed in; airplane mode
+  at launch shows "We can't load your account / Try again" and recovers when online.
+- Google on iOS: the native account sheet opens; cancelling shows the friendly message; a
+  `@legalterminus.test` Google account on QA is refused with the server's sentence and signed
+  out (the guard, by design); the full sign-in is proven on the production TestFlight build with
+  a dedicated test Google account (E29-S10) — a new Google user lands as Client, an email with
+  a password account gets the "already has an account" message.
+- A refused account shows the server's sentence, not "API error", and the next screen is the
+  login page.
+
+**Tests**: existing `google-sign-in.spec.ts`, `offline-role.spec.ts` unchanged and green; device
+checklist above, recorded in this story.
+
+---
+
+### E29-S05 — Files on iOS
+
+**As** a client or staff member, **I want** to upload, view, download and export files in the
+iPhone app **so that** matters can be worked from the phone.
+
+**Context.** `native.ts` has `openBlobNative` (Filesystem → cache → `@capacitor-community/file-opener`)
+and `shareBlobNative` (Share sheet), used by document View, zip, `exportToXlsx`, Master Sheet CSV
+and comment-image zoom (`commentImageDom.ts`). On iOS, File Opener uses
+`UIDocumentInteractionController` (needs a presenting view controller; the plugin handles it) and
+Share uses the system sheet (Save to Files, AirDrop, Mail). Uploads go by signed URL straight to
+GCS (the bucket CORS from S03). `<input type="file">` in WKWebView opens the native
+Photos / Take Photo / Choose File sheet by itself; `accept="image/*"` gives Photos + Camera,
+`accept=".pdf"` gives Files; `capture` forces the camera. `multiple` works on iOS 14+.
+
+**Tasks**
+1. Walk every file path with `Capacitor.getPlatform() === 'ios'` in mind; no code change is
+   expected in the branches, but check `EXTENSIONS` covers what the share sheet needs to name
+   the file (iOS infers the viewer from the extension, not the MIME type).
+2. On iOS, a `blob:` download anchor does nothing either, so the same native branches apply —
+   confirm every `download` attribute site goes through `openBlobNative`/`shareBlobNative`
+   (grep `download=` and `URL.createObjectURL` in `Portal/src`).
+3. Image zoom (`commentImageDom.ts`): iOS has no `window.open` for blobs either; confirm the
+   native branch.
+4. Large uploads: the signed-URL `PUT` from WKWebView with a 25 MB file; background it is not
+   (the app must stay in the foreground — write that into the manual's upload page for the app).
+
+**Acceptance criteria** (real iPhone, QA): upload a PDF from Files, a photo from Photos, a new
+photo from the camera, and three files at once; the size-limit message appears for an oversized
+file; View opens a PDF in the system viewer and an image full screen; zip download offers the
+share sheet and Save to Files works; Excel and CSV exports open in Numbers/Excel or save; a
+comment image zooms; Worksheets upload and download.
+
+**Tests**: `documents.spec.ts` and `master-sheet.spec.ts` unchanged and green (web path);
+device checklist recorded here.
+
+---
+
+### E29-S06 — iOS shell behaviour
+
+**As** a person using the app, **I want** it to feel like an iPhone app, not a web page in a box.
+
+**Tasks**
+1. **Safe areas.** `Portal/index.html` viewport gets `viewport-fit=cover`; the app layout's
+   top bar and any bottom-fixed bar pad with `env(safe-area-inset-top/bottom)` **only under
+   `Capacitor.isNativePlatform()`** — a `data-native` attribute on `<html>` set in `initNative`,
+   and CSS `html[data-native] .app-topbar { padding-top: env(safe-area-inset-top) }`. The
+   website's CSS is unaffected (no attribute, no padding).
+2. **Keyboard.** `@capacitor/keyboard` with `resize: 'body'` (config `plugins.Keyboard`), so a
+   focused input near the bottom scrolls into view; check the Chat composer and the login form.
+   Inputs must be ≥16px font (they already are; a smaller one makes Safari zoom the page).
+3. **Status bar.** `@capacitor/status-bar`: style `Dark` text on the white top bar; set in
+   `initNative`.
+4. **Overscroll / bounce.** Leave `scrollEnabled: true`; stop the rubber-band at the page top
+   with `html[data-native] { overscroll-behavior-y: none }` so pull-to-refresh-looking bounce
+   does not happen on fixed-header screens.
+5. **Back.** No hardware back on iOS; `allowsBackForwardNavigationGestures` is off in Capacitor
+   by default — leave it off (an in-page router with a swipe-back WebView makes double history).
+   Every screen already has a Back control (E-26 audit); confirm on the 6 deepest screens.
+6. **External links.** Links to other hosts (payment receipts, website pages, `mailto:`, `tel:`)
+   must open outside the WebView: Capacitor iOS opens non-app hosts in Safari by default; verify,
+   and route any `window.open(url, '_blank')` through `@capacitor/browser` in a `openExternal()`
+   helper in `native.ts` (browser path unchanged).
+7. **Razorpay "Pay Now" (E-24, `PayNowCard.tsx`, `payNow.ts`).** `checkout.js` renders an iframe
+   from `api.razorpay.com`; the iframe loads inside the WebView fine, but UPI "intent" links
+   (`upi://`, `phonepe://`, `gpay://`) and bank 3-D Secure redirects must leave the app. Test a
+   card (test mode on QA: `payment.gateway = simulated` — so this can only be fully tested on
+   production with a real ₹1 payment; plan it with the firm) and a UPI app hand-off. Record
+   the result; if UPI intents fail, add `LSApplicationQueriesSchemes` for the UPI apps and let
+   Capacitor pass the scheme to the OS.
+8. **Icon and splash.** `npx @capacitor/assets generate --ios` from the same
+   `MobileApp/assets/` as Android; `SplashScreen` config already holds it until first paint
+   (`hideNativeSplash`). iOS needs a 1024×1024 icon with no alpha.
+9. **Debug.** `webContentsDebuggingEnabled` true in Debug only (Capacitor default on iOS is
+   on for Debug builds; make sure Release is off).
+
+**Acceptance criteria** (real iPhone with a notch/Dynamic Island, QA): no content under the
+status bar or home indicator on Login, Home, Matter, Chat, Reports, a full-page form; the
+keyboard never covers the focused input on Login, New Matter, Chat; rotation keeps layout;
+tapping a `mailto:`/`tel:`/website link leaves the app; Pay Now opens Razorpay and returns
+with the result (QA: simulated gateway path shown).
+
+**Tests**: Playwright `offline-role.spec.ts` and layout specs unchanged (web path has no
+`data-native`); a Playwright test that `html` has **no** `data-native` on the web build; device
+checklist recorded here.
+
+---
+
+### E29-S07 — Emailed links open the app (Universal Links)
+
+**As** a person who receives a sign-in or password link by email, **I want** it to open the app
+on my iPhone **so that** I am not signed in on the website instead.
+
+**Context.** Android uses an `https` intent filter on `/portal/account/action` plus
+`/.well-known/assetlinks.json` on the host; `appUrlOpen` in `native.ts` routes the path.
+On production, `assetlinks.json` is **generated by Firebase Hosting from the Android app's
+fingerprints in Firebase project settings** (found 2026-11-03), not from the repo; it is live now
+with three keys, one of them a debug key that should be removed in Firebase. iOS needs
+`/.well-known/apple-app-site-association` (AASA) — Firebase Hosting generates that one too when
+the iOS app in Firebase settings has its **Team ID** and **App Store ID** filled in; otherwise it
+must be a file in `Frontend/public/.well-known/` served as `application/json` with no redirect.
+
+**Tasks**
+1. Apple portal: enable **Associated Domains** on the App ID; Xcode → Signing & Capabilities →
+   Associated Domains: `applinks:legal-terminus-qa.web.app` for the QA build, and
+   `applinks:legalterminus.com` for production. Make the host a build setting like Android's
+   `linkHost` (an `.xcconfig` per configuration: `LINK_HOST`, used in `App.entitlements` as
+   `applinks:$(LINK_HOST)`), so a QA build never claims the production host.
+2. AASA content:
+   ```json
+   { "applinks": { "details": [ { "appIDs": ["TEAMID.com.legalterminus.app"],
+       "components": [ { "/": "/portal/account/action*" } ] } ] } }
+   ```
+   Decide the source: Firebase-generated (fill Team ID in Firebase → Project settings → iOS app)
+   or the repo file. **Prefer the same source as `assetlinks.json`** so the two never disagree;
+   record the choice in `architecture.md`. On QA, publish it now. **On production, not until
+   launch is approved** (the 2026-11-03 rule) — the same gate as Android's file.
+3. `native.ts` `openAccountLink` already handles the path; iOS delivers Universal Links through
+   `appUrlOpen` too. No change expected; verify the `replace: true` navigation lands on the
+   existing action page with the query intact.
+4. The reverse path: tapping the link while the app is **not installed** opens Safari — fine.
+
+**Acceptance criteria**: on a real iPhone with the QA build installed from TestFlight (not Xcode
+— Universal Links are verified at install from a signed build), a sign-in link in Mail opens the
+app and signs in; a password-set link opens the set-password page; `curl -sI
+https://legal-terminus-qa.web.app/.well-known/apple-app-site-association` is `200`,
+`content-type: application/json`, no redirect; Apple's CDN check
+(`https://app-site-association.cdn-apple.com/a/v1/legal-terminus-qa.web.app`) returns it.
+
+**Tests**: unit test for `openAccountLink` path matching (pure); device checklist above.
+
+---
+
+### E29-S08 — Account deletion started in the app (both platforms)
+
+**As** a client, **I want** to ask for my account to be deleted from inside the app **so that**
+the app meets App Store 5.1.1(v) and Play's Data safety answer is true.
+
+**Context.** Only an Admin can delete a user today (`DELETE /api/users/:uid`,
+`portalUsers.routes.js`, admin only). A client's matters, invoices and uploaded filings are
+records the firm must keep (Companies Act, GST) — so a client's deletion is a **request** the firm
+completes, not an instant purge, and the privacy policy (PR #223) says what is kept and why.
+Both stores accept a request-based flow when it starts in the app and is completed in a stated
+time.
+
+**Design** (write to `architecture.md`, "Account deletion")
+- `POST /api/auth/me/deletion-request` — `verifyToken`, any workspace role **except** `admin`
+  (an admin deletes themselves through Users like anyone else — a lone admin must not lock the
+  firm out). Body: Zod `{ reason?: string(≤500) }` `.strict()`. Effect: `users/{uid}.deletionRequestedAt`
+  + `deletionReason`; Firebase Auth user **disabled** (they cannot sign in again); email to the
+  firm's admin address (existing `emailService`, template "Account deletion requested"); an
+  audit `events` entry. Response 202 `{ message }`. Idempotent.
+- `DELETE /api/auth/me/deletion-request` is **not** offered: once asked, the admin decides.
+- Users list (`UsersPage`): a `badge-warning` "Deletion requested" on the row and a filter; the
+  existing delete action completes it (removes Auth user + profile; matters stay with the
+  client's name as the record — today's behaviour). Nothing else changes in the delete path.
+- Portal: Profile / Account menu → "Delete my account" → a full-page confirm (mobile pattern,
+  `PageShell`): what happens, what is kept, 30-day expectation → button → signed out → login
+  page shows "Your deletion request was received." Shown to **every** role except admin, on web
+  and app alike (the rule applies to the account, not the platform).
+- Website privacy policy: the PR #223 wording, plus the in-app path.
+
+**Acceptance criteria**
+- A client taps Delete my account → confirms → is signed out and cannot sign in ("This account
+  has been disabled" message is friendly, not a Firebase code); the admin gets the email within a
+  minute; the Users page shows the badge; the admin's delete removes the account; the matter
+  still lists with the client's name.
+- An admin does not see the entry; `POST` as admin returns 403.
+- Second `POST` returns 202 without a second email.
+
+**Tests**: Playwright `account-deletion.spec.ts` — client requests (mocked email, QA
+`EMAIL_DISABLED`), badge appears for admin, admin completes; RBAC: admin 403. Backend unit test
+for the schema and the role guard. Manual update: `docs-site`/manual page for the account menu
+and the Users page (LT keeps its docs in `docs/`; say where in the story's completion note).
+
+---
+
+### E29-S09 — How the apps are built and released (`docs/mobile-release.md`, Android job, build guard)
+
+**As** whoever cuts a release, **I want** one written procedure and one pipeline job **so that**
+a build is reproducible and never carries QA values.
+
+**The strategy** (adopted from BeatMyEMI; its `deploy.yml` Android job is the template):
+
+| | Android | iOS |
+|---|---|---|
+| Built by | **GitHub Actions**, job `build-android` in `deploy-production.yml`, run **by hand** (`workflow_dispatch`) from a `v*-lt.*` tag, inside the `production` environment (the reviewer approval applies) | **Xcode on the Mac**, from the same tag checked out clean |
+| Values | Production `.env` written by the job from secrets (never `.env.local`) | Production `.env` written by `MobileApp/scripts/env.sh production` from a file outside the repo |
+| Signing | Upload keystore from secrets `ANDROID_KEYSTORE_B64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD`; `GOOGLE_SERVICES_JSON_B64` | Xcode automatic signing with the team's distribution certificate; `GoogleService-Info.plist` from outside the repo; `MobileApp/ios/ExportOptions.plist` (method `app-store`) committed |
+| Version | Inputs `version_name` and `build_number`; the job writes them into `build.gradle` | The same two numbers, set in Xcode (or `agvtool`) before Archive |
+| Output | Signed `.aab` + `.apk` + `mapping.txt` as workflow artifacts (7 days) and attached to a **GitHub Release `vX.Y.Z (Build N)`** on the tag | Archive → Distribute → App Store Connect → TestFlight; the `.ipa` is also exported to `~/lt-android-release/out/` and attached to the same GitHub Release by hand |
+| Store | `.aab` uploaded to Play **by hand** (Internal testing → Production, staged rollout 10% → 100%; managed publishing stays on) | TestFlight internal group → App Store review → phased release |
+| Guard | `MobileApp/scripts/check-bundle.mjs` runs after `build:mobile`: a `production` build fails if the bundle contains `qa-data`, `legal-terminus-qa`, `localhost:5001`, `.test` or `EMAIL_DISABLED`; a `qa` build fails if it contains `legalterminus.com/api` | The same script, run by `sync:ios` |
+| Numbers | **One `version_name` and one `build_number` for both platforms per release.** `build_number` = last GitHub Release's build + 1, never reused, never lower; QA builds count too (the Play and TestFlight counters are per app, not per track) | |
+| Secrets | GitHub Secrets as base64 (`base64 -i file | pbcopy`); the originals in two places off the repo (`~/lt-android-release/keys/` + the firm's password manager) | The `.p12` export of the distribution certificate and the App Store Connect API key `.p8` in the same two places |
+
+**Tasks**
+1. `docs/mobile-release.md` exists (written 2026-11-10 with this epic). Keep it true as the
+   job lands: fill in the dry-run result, link it from `docs/delivery.md` and `README.md`, and
+   retire `docs/android-release-plan.md` into a "history" note at its top.
+2. `deploy-production.yml`: add `build_android` (boolean), `android_format`
+   (`aab`/`apk`/`both`), `version_name`, `build_number` inputs and the `build-android` job
+   (Java 21, Android SDK, `npm ci` in `Portal/` and `MobileApp/`, write `Portal/.env` from
+   secrets, `npm run build:mobile`, `check-bundle.mjs production`, restore keystore and
+   `google-services.json`, `cap sync android`, `gradle bundleRelease assembleRelease`,
+   `apksigner verify --print-certs`, upload artifacts, `softprops/action-gh-release` on the tag).
+   `needs: build-and-deploy` is **not** required — the app does not need a web deploy, but the
+   job runs only on a tag ref, same as the environment rule.
+3. The guard script and the `env.sh` helper (reads `~/lt-android-release/env/<env>.env`, writes
+   `Portal/.env.mobile`; `build:mobile` uses `--mode mobile` which loads `.env.mobile` — check
+   Vite's mode-file precedence: `.env.mobile.local` > `.env.mobile` > `.env.local` > `.env`;
+   **`.env.local` is still loaded**, so the guard is what catches a leak).
+4. New GitHub Secrets per `SETUP.md`'s procedure; document in `SETUP.md`.
+5. One dry run: build vc4 from the current tag on the pipeline, compare its signer and contents
+   with vc3 (`apksigner`, `unzip -l`), and record in the doc.
+
+**Acceptance criteria**: a release-tag run of `build-android` produces a signed `.aab` whose
+signer SHA-1 is the upload key's, contains no QA value, and is attached to the GitHub Release
+with the build number in its name; a run from `main` is refused by the environment rule;
+`check-bundle.mjs production` fails on a bundle built from this machine's `.env.local`.
+
+**Tests**: the guard script has a unit test with two fixture bundles; the workflow change needs
+the code owner's review (`.github/`).
+
+---
+
+### E29-S10 — App Store Connect, TestFlight, review, release (👤 for the console)
+
+**Tasks**
+1. App Store Connect → New app: name "Legal Terminus", bundle id (D5), SKU `legalterminus-ios`,
+   primary language English (India available). Category Business.
+2. **App Privacy** (nutrition labels): mirror `docs/play-store-listing.md`'s Data safety answers —
+   contact info, identifiers, user content (documents, messages), financial info (payment status
+   and amounts), government IDs; all "linked to you", none used for tracking; no third-party
+   advertising. Privacy policy URL: `https://legalterminus.com/privacy-policy` (must already say
+   how to delete — PR #223 merged and released first).
+3. **Age rating** questionnaire (none of the content categories → 4+). **App Review
+   Information**: the reviewer account from the Android plan step 17
+   (`play.reviewer@legalterminus.com`, production, role Client) — rename the file to
+   `STORE_REVIEWER.txt` since both stores use it; notes: "Sign in with the email and password
+   provided. Documents and matters are the firm's client work; the account has one sample
+   matter." Add a sample matter to it so the reviewer sees something (Admin creates it on
+   production — explicit approval).
+4. **Review notes for guideline 4.2** (minimum functionality): state the native parts — file
+   handling through the system viewer and share sheet, Universal Links, native session, in-app
+   deletion; and that the app is the client's only way to upload to their matter from a phone
+   camera.
+5. Screenshots: 6.7" (iPhone 15 Pro Max) and 6.5" (iPhone 11 Pro Max / Xs Max), from the
+   simulator with **QA data only** — the same five screens as Play. No iPad screenshots (D4).
+6. TestFlight: a QA-values build (`1.0.0`, build N) to an internal group (the firm's testers),
+   with the checklist from S04–S07 run on at least one real iPhone. Then the production-values
+   build (build N+1) to the same group — this is the first real Google and Apple sign-in
+   against production (QA refuses real accounts); use dedicated test Google and Apple accounts,
+   never a real client.
+7. Submit for review with **phased release** on. Managed-release equivalent: "Manually release
+   this version" so an approval does not publish by itself.
+8. After approval: publish the production AASA (S07 gate), release, watch crashes in Xcode
+   Organizer and App Store Connect for a week.
+
+**Acceptance criteria**: the app is live on the App Store in India; a Client installs it, signs
+in, opens a matter and downloads a document (the issue's done-when).
+
+---
+
+### E29-S11 — Sign in with Apple (ships with S04)
+
+**As** a person on an iPhone, **I want** to sign in with my Apple ID **so that** the app can
+offer Google sign-in at all (guideline 4.8) — and the firm wants the account to be the same one
+it registered me under.
+
+**Context.** Firebase provider `apple.com`. In the app, `@capacitor-firebase/authentication`
+`signInWithApple({ scopes: ['email', 'name'], skipNativeAuth: true })` returns `idToken` and
+`rawNonce`; `new OAuthProvider('apple.com').credential({ idToken, rawNonce })` into
+`signInWithCredential` — the same pattern as Google, so one Firebase session (BeatMyEMI's
+`auth-service.ts` is the worked example). On the website, `signInWithPopup` / redirect with the
+same provider (parity rule: the website offers what the app offers). The Apple portal needs:
+Sign in with Apple on the App ID (Xcode capability too), a **Services ID** for the web with
+the Firebase OAuth redirect URL as a return URL, and a **Sign in with Apple key** (`.p8`)
+registered in Firebase → Authentication → Apple. The QA guard applies as for Google.
+
+**Two product problems and their answers**
+1. Apple sends the person's **name only on the first sign-in**. Capture it from the credential
+   (`additionalUserInfo.profile.name` / `result.user.displayName`) and send it with
+   `/api/auth/register` on that first call, or the account is nameless forever. The Users page
+   must tolerate an empty name until the admin edits it.
+2. **"Hide my email"** gives `xxxx@privaterelay.appleid.com`. `upsertUser` matches
+   admin-created users by email, so a client the firm registered under their real address would
+   get a second, empty Client account. Decision: the login page says, above the Apple button,
+   "Use the email your firm has for you — a hidden email creates a new account"; and the backend
+   treats a `privaterelay.appleid.com` address exactly like any other new sign-up (a Client
+   with no matters) — the admin links it by editing the real client's additional emails, the
+   existing path. No special-casing in code beyond the hint.
+
+**Tasks**: provider in Firebase; portal + Xcode capability; Services ID + key; `appleSignIn.ts`
+(web + native branches, same shape as `googleSignIn.ts`, `appleSignInMessage` for the error
+codes); the button on `LoginPage` (web and app) with Apple's required styling (black button,
+"Sign in with Apple", the Apple logo asset); `providers: ['google.com', 'apple.com']` in
+`capacitor.config.ts`; `register` accepts `provider: 'apple'` and a first-sign-in `fullName`;
+the hint text. Code in `docs/ios-app-implementation-guide.md`.
+
+**Acceptance criteria**: on the production TestFlight build, a dedicated test Apple ID signs
+in and lands as Client with its name; cancelling shows the friendly message; the website's Apple
+button works in Safari and Chrome; a `@legalterminus.test` account is refused on QA with the
+sentence; on Android the Apple button is hidden (D6), and a unit test covers the
+platform check.
+
+**Tests**: Playwright `apple-sign-in.spec.ts` on the web build (mocked credential and mocked
+403, like `google-sign-in.spec.ts`); unit tests for `appleSignInMessage`; device checklist.
+
+### E29-S12 — Push notifications (deferred, = E26-S06)
+
+APNs key (`.p8`) uploaded to Firebase Cloud Messaging; `@capacitor/push-notifications`; the
+token in `users/{uid}.fcmToken` per `architecture.md`'s notification design; backend sends via
+the Admin SDK on the same events as the in-app notifications. Both platforms in one story.
 
 ---
 
@@ -4330,7 +5380,37 @@ epics above; the workflow-shape changes are data edits to
 `shared/workflows/companyIncorporation.definition.js` (re-seeded; now **40 steps**),
 not new engine code.
 
-### Node.js 26 everywhere and the critical/high npm findings — #218 (2026-10-30) 🔄 On branch `chore/218-node-and-vulnerabilities`, not merged
+### iOS app and the Android app brought in line — #268, #267 (2026-11-11) 🔄 On branch `feat/ios-app`, not merged
+
+E-29's code side, built in one branch: the iOS platform (S02), the app origin on the API (S03),
+Google + Apple sign-in set-up (S04, S11), the files audit (S05), the shell (S06), per-environment
+emailed links (S07), account deletion (S08), the guard and the Android job (S09). The owner's
+instruction of 2026-11-11 — **both apps on QA first, one build-time switch** — is decision D7:
+`LT_APP_ENV` / `MobileApp/environments.json`; a QA build is "Legal Terminus QA",
+`com.legalterminus.app.qa`. Per-story detail, risks and open items: E-29 → "Implementation
+record". Owner steps: `docs/mobile-release.md` → "Owner checklist".
+
+Verified on the developer Mac (Xcode 26.1.1, Node 26, JDK 21), 2026-11-11:
+- backend `npm test`: 460 + new tests pass (CORS near-misses, deletion schema / roles / service);
+- Portal `npm run build` passes, the web `index.html` has no `viewport-fit`; Portal `npm test`
+  (new, plain Node) passes; `MobileApp` `npm test` (switch, guard fixtures, app-link files) passes;
+- `npm run sync:ios` (QA) → clean QA bundle → `xcodebuild -sdk iphonesimulator
+  CODE_SIGNING_ALLOWED=NO` **BUILD SUCCEEDED**; the app is `com.legalterminus.app.qa`,
+  "Legal Terminus QA", 1.0.0 (1);
+- a production bundle built here passes `check-bundle production` and fails `check-bundle qa`;
+- Android (QA switch): `./gradlew assembleDebug` and the minified `assembleRelease` (debug key, no
+  `key.properties` here) both build; the APK is `com.legalterminus.app.qa`, label "Legal Terminus
+  QA", App Link host `legal-terminus-qa.web.app`, `mapping.txt` produced. R8 first failed on the
+  sign-in plugin's unused Facebook handler — fixed with `-dontwarn com.facebook.**`. Gradle refuses
+  `-PappEnv=production` on a QA-synced bundle, as designed. The synced assets pass `check-bundle qa`;
+- iOS simulator (iPhone 17 Pro, iOS 26.1): the QA build installs as "Legal Terminus QA" with the LT
+  icon, shows the LT splash, then the Portal's sign-in page with Google and **Sign in with Apple**,
+  laid out clear of the Dynamic Island. Signing in was not attempted: QA's API does not allow
+  `capacitor://localhost` until this branch is merged and deployed (E29-S03's expected failure);
+- Not run: Playwright (the shared ports 5001/5173 belonged to another session's run), any device
+  test, the pipeline job.
+
+### Node.js 26 everywhere and the critical/high npm findings — #218 (2026-10-30) ✅ Released in v1.6.0-lt.9
 
 `npm audit` on 30 Oct reported 2 critical and 28 high findings across the four
 packages, and local development ran a different Node.js from production.
@@ -4426,7 +5506,7 @@ client-form fields and the Clients page download from `d87ae2b2` are untouched.
   (7). The old #205/#206 spec moved to `client-group-fees.spec.ts`, its Reports-link
   test now checks the Clients page download directly.
 
-### Images in step comments and the Discussion — #122 follow-up (2026-10-29) 🔄 On branch `feat/122-comment-images`
+### Images in step comments and the Discussion — #122 follow-up (2026-10-29) ✅ Released in v1.6.0-lt.9
 
 The firm reopened #122: screenshots must go into the step comment box and the
 Discussion, by paste or by an "Upload image" button. Inline base64 was rejected in
@@ -4508,7 +5588,7 @@ workload, exportable to Excel; a person's view exports their task list.
   away leaves the previous person's figures; elapsed time after a correction is the
   last round only; in the whole-team view "not started" is per person only.
 
-### Trademark Reports on a shared worksheet engine — #210 (2026-10-29) 🔄 In Progress
+### Trademark Reports on a shared worksheet engine — #210 (2026-10-29) ✅ Released in v1.6.0-lt.9
 
 On branch `feat/210-217-worksheets`, not yet on `main`. Story E18-S08.
 
@@ -4553,7 +5633,7 @@ On branch `feat/210-217-worksheets`, not yet on `main`. Story E18-S08.
   under the deny-all catch-all.
 - **Tests:** unit as above; `Portal/e2e/trademark-reports.spec.ts` (8, not yet run).
 
-### Company Worksheets with KYC reminders — #217 (2026-10-29) 🔄 In Progress
+### Company Worksheets with KYC reminders — #217 (2026-10-29) ✅ Released in v1.6.0-lt.9
 
 Same branch; story E18-S09. Thirteen sheets on the #210 engine, each its own book.
 
@@ -4611,7 +5691,7 @@ Same branch; story E18-S09. Thirteen sheets on the #210 engine, each its own boo
   team member; also a tile on the Reports hub.
 - **Tests:** unit (in the 29 above); `Portal/e2e/worksheets.spec.ts` (9, not yet run).
 
-### Website Theme C, round 3 — the firm's review of 13 Oct and answers of 22 Oct (#209) (2026-10-29) 🔄 On branch `feat/209-theme-c`, not merged
+### Website Theme C, round 3 — the firm's review of 13 Oct and answers of 22 Oct (#209) (2026-10-29) ✅ Released in v1.6.0-lt.9
 
 Part of E-25. Everything is behind `VITE_THEME_C` (QA only) except the footer typo.
 With the switch off, Home and Private Limited render as before (text and screenshots
@@ -4680,7 +5760,7 @@ found on this repo's production data.
 - **Not changed:** removing the step a matter is ON still leaves it there; a request
   for changes does not reset the step's due date.
 
-### Website payments — feedback from the firm's test (#212) (2026-10-13) 🔄 In Progress
+### Website payments — feedback from the firm's test (#212) (2026-10-13) ✅ Released in v1.6.0-lt.8
 
 On `main` (QA) only. Part of E-24; nothing here is in production.
 
@@ -4729,7 +5809,7 @@ On `main` (QA) only. Part of E-24; nothing here is in production.
   `pricing.service.test.js`.
 - **Still with the firm:** the product-to-service links, and the prices themselves.
 
-### Website enquiries go to their own inbox — #20 (2026-10-13) 🔄 On `main`, not in production
+### Website enquiries go to their own inbox — #20 (2026-10-13) ✅ Released in v1.6.0-lt.8
 
 The firm added `CONTACT_LEADS_EMAIL` in the Cloud Run console and it "kept getting
 removed". The production deploy passes `--set-env-vars`, which REPLACES the
@@ -6080,7 +7160,7 @@ Follow-ups raised after the earlier batches went to QA. Each shipped as its own 
 
 *Document generated by Winston (BMAD Architect Agent) — 2026-05-31; change log appended 2026-06-27.*
 
-### Website Theme C, round 4 — the firm accepts the alignment recommendation (#209) (2026-10-30) 🔄 On QA, awaiting the firm's approval
+### Website Theme C, round 4 — the firm accepts the alignment recommendation (#209) (2026-10-30) ✅ Released in v1.6.0-lt.10
 
 The firm replied "Apply recommendation", adding that Home now looks right, and asked
 for the Private Limited page and every Policies page to be fixed.
@@ -6099,14 +7179,14 @@ for the Private Limited page and every Policies page to be fixed.
   as the firm asked for one common bottom section. Live build untouched (Theme C only).
 - Tests: `Frontend/tests/e2e/theme-alignment.spec.js`; all-routes with the switch on.
 
-### Security: exact CORS allowlist (2026-10-31) 🔄 On QA, reaches production with the next release
+### Security: exact CORS allowlist (2026-10-31) ✅ Released in v1.6.0-lt.9
 
 Any site on `web.app` or `firebaseapp.com`, and lookalike domains, could make credentialed
 calls to the API. Ported Ambyflow's anchored allowlist by content. QA also allows
 `https://localhost` and `http://localhost:5173` for the Android build. Not user-visible.
 Tests: `backend/src/__tests__/corsOrigins.test.js`.
 
-### Team members: no button they cannot use, and a dashboard they can load (2026-10-31) 🔄 On QA, reaches production with the next release
+### Team members: no button they cannot use, and a dashboard they can load (2026-10-31) ✅ Released in v1.6.0-lt.9
 
 From the firm's QA sanity report that team members could not close steps. The rule is
 unchanged by decision: a team member completes a step only if they own the matter or
@@ -6120,12 +7200,12 @@ the step. The page offered the button anyway, and it failed with 403.
   neither it nor the matter. It stays with managers and admins until someone assigns it.
 - Tests: `Portal/e2e/team-step-access.spec.ts`, `Portal/e2e/dashboard-cockpits.spec.ts`.
 
-### Blog headline on one line (2026-11-01) 🔄 On QA, Theme C only
+### Blog headline on one line (2026-11-01) ✅ Released in v1.6.0-lt.10
 
 #209: "Discover Our Articles & News" now fits on one line at every width, sized to fit.
 Tests: `Frontend/tests/e2e/theme-alignment.spec.js`.
 
-### Pricing cards aligned like Private Limited on every page (2026-11-02) 🔄 On QA, Theme C only
+### Pricing cards aligned like Private Limited on every page (2026-11-02) ✅ Released in v1.6.0-lt.10
 
 #209, the firm on 2 Nov: "make the text alignment consistent with the Private Limited
 pricing section". 49 of the 55 service pages with pricing cards had the plan name,
@@ -6142,7 +7222,7 @@ differently and the round-3 centring named only Private Limited's.
 - Tests: `Frontend/tests/e2e/theme-alignment.spec.js` ("Pricing cards read the same
   on every page").
 
-### Supreme Plus on OPC and Trademark Registration (2026-11-02) 🔄 On QA
+### Supreme Plus on OPC and Trademark Registration (2026-11-02) ✅ Released in v1.6.0-lt.9
 
 #209, the firm on 2 Nov, with a picture of each table: a fourth plan, "Supreme Plus", on
 the OPC and Trademark Registration pages, as Private Limited has.
@@ -6155,12 +7235,1105 @@ the OPC and Trademark Registration pages, as Private Limited has.
 - Portal: `shared/pricing/catalog.json` regenerated, and the two new plans seeded into
   the QA catalogue (`seedPricing.js`, which adds missing plans and never overwrites a
   price the firm has set). They appear on the portal's Website Prices page on QA.
-- **Not in the live catalogue yet.** The release must run `seedPricing.js` against the
-  live database too, or the live site hides Supreme Plus (a plan missing from the
-  catalogue is not on sale).
+- ~~Not in the live catalogue yet.~~ Done 2026-11-03: the live catalogue was empty (the
+  site showed each page's built-in plans), and QA's whole catalogue was copied to it.
+  See the next entry.
 - Confirmed the same day: OPC Supreme Plus starts "Everything in Supreme" (the table
   said Enriched), and the OPC cards say "Professional fee only • + 18% GST", the
   wording of the firm's OPC table. The trademark table keeps "+ Govt. fees & GST
   extra", as the firm's own trademark table does.
 - Not done: #221 (Prior User pricing on the trademark plans) is a separate issue.
 - Tests: `Frontend/tests/e2e/pricing-plans.spec.js`.
+
+### Theme C live; live prices taken from QA (2026-11-03) ✅ Released in v1.6.0-lt.10
+
+#209: the firm approved the test website on 3 Nov ("Approved").
+- The production build now sets `VITE_THEME_C=true`. Payments (`VITE_PAYMENTS_ENABLED`)
+  stay off in production. Checked locally with production's flags first:
+  theme-alignment and pricing-plans, 24/24.
+- **Prices.** At the user's word, the live `pricingCatalog` became an exact copy of QA's
+  (61 products). QA's held ten prices the firm had changed in the portal, which the seed
+  file does not have, so this was a copy, not `seedPricing.js`. The live
+  `/api/public/pricing` now returns the same body as QA's.
+- **Backup first.** A managed export (`gcloud firestore export`) is refused to the
+  Editor account, so the live database was dumped document by document
+  (every collection and subcollection, typed values) to
+  `gs://legal-terminus-web-backups/2026-11-03-before-lt.10/`, with the script that made it.
+  Checked against the live counts: every root collection and all 912 steps match.
+  The bucket is new, private, in asia-south2.
+- Before tagging, confirmed the three production hotfixes of October (`f59e0f34`,
+  `06211e1f`, `4c4e1c0e`) are all on `main`.
+
+### App traces off the live site; comment images open on Safari (2026-11-03) ✅ Released in v1.6.0-lt.11
+
+The Android app (E-26) is still in development, so the user asked that nothing on the
+website, the portal or in emails point to it.
+- Checked first: no page, screen or email mentions the app. Two files did:
+  `/.well-known/assetlinks.json` (made emailed account links open the app) and
+  `/portal/webview-update.html` (the app's "update your WebView" page, reachable by URL).
+- `assetlinks.json` is removed from the repo, but after the release `legalterminus.com` and
+  QA still serve one: Firebase Hosting generates it from the Android app registered in the
+  Firebase project settings (its SHA-256 fingerprints). Removing that is a project setting,
+  left alone because the build in Play review signs in with the same registration.
+- `webview-update.html` moved to `MobileApp/web/`; only the
+  app build (`--mode mobile`) emits it.
+- Kept, not user-visible: the app's origin on the production API and bucket, and the
+  Capacitor code, which does nothing in a browser. Removing them would only break the
+  build in Play review.
+- Safari risk fixed: since `c2be951d`, "open full size" on a comment image opened its tab
+  after an `await`, outside the click, which Safari blocks as a pop-up. The browser now
+  opens it in the click. `Portal/e2e/comment-images.spec.ts` checks the tab opens during
+  the click; it fails on the previous code.
+
+### Technology Services page, with Infynia Labs (2026-11-04) — ✅ Released in v1.6.0-lt.12
+
+The user asked for a new product: software development for the firm's clients — website,
+payment gateway, business email, online store, apps — sold by Legal Terminus and delivered
+by its technology partner Infynia Labs (https://infynialabs.com).
+- New page `/technology-services` (`Frontend/src/Pages/TechServices`), a top-level
+  "Technology Services" item in the main menu, SEO entry and sitemap row. It is built from
+  the service-page family's markup (the Add-a-Director reference), so Theme C styles it
+  with no new CSS — the user asked that it look like every other product page.
+- Plans: Elemental and Enriched are catalogue product **SVC-062 `technology-services`**,
+  priced from Website Prices in the portal and sold through the shared checkout (Buy Now
+  shows only where `VITE_PAYMENTS_ENABLED` is on). ₹14,999 / ₹29,999 are placeholders
+  for the firm to set. Supreme is custom, "Pricing on request", and opens the
+  consultation form instead of the checkout. `serviceKey` is null: there is no portal
+  service for technology work, so a paid order does not open a matter by itself.
+- Leads from every form on the page go to `/api/contact` → the portal's Leads, labelled
+  "Technology Services" (added to the website's service-name map).
+- Why-us copy the user asked for: end-to-end ownership by Legal Terminus, and AI-native
+  fast development and deployment. No counts are claimed. "View Portfolio" links to
+  `infynialabs.com/#work` — the site has no separate portfolio page (/portfolio, /work
+  and /projects are 404).
+- Test: `Frontend/tests/e2e/technology-services.spec.js`.
+- Payments on the live site followed in v1.6.0-lt.13 (next entry). Before that, the production API has no Razorpay keys (only
+  the unused PhonePe secrets), so switching `VITE_PAYMENTS_ENABLED` on there would show
+  Buy Now buttons that fail. Needs the firm's LIVE Razorpay key id, secret and webhook
+  secret as `production` environment secrets, the webhook registered in Razorpay, and
+  the deploy workflow change (a `.github/` change, so it is the owner's merge).
+
+### Payments on the live site (2026-11-04) — ✅ Released in v1.6.0-lt.13
+
+The owner switched "Buy Now" on for legalterminus.com. The firm's Razorpay LIVE Key ID,
+Key Secret and webhook secret are `production` environment secrets (`RAZORPAY_*`), the
+webhook `https://legalterminus.com/api/orders/webhook` is registered in the firm's
+Razorpay account (payment.captured, order.paid, payment.failed, refund.processed,
+refund.created), and `deploy-production.yml` now passes the keys to the API and builds the
+website with `VITE_PAYMENTS_ENABLED=true`. Every product with catalogue prices sells online
+from the release that carries this; paid orders wait for admin approval before a matter
+opens (#212). The unused PhonePe variables are left in place.
+
+### Technology Services on the home page and footer (2026-11-04)
+
+The owner asked for Technology Services to be visible from the home page, not only the menu.
+- A home tile directly above the PDF tools tile (`HomeTechServicesCta`): a light twin of the
+  PDF tile (same `hpt-*` layout, `hpt-cta--tech` variant, Theme C overrides in
+  `src/theme/home.css`), linking to `/technology-services`.
+- "Technology Services" added last in the footer's Service Links column.
+- Fix: the top menu set `fontWeight: 700` on every link without a dropdown, meant only for
+  Home (May 2026). Technology Services is the second such link and turned bold. Now only Home.
+- Tests added to `Frontend/tests/e2e/technology-services.spec.js`.
+
+### Pay Now for the amount due, and the payment checkpoint follows the ledger (2026-11-04, #220)
+
+**Pay Now (#220).** On a part-paid matter the client sees "Pay Now ₹<amount due>" in the
+Payments tab. It opens the same Razorpay checkout as the website; the amount is the
+matter's amount due, computed by the server — the client cannot change it. Once the
+gateway confirms, the payment is added to the matter's payment history by itself, the
+amount due and status update, and admins/managers are notified. Admin/manager can switch
+Pay Now off (or back on) per matter in the same tab; it is on by default. Details in
+architecture.md, "Website orders and payments".
+- A matter with nothing paid yet gets no Pay Now: the issue asks for part-paid matters.
+- Paying does not advance a payment checkpoint step by itself; staff press Mark as Paid.
+- Tests: `backend/src/__tests__/payNow.test.js`, `Portal/e2e/pay-now.spec.ts`.
+
+**Security fix ported from Ambyflow (audit F-01, 2026-10-04).** "Mark as Paid" is now
+admin/manager only and checks the payment history; a typed status is ignored. Before,
+any team member on a matter could mark it fully paid without a payment recorded. Team
+members now see "Waiting for payment to be recorded." instead of the button.
+- Tests: `Portal/e2e/payment-gate-ledger.spec.ts`; `step-execution.spec.ts` records the
+  balance before Mark as Paid.
+
+### GST return reminders: a matter and an email every period (2026-11-04, #219)
+
+The firm asked for GST return filing to run itself: a client set to Monthly gets a new
+matter on the 1st of every month, for the month just ended, and an email asking for its
+sale, purchase, bank and expenditure details with the GSTR-1 and GSTR-3B due dates.
+Quarterly clients get the same on 1 July, 1 October, 1 January and 1 April for the quarter
+just ended (financial-year quarters). Design in architecture.md, "GST return reminders".
+- Set per client in the client form: "GST return filing" — Not filed by us / Monthly /
+  Quarterly. It starts from the next 1st; choosing it never opens back-dated matters.
+- Two editable templates (monthly, quarterly). The subject is "<Company> - GST Return -
+  September 2026" / "… - Q2 2026-27". Period, due dates and company stay automatic after
+  editing. Quarterly due dates (13th, 24th) were added to the Statutory Calendar.
+- The matter uses the existing "GST Return Filing (Monthly)" service (`gst-returns`), or
+  `gst-returns-quarterly` for quarterly clients once the firm creates one. It is opened
+  unpaid, so it waits for admin approval like a recurring matter; the email goes out when
+  it opens.
+- Documents now accept .csv, .json, .txt and .zip.
+- Open: there is no Cloud Scheduler job, so a period opens on the first API request on or
+  after the 1st (any portal or website traffic). A scheduler call to
+  `/api/internal/run-gst-returns` would make it run at a fixed time.
+- Tests: `backend/src/__tests__/gstReturns.test.js`, `Portal/e2e/gst-returns.spec.ts`,
+  `matter-payments-docs.spec.ts` (#77 upload types).
+
+### Chat: edit and delete messages, confirm before sharing (2026-11-05)
+
+A staff member's shared message reached a client with two stray lines pasted into it
+(writing-assistant suggestions), and there was no way to fix it: the text had to be
+changed in the database by hand. Design in architecture.md, "Chat: editing, deleting
+and confirming a shared message".
+- The matter tab "Discussion" is now **Chat** (the default email wording follows).
+- The author of a message, or an admin, can edit or delete it. An edited message shows
+  "· edited"; a deleted one leaves "This message was deleted" in its place. Neither sends
+  a notification or an email.
+- Before a staff message shared with the client is sent, a preview shows exactly what
+  will go out and says it will be emailed and cannot be recalled.
+- Tests: `Portal/e2e/discussion.spec.ts` (three new tests); other specs use the new tab
+  name.
+
+### Service editor keeps conditions, forms and actions; GST runs at 09:00 (2026-11-05)
+
+- **Service editor.** Saving a Service silently dropped each step's condition ("only
+  when the client has GST"), client form and actions (notify, send email). The editor
+  offered them and the engine runs them, but the API schema did not list them. Ported
+  from Ambyflow, with its save-time checks: a condition whose operator cannot apply,
+  or a form that could not be filled in, is refused with a message naming the step.
+  Services saved before this have none of these settings and need re-entering.
+- **GST timing.** A Cloud Scheduler job (`lt-gst-returns-daily`, asia-south1) calls
+  `/api/internal/run-gst-returns` at 09:00 India time every day. It signs in as its own
+  service account, `lt-scheduler@`, which holds no project roles; the API checks the
+  Google-signed token, so no shared secret exists. The traffic fallback now also waits
+  until 09:00 India time. Before, a period opened with the first request after midnight.
+- Tests: `serviceStepSchema.test.js`, `schedulerAuth.test.js`.
+
+### Managers can change website prices (2026-11-05, #241)
+
+- Settings → Website Prices was read-only for a manager. A manager can now change and
+  save prices exactly as an admin can, and the website picks the change up the same
+  way. Team members, clients and professionals still cannot open the screen or call
+  the API (`PUT /api/pricing/:productKey` now allows `admin, manager`).
+- Tests: `Portal/e2e/pricing.spec.ts` (a manager saves a price through the API and the
+  screen; other roles still 403).
+
+### Refund log; the client dashboard before approval (2026-11-05, #240, #242) ✅ Released in v1.6.0-lt.18
+
+**Refund log (#240).** Admins and managers record a refund under a matter's Payments →
+**Refund History** — reason, refund amount, initiation date, transaction id, status
+(Initiated, Processing, Successfully Credited, Failed) — and move the status on by hand.
+The client name, matter and payment amount come from the matter. A refund of a website
+order that was never approved is recorded on the order (Website Orders → Details), and
+stops it being approved. The client sees their matter's refunds read-only and a fifth
+**Refund** card on the dashboard when they have one. Design in architecture.md, "Refund
+log and the client dashboard before approval".
+- Not built: refund automation. Razorpay's refund API is not connected; the refund is
+  made in Razorpay or at the bank and recorded here.
+- Decision: a refund does not change the payment history. Amount paid stays what was
+  received; the log shows net received beside it.
+- Refund total never exceeds the amount paid (server-checked). Credited needs the
+  transaction id. Credited and Failed are final.
+
+**Client dashboard before approval (#242).** A client who paid on the website and has no
+matter yet sees Payment status, Matter status, Amount paid and Service requests with a
+Pending approval notice, never ₹0 due or progress. After approval the usual four cards
+return on the next refresh. A client with matters sees a "Waiting for approval" list. A
+service cancelled and refunded before approval shows as Refunded with amount, status and
+reason (the open question in #242), and the notice reads "Service cancelled".
+- New endpoint `GET /api/orders/mine` (the client's own orders, from the sign-in).
+- Tests: `backend/src/__tests__/refunds.test.js`, `Portal/e2e/refunds.spec.ts`.
+
+### Additional payment requests with a government fee breakup (2026-11-05, #222)
+
+The firm asked to request more money from a client on a matter — usually government
+fees — with the fees listed one by one, and for the client to pay the total online.
+Design in architecture.md, "Website orders and payments" → "Additional payment requests".
+- In the matter's Payments tab, staff press **Request additional payment**, add fees
+  (name, description, amount), add or remove them, see the total and send. Any member of
+  staff can send; team members get a "Payment requests" tab that shows only the
+  requests, never the matter's figures or payment history.
+- The total is always the server's sum of the fees; a total sent by the page is refused.
+  A sent request is added to the matter's total cost, so the amount due includes it.
+  A matter with no total cost cannot be sent a request.
+- The client is told in the portal and by email, sees every fee and the total, and pays
+  with **Pay ₹<total>** through Razorpay. The payment lands in the payment history by
+  itself and the request shows as paid. Pay Now now offers only the rest of the amount due.
+- Admin/manager can cancel an unpaid request (it comes off the total cost) or record it
+  as paid when the client paid some other way. A request is paid once: a second payment
+  for it is not added, and admins/managers are told.
+- No GST is added: the fees are charged as entered.
+- Open: a request paid by hand while the client has a Razorpay checkout open leaves that
+  payment, if completed, unapplied (staff are told, to refund it). Editing the total cost
+  by hand afterwards can remove a request's amount from it; the firm should change fees
+  by cancelling and re-sending the request.
+- Tests: `backend/src/__tests__/paymentRequests.test.js`,
+  `Portal/e2e/payment-requests.spec.ts`.
+
+### Website cart: several services, one payment (2026-11-05, #244) ✅ Released in v1.6.0-lt.18
+
+The firm asked for an Add to Cart on the website: choose several services, review them, and
+pay for all of them in one checkout. Design in architecture.md, "Website orders and
+payments" → "Cart".
+- "Add to Cart" sits beside "Proceed to Checkout" on a plan's summary, on every service
+  page. A cart icon with a count is in the header; `/cart` lists each service with a plan
+  picker, Remove, and the price, GST and total, and "Checkout — pay ₹…" opens the usual
+  checkout for the whole cart.
+- One plan per service (the plans are tiers; picking another swaps it), no quantity, at
+  most 10 services. The cart is kept in the browser and emptied once paid. Shown only where
+  online payment is on.
+- The server prices every line from the catalogue; the order total is their sum and is
+  paid once through Razorpay. One approval under Website Orders opens one matter per
+  service; a service with no workflow is left for staff to open by hand. A one-service
+  order is stored and handled exactly as before.
+- The confirmation page, the confirmation email and Website Orders list every service.
+- Tests: `backend/src/__tests__/orderItems.test.js`; `Portal/e2e/orders.spec.ts` (three
+  "#244" tests: server pricing and refusals, one approval opening N matters, a line with
+  no workflow).
+- Open: no Frontend Playwright test for the cart page itself (the website suite only
+  checks that pages render); a cart order cannot be partly refunded — a refund is for the
+  whole order, as before.
+
+### Website cart page opens directly; website builds again (2026-11-06, #244)
+
+- `/cart` had no hosting rewrite, so opening or reloading it went to the home page
+  (only clicking through inside the site worked). Both hosting configs now send `/cart`
+  to the app, like `/payment/result`.
+- Dependabot #235 moved `@vitejs/plugin-react` to 6, which needs vite 8; the site is on
+  vite 7, so `npm ci` failed and so would the next website deploy. Back on 5 until vite 8
+  is its own change.
+
+### Coupon codes at the website checkout (2026-11-06, #256, #257, #260) — E-27 ✅ Released in v1.6.0-lt.19
+
+- Admins and managers create coupon codes under Settings → Coupons: a percentage or a fixed
+  amount; for every service, for chosen services only, or for orders above an amount; usable
+  once (by one payment, then off for everyone) or between two dates (7 days, 30 days or chosen
+  dates, India time). They switch codes on and off and can delete one nobody has used.
+- At checkout on the website the client types a code; the server checks it and shows the
+  original price, the discount, the GST and the total, and the order is charged that. The
+  discount comes off before GST. A code that does not fit says why in words, and the client
+  can always pay without it.
+- A one-time code is held by the checkout that applied it for 30 minutes, and used up when
+  that order is paid — inside the same transaction that marks it paid, so it counts once.
+- Reports → Coupon & Discount lists every use with its own figures, uses per coupon, a date
+  filter and CSV. Website Orders, the payment result page and the confirmation email show the
+  discount.
+- Tests: `backend/src/__tests__/coupons.test.js`; `Portal/e2e/coupons.spec.ts`,
+  `auth-rbac.spec.ts`; `Frontend/tests/e2e/cart.spec.js`.
+- Open: no browser test of the website checkout's coupon field (needs a signed-in website
+  session); a payment held for review does not use up its code.
+
+### Trademark user type: Proposed to be Used or Prior User (2026-11-06, #221) — E24-S07 🔄 On QA
+
+- The trademark page asks "Proposed to be Used" or "Prior User" above its four plans. Prior User
+  adds ₹2,500 (the firm can change it under Website Prices) to every plan at once, before GST.
+- 7 Nov (owner): the page starts on **Proposed to be Used**, so Buy Now goes straight to checkout;
+  the hint under Prior User says what the surcharge pays for ("Includes preparing your user
+  affidavit and evidence of use" — the affidavit rule 25 of the Trade Marks Rules, 2017 requires
+  when earlier use is claimed). The default applies only while the catalogue still offers that
+  answer; otherwise nothing is chosen and Buy Now asks, as before. A cart line saved without an
+  answer still has to be answered in the cart.
+- The server adds the surcharge from the answer's id; the browser never sends a price. Works for
+  Buy Now, the cart (which keeps and shows the answer) and coupons. Website Orders and the matter
+  opened on approval show the user type.
+- Catalogue: a generic one-question `choice` on a product (`pricing.service.js`); the question is
+  in `scripts/build-pricing-catalog.py` (`CHOICES`) and `shared/pricing/catalog.json`. Stored
+  products without it are read with the seed's question, so no seed run is needed to deploy;
+  `npm run db:seed:pricing` stores it, keeping any surcharge the firm set.
+- Open: the Elemental badge "★ PROPOSED-TO-BE-USED" and the answer hints need the firm's sign-off.
+
+### Technology Services: Request Portfolio instead of View Portfolio (2026-11-10, #243) 🔄 On QA
+
+The firm does not want the Technology Services page to send visitors to infynialabs.com for the
+portfolio (#243). The page's "View Portfolio ↗" button opened `infynialabs.com/#work` in a new tab.
+
+- The button is now **Request Portfolio** and opens the existing consultation form in a popup
+  (title "Request Portfolio", button "Request Portfolio"). The lead is recorded like any other from
+  this page (`source: technology-services`) but its subject and message start with
+  "Portfolio request", so staff see what was asked for.
+- Two other places on the page pointed visitors at the same portfolio: the note's "portfolio" link
+  now reads "request the portfolio" and opens the same form; the FAQ "Where can I see Infynia
+  Labs' past work?" now says to use the Request Portfolio button. The plain `infynialabs.com`
+  credit link in the note, and the footer's "Developed by … InfyniaLabs" credit, are unchanged.
+- `ConsultationForm` / `ConsultationModal` gained two optional props, `request` and
+  `submitLabel`; every other use is unchanged.
+- `tests/e2e/technology-services.spec.js`: the old "portfolio opens in a new tab" test is replaced
+  by two that open the form, submit it (intercepted) and check the lead and that no tab opens.
+  Not fixed here, failing before this change too: "the menu item is not bold" in the same spec,
+  and two lint errors in its header (`document`, `process` globals).
+
+### Unused website components removed (2026-11-06)
+
+- 512 files under `Frontend/src` (old page versions, components no route renders, their
+  images) were not reachable from `src/main.jsx` by any import. They misled work on
+  #221: an old trademark component with a ₹1 price and a hidden Buy Now was mistaken
+  for the live page. Removed.
+- Proof of no change: the website built byte-for-byte identical before and after
+  (`vite build`, `diff -r` of the two outputs is empty).
+- **Kept on purpose:** the CSS files of the removed components (`src/Components/*/*.css`),
+  because `scripts/theme/fanout.py` groups every component stylesheet to generate
+  `src/theme/families.css`, and some live classes get their Theme C rule only through a
+  group a dead stylesheet belongs to. Dropping them and regenerating would restyle live
+  pages. `src/theme/ref/`, and `src/data/urlMap.js` (the #175 URL record), stay too.
+- Not user-visible.
+
+### Completed matters stay listed; Clients list and renamed clients (2026-11-10, #275, #277) ✅ Merged (PR #283), on QA
+
+**#275 — completed matters disappeared from the Matters list.** The Matters page asked
+`GET /api/tasks` for one page — the 25 most recently updated matters — and filtered that
+in the browser. A completed matter dropped off once 25 others were touched after it, and
+"Status: Completed" found only those still in the first page. The admin dashboard's
+"Awaiting approval" and "Active" counts were taken from the same 25 rows.
+
+- The Portal now reads every page (`fetchAllPages`, `getTasks()`); the background
+  refresh is 60 s instead of 15 s. The list opens filtered when reached by a dashboard
+  link (`/tasks?status=completed`), which it ignored before.
+- Same for every staff role: admin and manager used the paged query; team members,
+  clients and professionals already got everything in one response.
+- `scripts/backfillTaskUpdatedAt.mjs` (dry run by default): an ordered query leaves out a
+  matter with no `updatedAt`. QA dry run: 5 matters, all fine. Not run on production.
+
+**#277 — new clients missing from the Clients list; a rename did not reach matters.**
+- The Clients page read one page of 100 clients, ordered attention-first then by name, and
+  never the next — a new client (no attention signals) late in the alphabet was not on it
+  once the firm had over 100 clients. It now reads every page (`/api/clients` allows 500
+  per page). Saving a client also refreshes the cached Clients list, which was cached for
+  30 s and not told about a new client.
+- `clientName` on a matter is a copy made at creation and was never refreshed. A client's
+  name change (staff edit, the client's own profile, re-adding an existing client) now
+  rewrites it on all their matters (`services/clientName.service.js`); `updatedAt` is not
+  touched. Matters where they are only an additional contact (#188) keep their owner's
+  name. Refunds, website orders and sent notifications keep the name of the time.
+- `scripts/syncClientNamesOnMatters.mjs` repairs matters renamed before this (dry run by
+  default). QA dry run: 0 to update, 4 already right, 1 matter with no client profile.
+  Not run on production.
+
+Tests: `backend/src/__tests__/clientName.test.js`; Playwright
+`Portal/e2e/matters-and-clients-lists.spec.ts`. User-visible: yes (lists, names).
+
+**Follow-up found before release (2026-11-10): sign-in wrote the email over a client's name.**
+Previewing the one-off repair on the live database (`syncClientNamesOnMatters.mjs`, dry run)
+showed three clients whose profile name had become their email address. Cause: `POST
+/api/auth/register` runs on EVERY sign-in, the sign-in page sends `fullName: displayName ||
+email`, and an email-and-password account has no displayName — so every such sign-in merged the
+email over the real name (and blank `mobile` / `businessName` / `state` over saved ones). With
+#283's rename sync this would have renamed all of that client's matters to their email on each
+sign-in. Fixed before #283 reached production:
+- `services/signInProfile.js` (`buildSignInProfile`): for an existing user, sign-in fills a field
+  only when the profile has nothing there (for the name: nothing, or only an email) and the value
+  sent is real; a new user is created as before.
+- `clientName.service.js` `clientRealName`: the rename sync and the repair script never take an
+  email or an empty name; such matters keep the name they have.
+- Live preview after the fix: 26 matters would be updated, 25 already right, 4 left alone (the
+  three email-named clients and one matter with no client profile). Not applied yet.
+- Still to repair by hand or by decision: the three live client profiles whose name is now an
+  email address (their real name survives on their matters).
+
+
+### TDS Sheet in Worksheets; dropdown choices staff can edit (2026-11-10, #280) — E18-S10 🔄 In review
+
+The firm asked for its TDS register as a sheet under Worksheets, "following the uploaded Excel format
+… do not copy the GST Sheet columns", with the yellow columns as dropdowns whose values Admin,
+Manager and Team can add, edit and remove. Design in architecture.md, "Worksheets" → "Dropdown
+choices", "Row numbers", "TDS Sheet".
+- **Columns, read from the image attached to the issue, in its order:** Sl. No., Company Name,
+  **Assigned to**, **Checker**, **Client**, TAN NO, USER ID, Traces Password, IT Password, **TDS Data
+  Received**, **Excel Prepared**, **Final Excel Mail to Client**, **Challan paid by client**, SALARY
+  (Form 138) FILING DATE, NON-SALARY (form 140) FILING DATE, SALARY (Form 138) PR NO, NON-SALARY (form
+  140) PR NO, STATEMENT STATUS 26Q (Form 140), STATEMENT STATUS 24Q (Form 138). Bold = yellow in the
+  file = dropdown. The two filing dates are date columns; everything else is text.
+- **Sl. No.** is the row number of the sheet as shown (after filters, search and sort), also in the
+  download; it is not stored, and an upload skips it.
+- **Dropdowns:** Assigned to, Checker and Client start empty — the firm adds its people and clients
+  under **Edit dropdowns**; the four status columns start Yes / No. Edit dropdowns works on every
+  dropdown column of every worksheet and Trademark Report, for admins, managers and team members.
+  A choice that is renamed or removed stays on the rows that already hold it.
+- **Upload** matches rows by TAN NO (one row per TAN). The image's PR numbers display as
+  "75230960006822400%" — an Excel percentage format on a 15-digit number; the upload reads the number
+  and keeps it whole as text.
+- **Open questions for the firm:**
+  - "Form 138" / "form 140" are kept exactly as in the file; are they Form 24Q (salary) and 26Q
+    (non-salary)? The upload accepts either spelling.
+  - One row per TAN: if the firm keeps a separate sheet per quarter, a Quarter column (and TAN +
+    Quarter as the key) is needed — otherwise uploading Q2 updates the Q1 rows.
+  - Traces and IT passwords are stored as plain text visible to every admin, manager and team member,
+    as in the firm's Excel file. The GST Sheet left them out deliberately (#217). Should they be
+    masked or restricted?
+  - Should "Assigned to" / "Checker" list the portal's staff automatically instead of a typed list?
+- Tests: `backend/src/__tests__/worksheetEngine.test.js` (5 new); `Portal/e2e/worksheets.spec.ts`
+  (columns and buttons; a team member adds a choice and uses it in a new record; upload in the firm's
+  layout; clients refused, non-dropdown column refused). Run locally against QA on 2026-11-10: worksheets.spec 13/13 passed.
+
+### TDS Sheet: Assigned to and Checker list the portal's staff (2026-11-19, #280) — E18-S10 🔄 In review
+
+The firm answered the four questions on 11 Nov: (1) "Form 138" / "form 140" are correct — no change;
+(2) one row per TAN — already how the upload works (key `tan`), no change; (3) the Traces / IT
+password columns stay visible to Admin, Manager and Team — no change; (4) **Assigned to** and
+**Checker** should list the portal's staff automatically. Only (4) is code. Design in
+architecture.md, "Worksheets" → "Staff columns".
+- New field type **`staff`**. Assigned to and Checker are `staff` columns: the picker lists the
+  active admins, managers and team members by name (never clients or professionals; seeded e2e
+  accounts are hidden outside test runs). The row stores the person's **uid**; the grid, search,
+  filters, sort and Download Excel show the **name**. A deactivated colleague still shows by name on
+  the rows that hold them, but is not offered for new picks.
+- **Edit dropdowns** no longer lists these two columns (`PUT …/options/assigned_to` → 400 "not a
+  dropdown column"). The firm's typed list for them (`optionOverrides.assigned_to/checker` on live)
+  is left in the config and ignored.
+- **Existing rows on live keep what they hold.** A name typed before this change is not a uid; it
+  shows as written (and filters together with the same person's picked rows, since both read as the
+  same name). Picking the person on the row, or uploading the sheet again, turns it into the person.
+  No data migration.
+- **Upload:** a cell is matched to a person by display name (case and spacing ignored) or email;
+  active staff first, then former staff. A cell that matches nobody — or two people of the same
+  name — is **kept as written** and listed in the preview's "cells were kept as written" warnings,
+  the same way untidy dates are. Download → upload round-trips (the download writes names).
+- **Manual edits** must pick an active staff member (`400 Pick a person from the "Assigned to"
+  list.`); clearing is allowed.
+- The GST Return Filing sheet's **Assign Person** is unchanged: the matter sync writes the matter's
+  assignee there as a name, so making it a staff column is a separate change, not the same mechanism.
+- Tests: `backend/src/__tests__/worksheetEngine.test.js` (6 new, 3 adjusted to use Client as the
+  editable list); `Portal/e2e/worksheets.spec.ts` (the Edit dropdowns list omits Assigned to /
+  Checker; a team member picks a staff member, the row shows the name and stores the uid; upload
+  matches a name in capitals, keeps an unknown name with a warning; typed name refused by the API;
+  options on Checker refused).
+
+### GST Return Filing sheet under Reports, kept up to date from the GST matters (2026-11-10, #279) — E18-S11 🔄 In review
+
+The firm asked for a GST Return Filing sheet under Reports (not Worksheets), filled automatically
+from the GST workflows, editable by hand, with a Monthly / Quarterly dropdown "similar to the
+Marketing Report section" whose views do not mix. Design in architecture.md, "GST Return Filing
+sheet".
+- **Columns, read from the image attached to the issue, in its order:** Sl. No., GST Return Clients,
+  **CONSTITUTION**, GSTN No, Mail ID for data collection, GST User ID, GST Pswd, Contact No., **Assign
+  Person**, Current Status, **Data Received**, **Tally/ Excel Prepared**, Date of GSTR-1 Filing,
+  **GSTR-1 Filed Mail**, **GSTR_2B Reco Mail to Client**, **Additional Data or Confirmation Received
+  from Client**, **Challan Mail to the client**, **Challan paid by client**, **Annual Working Sheet
+  Update**, Date of GSTR-3B Filing, Completion Check (shaded pink, not yellow — kept as text), Remarks.
+  Bold = yellow = dropdown (Constitution: Company, Partnership, Proprietorship, OPC, LLP, Section 8;
+  Assign Person: empty, the firm adds its people; the rest Yes / No — all editable under Edit
+  dropdowns). We added **Return Period** and **Matter** at the end.
+- **What a row is (decision):** one client's return for one period. The firm's image shows one
+  client per row with per-return status columns, so a register without a period would overwrite
+  last month's status with this month's. Alternative considered: one row per client with the
+  current period's status only (simpler, but the history the firm keeps month by month would be
+  lost). Upload matches rows by GSTN No + Return Period within the view.
+- **From the workflows (decision):** a matter of a linked GST service gives one row; client details
+  from the client's profile; Current Status = the current task; Assign Person = who holds it; each
+  status column = "Yes" (or the date, for the two filing dates) once the task whose NAME says so is
+  completed — e.g. a task named "GSTR-1 filed" fills Date of GSTR-1 Filing; Completion Check = Done
+  when the matter is completed. A workflow without such a task leaves that column to people. The
+  live GST services' task names were not available to us (QA has none) — the name rules are in
+  `gstReturnSheet.service.js` and are listed in the open questions.
+- **Edits vs the workflow (decision): last change wins** per cell. A typed value stays until the
+  workflow changes that cell, then the workflow's value shows. Alternatives: workflow always wins
+  (typed values on derived columns would be lost at the next sync) or typed always wins (then "any
+  updates made to workflow data should automatically reflect" would fail for edited cells).
+- **Monthly vs Quarterly:** from the matter's GST period (#219), else its service, else the client's
+  GST return setting. A record is in one view only; keys, uploads and edits never cross.
+- **When it updates:** each time the sheet is opened (at most every 15 seconds), reading only the
+  matters changed since the last time. A change to the client's profile (new GSTIN) shows once the
+  matter next changes.
+- **Indexes to deploy with the release:** `tasks (serviceKey, updatedAt)`, `worksheetRecords (book,
+  sourceMatterId)`. Without the first, the sheet still works but only re-reads the newest 200 GST
+  matters.
+- **Open questions for the firm:**
+  - Confirm "one row per client per month / quarter". If the firm wants one row per client showing
+    only the current period, the model changes.
+  - Name the tasks of your GST Return Filing services the way the columns read (e.g. "Data received",
+    "Tally / Excel prepared", "GSTR-1 filed", "GSTR-1 filed mail", "GSTR-2B reco mail", "Additional
+    data / confirmation", "Challan mail", "Challan paid", "Annual working sheet", "GSTR-3B filed"), or
+    tell us your names and we map them. Or should each column be mapped to a task in the service
+    settings instead of by name?
+  - Completion Check is shaded differently in the file: should it be a dropdown, or set by the
+    portal only when the matter is completed (as now, plus typing)?
+  - Assign Person: should it list the portal's staff automatically?
+  - GST Pswd is stored as plain text visible to all staff, as in the file — mask or restrict?
+  - Renaming a dropdown choice does not rename it on existing rows — should it?
+- Tests: `backend/src/__tests__/gstReturnSheet.test.js` (13: columns, exclusive keys and uploads,
+  derivation, step-name matching, period and frequency, last change wins);
+  `Portal/e2e/gst-return-filing.spec.ts` (dashboard tile, dropdown and columns; a matter's row
+  follows its workflow and a typed cell yields to the next workflow change; a manual Quarterly row
+  stays out of Monthly and is 404 through it; Constitution choice added by a team member; client,
+  team and validation guards). Run locally against QA on 2026-11-10: 5/5 passed (the new tasks index is not on QA, so the sync used its fallback); trademark-reports.spec 8/8 still pass.
+
+### Matter steps and Chat fixes (2026-11-14, #293, #295, #296, #297) 🔄 In review
+
+**#293 (1) — the team member assigned on a GST matter got no email.** Root cause: a matter
+created with no payment — every GST return matter the #219 sweep opens, every #167
+recurring copy, any matter created as "No payment" — waits in `pending_admin_approval`.
+Creation tells only the admins, and approving it told only the matter's creator (for GST:
+`system:gst-returns`, nobody). The people the first step is assigned to were never told, at
+creation or at approval. A paid matter skips approval and was announced at creation —
+hence "especially matters with no payment".
+- `services/stepAssignmentNotice.service.js`: one "this step is yours" notice, used at
+  creation, at approval (new) and on every move to an internal step.
+- It now reaches every assignee of a shared step (#192); creation and transitions told
+  only the primary assignee.
+- `notify()` skips `system:*` recipients.
+- Not changed: a matter whose first step is the CLIENT's is not announced to the client
+  at approval (the client already got the matter-created / GST email when it opened).
+- Tests: `backend/src/__tests__/stepAssignmentNotice.test.js` (8).
+
+**#296 — payment messages out of the Steps tab (supersedes #293 part 2).** Two things showed
+there: the amber, blinking "Part payment received" banner (client and staff), and the
+payment entry ("Payment received: ₹1000 via UPI. ₹0 remaining of ₹2000.") as the current
+step's "From the previous step" note — which reached team members, who must not see
+figures (#148). Both are gone for everyone; the Payments tab is unchanged. Because #296
+removes them for all roles, #293's "only Admin and Manager" ask is met in the Steps tab.
+- `shared/payments/ledgerEvents.js`: the event types that carry payment figures, used by
+  the Portal and the API.
+- The API also stopped returning those entries in a team member's or professional's
+  activity feed; admins and managers keep them in the history.
+- Tests: `backend/src/__tests__/paymentLedgerEvents.test.js` (4); Playwright
+  `Portal/e2e/payments-not-in-steps.spec.ts`. User-visible: yes.
+
+**#295 — Chat in the mobile app: name, Send button, 5,000 words.**
+- **Rename:** the Portal tab has been "Chat" since 2026-11-05 (v1.6.0-lt.17), everywhere
+  — website and app, because the app renders the Portal. A phone app built before that
+  still shows "Discussion" until the next app build. Portal-wide is the right scope: an
+  app-only name would make the same screen read differently on the website. The last
+  user-visible "discussion" (the load-error message) now says "chat".
+- **Send button:** the Chat card had a 70% height cap and the text box grew without
+  limit, so a long message pushed Send out of the card, where the fixed bottom navigation
+  covered it. Now the thread carries the cap, the text box stops at about a third of the
+  screen and scrolls inside, Send is kept in view while typing, and the bottom navigation
+  steps aside while the composer has focus on a phone. Send is a 44px target.
+- **5,000 words:** Chat messages only; step comments and notes stay at 1,000. One copy of
+  the numbers in `shared/richText/limits.js`, read by the API and the editor. A message's
+  edit history is trimmed oldest-first so a long, often-edited message stays under
+  Firestore's document limit.
+- Tests: `backend/src/__tests__/richTextWordLimit.test.js` (+4),
+  `chatMessages.test.js` (3); Playwright `discussion.spec.ts` (+2, a 390px phone screen),
+  `comment-editor.spec.ts` (5,000-word boundary). User-visible: yes.
+- Not verified on a device: the Playwright check uses a 390x520 browser window to stand
+  in for a phone with its keyboard open.
+
+**#297 — Chat edits are announced; only the author can edit; darker sent bubble.**
+- An edit is announced exactly like a new message, through one shared path
+  (`services/chatMessageNotify.service.js`): a staff edit of a message the client can see
+  emails the client (and the matter's CC addresses); a client's edit emails the matter's
+  owner and the people on its current step, or the admins. The email says the message was
+  edited and carries the new text — two new editable templates, "Client — Chat message
+  edited" and "Internal — A client edited a message". An internal staff note tells only
+  colleagues @mentioned for the first time. One bell notification and one email per
+  person; an unchanged save sends nothing (checked in a transaction).
+- **Bug fixed:** staff, admins included, could edit a client's message (the 2026-11-05
+  rule let an admin edit anyone's). Edit is now the author's only — the Edit icon shows
+  only on your own messages and the API refuses anything else with 403, judged from the
+  signed-in user, not the request. **Decision:** an admin can still DELETE any message as
+  moderation; the issue asked only about editing. Say if admins should lose that too.
+- Sent bubbles are a darker green (`emerald-100`, visible edge) for contrast on white.
+- Tests: `backend/src/__tests__/chatMessages.test.js` (+9: edit rights, the API check,
+  edit emails for both directions, no internal leak, new-message wording unchanged,
+  templates); `singleEmailPerEvent.test.js` now guards the shared service. Playwright
+  `discussion.spec.ts` (edit notifies once, client edit reaches the owner, edit rights by
+  role, no Edit on a client's bubble, bubble colour). User-visible: yes (emails, Edit
+  icon, colour).
+
+
+### Website cart: quantities per service (2026-11-14, #244) 🔄 In review
+
+The firm asked (2026-11-12) for + and − on each cart line, Flipkart-style, so a client can
+buy several units of one service — "3 Trademark Registrations" — without going back to the
+service page. Design in architecture.md, "Website orders and payments" → "Cart" →
+"Quantities".
+- Each cart line has − / quantity / +. − stops at 1 (Remove takes the line out); + stops at
+  **10 of a service** and **20 services in all** (the server refuses more, too). The line
+  shows its total and the unit price ("₹9,499 each"); the summary's price, GST, the cut-price
+  saving and the total follow the quantity. The header count is the number of units.
+- Every unit is a service of its own: the server prices each one from Website Prices
+  (GST per unit, and a coupon's discount spread over the units), and the order total — the
+  figure Razorpay is asked for and every payment is checked against — is their sum.
+- One approval under Website Orders opens **one matter per unit** (3 units → 3 matters),
+  each fully paid with that unit's share; approving again, or Try again, never opens more.
+  A unit whose service has no workflow is listed for staff to open by hand.
+- Website Orders, the confirmation page and the confirmation email show "× 3" and the line
+  total. Carts saved in a browser before this load with 1 of each; orders stored before it
+  are read as 1 of each.
+- Tests: `backend/src/__tests__/cartQuantity.test.js` (caps, pricing, coupons, settlement,
+  one matter per unit, old orders); `Portal/e2e/orders.spec.ts` (two "#244 quantity" tests);
+  `Frontend/tests/e2e/cart.spec.js` (+/−, caps, 360px). Playwright not run by the author.
+- Open: Buy Now on a service page still buys one; quantities are set in the cart. A refund
+  is still for the whole order.
+
+### Convenience fee on online payments: Razorpay Customer Fee Bearer (2026-11-14, #276) 🔄 In review — waits on Razorpay
+
+The firm chose Option 1 (2026-11-12): Razorpay itself works out the convenience fee for the
+payment method the client picks and adds it at checkout, for website orders (cart included)
+and Pay Now / payment requests. Shown to the client only at checkout. Design in
+architecture.md, "Website orders and payments" → "Convenience fee".
+- We never add a fee: our totals and the Razorpay order stay price + GST.
+- A payment settles when its verified amount is the amount due, or the amount due + the fee
+  Razorpay reports for that payment (read from Razorpay's API or the signed webhook, never
+  from the browser; at most 10% of the order, or ₹25 on a small one). Anything else is held
+  for review, as before.
+- The fee is recorded on the order (`convenienceFee`, `convenienceFeeTax`, `gatewayAmount`)
+  and shown to staff under Website Orders as "Convenience fee (paid by client)". The matter
+  is credited the amount due only; client receipts, order history and emails do not show it.
+- **Owner action:** ask Razorpay to enable Customer Fee Bearer on the TEST account (QA) and
+  the LIVE account. Until then nothing changes.
+- Tests: `backend/src/__tests__/convenienceFee.test.js`; Playwright (not run by the author):
+  `Portal/e2e/orders.spec.ts` "#276", `Portal/e2e/pay-now.spec.ts` two "#276" tests, using
+  the simulator's `success_fee` / `fee_webhook` / `fee_mismatch`.
+- Open: Razorpay's docs do not say in so many words that the payment `amount` is order + fee
+  under Customer Fee Bearer, nor whether `fee` is present while a payment is only
+  `authorized` (handled: such a return waits for the webhook). Confirm on the TEST account
+  before LIVE. A full refund in Razorpay also returns the fee; our refund record stays the
+  order's amount.
+
+### Security: CodeQL code-scanning alerts triaged and fixed (2026-11-14) 🔄 In review
+
+CodeQL with `security-extended` (enabled in PR #298) opened 67 alerts on `main`. Branch
+`fix/codeql-alerts` fixes the ones in shipped code; the rest are listed for the owner to
+dismiss on GitHub with a reason. Not user-visible, except: the PDF tools no longer run a
+file name as markup, and the Android app must be signed in again after a phone restore
+(backups are off because the app holds a signed-in session).
+
+- **One linear sanitiser** — `backend/src/utils/sanitize.js` (`stripTags`, `removeDelimited`,
+  `isPlausibleEmail`, `isSafeKey`, `logValue`). Replaces the regex tag stripper in the contact
+  form, leads, Client Database, payment-request, refund, coupon and marketing-column cleaners,
+  and the worksheet engine (ReDoS, incomplete sanitisation).
+- **No request key reaches a prototype** — marketing day values, statutory calendar overrides,
+  worksheet record/dropdown/column edits.
+- **Logs** — request values go in structured fields, single-line (`userService`, `portalUsers`,
+  PayU routes, the Portal's static server).
+- **Android** — `allowBackup="false"` plus data-extraction rules excluding cloud backup and
+  device transfer.
+- **PDF tool pages** — file names set as text; SRI on every CDN script.
+- **Left for later:** `tasks.controller.js` log lines (parallel branches editing the file);
+  pdf.js worker scripts cannot carry SRI (self-host to close).
+- Tests: `backend/src/__tests__/sanitize.test.js` (15).
+### Filing Month and filing dates on GST return matters (2026-11-14, #292, #294) — E18-S12 🔄 In review
+
+The firm asked for a Filing Month tag on GST Return Filing matters (header and All Matters,
+staff and client, only on GST matters — #292) and a "Filed on" date tag on the GSTR-1 filed and
+GSTR-3B filing tasks (#294: "Step 6 – GSTR-1 Filed", "Step 13 – Proceed Towards GSTR-3B Filing").
+Design in architecture.md, "GST tags on the matter".
+- **Which matters / which tasks (decision): the GST Return Filing sheet's rules, reused.** A GST
+  return matter is one the GST reminders opened, or one of a service linked to the sheet. The
+  period is the sheet's Return Period. The two tasks are the ones that fill "Date of GSTR-1 Filing"
+  and "Date of GSTR-3B Filing", found by task NAME (services are editable — no step numbers are
+  assumed; the issue's step 6 and 13 are matched by "GSTR-1 Filed" and "Proceed Towards GSTR-3B
+  Filing"; "… filed mail" tasks are excluded). Changing a task's name in the service, or the
+  sheet's linked services, changes both the sheet and the tags.
+- **"Actual date of successful filing" (decision): the day the task was completed** (India date),
+  as the sheet's date columns already use. Nothing new is stored — the completion time is the
+  record. Alternative considered: a separate stored filing date with an edit box for staff; not
+  built. Consequences to confirm with the firm: if a task is ticked a day after the return was
+  filed, the tag shows the day it was ticked; reopening a filing task removes its date until it is
+  completed again. The sheet's date cell can still be corrected by hand.
+- **Visible where:** the header (Filing Month, then "GSTR-1 filed on …", "GSTR-3B filed on …") and
+  next to each task's name in the step list. The header carries the dates because completed tasks
+  are folded behind "Show completed". The matters list (desktop table and phone cards) shows the
+  Filing Month under the service, and its search finds a matter by month.
+- **Open questions for the firm:** ~~should staff be able to correct the filed date on the matter
+  (e.g. ticked late)?~~ Answered yes by the owner on 2026-11-14 — see the next entry. Should the quarterly tag read "Q2 2026-27" (as now, the sheet's period) or a
+  month range?
+- Tests: `backend/src/__tests__/gstReturnSheet.test.js` (+2: which matters are tagged and their
+  period; Filed on per task, with the issue's names, India date, reopened task);
+  `Portal/e2e/gst-return-filing.spec.ts` (+2: header, step rows, list and client view; a non-GST
+  matter has no tag). Playwright not yet run.
+
+### Correcting a GSTR-1 / GSTR-3B filing date (2026-11-14, #294) — E18-S12 🔄 In review
+
+The owner answered the open question above: staff must be able to correct "Filed on" when the
+filing task was ticked after the real filing. Design in architecture.md, "GST tags on the matter".
+- **Who (decision):** admin and manager on any matter; a team member on a matter they own or hold
+  a task of (the matters their list shows). Never a client or a professional — refused by the route
+  guard and by the handler from the verified token.
+- **Where:** a pencil beside "GSTR-1 filed on" / "GSTR-3B filed on" in the matter's header opens a
+  date picker (the header always shows, while completed tasks are folded in the step list). Only on
+  the two filing tasks, and only once completed.
+- **Range (decision):** a real date, no later than today (India), and no earlier than the 1st of
+  the month after the return's period ended (September → 1 October; Q2 → 1 October) — a return is
+  filed after its period. If the period cannot be told, no earlier than the day the matter opened.
+- **Stored on the task:** the corrected date plus who/when and the date it replaced; the completion
+  time is kept. The matter's history says "GSTR-1 filing date corrected from 12 November 2026 to 11
+  November 2026" (staff only; the client sees just the date). "Use completion date" undoes it.
+- **One source (decision):** the matter's tags and the sheet's Date of GSTR-1 / GSTR-3B Filing read
+  the date through one function. On a sheet row fed by a matter whose filing task is completed,
+  that cell is no longer typed over or overwritten by an upload ("correct it on the matter's filing
+  task"); rows without a matter keep the cell typable, as before.
+- **Reopen (decision):** a correction belongs to the completion it corrected. Reopening the task
+  removes the date; completing it again shows the new completion date, and the old correction is no
+  longer used.
+- Tests: `backend/src/__tests__/gstReturnSheet.test.js` (+5: one source — tag and sheet agree,
+  re-completion; who may — client/professional refused, route guard; validation and range; the
+  history entry; the sheet's matter-owned cell); `Portal/e2e/gst-return-filing.spec.ts` (+1:
+  guards, header correction, step row, history, sheet follows and refuses a typed edit, client view).
+  Playwright not yet run.
+
+### Filing dates entered on the task; a matter updates only its own sheet row (2026-11-19, #294) — E18-S12 🔄 In review
+
+The firm asked (17 Nov) for an **Add Filing Date** option beside the GSTR-1 filed task ("Step 6")
+and the GSTR-3B task ("Step 13"): staff pick and save the actual filing date, then complete the
+task — "do not automatically update the date"; the saved date and every edit to show in the GST
+Return Filing sheet's Date of GSTR-1 / GSTR-3B Filing column; and they reported that the sheet
+updates the wrong record for a matter. Design in architecture.md, "GST tags on the matter".
+- **Manual date (decision):** saved on the filing task once the matter has reached it (in
+  progress or completed), beside the current task and in the matter's header; changeable (pencil)
+  and removable; same range and same who-may as the 14 Nov correction; each save in the history
+  ("GSTR-1 filing date set to … / changed from … to … / removed"). Completing a filing task sets
+  no date.
+- **Completing without a date (decision): allowed.** Blocking the step would stop the workflow
+  for a missing date; instead the task shows no date and "Add Filing Date" stays in the header.
+  The sheet's cell stays blank (and typable) until a date is saved.
+- **Existing matters (decision): nothing visible disappears.** A filing task completed before the
+  release, with no saved date, keeps the date it showed (its completion day or its correction).
+  The cut-off is recorded automatically the first time the new code runs (`system/gstFilingDates`),
+  so no migration script is needed. Saving a date replaces it.
+- **Sync (owner: matter → report only):** the sheet shows the saved date and follows every edit on
+  its next opening; the sheet never writes to a matter, and a matter-fed date cell cannot be typed
+  over or uploaded over.
+- **Wrong record — root cause:** a row was tied to a matter not only by the sync but whenever a
+  person picked a matter in the row's Matter cell, with no check that the matter was for that
+  row's client and period, or that it did not already have a row. The sync then wrote to whichever
+  linked row it read first and, that row never having been synced, overwrote its client, GSTIN,
+  period, statuses and dates with the matter's. Adoption of a typed row (same GSTIN + period)
+  could also take another company's row, because the GSTIN comes from the client's one profile
+  while a client can hold matters for several organisations.
+- **Fix:** the Matter cell only accepts a matter of the row's client and period, of that sheet's
+  kind, with no row yet (otherwise refused, with the reason); every sync keeps only the matter's
+  own row and **releases** any other link (the released row keeps its cells, loses its link, and
+  is never written to again); adoption also checks the client name. Rows damaged before this fix
+  keep the values they were given — staff should check rows the sync released (logged) and delete
+  duplicates.
+- **Not changed (open):** a matter opened BY HAND takes the period that had just ended when it was
+  opened; a matter opened late for an older month still maps to the later month. A period picker
+  on hand-opened GST matters would close this.
+- Tests: `backend/src/__tests__/gstReturnSheet.test.js` — 28 (was 23): manual date shown before /
+  after completion, never from completion; legacy dates; validation incl. a reached-not-completed
+  task and removal; history lines; the sheet follows an edit; row fit; the bug case (another
+  client's row linked by the Matter cell is released, the matter's own row kept, order-independent);
+  link check; source checks of the sync and controller. `Portal/e2e/gst-return-filing.spec.ts`
+  updated: completion sets no date; Add Filing Date beside the current task; add and change from
+  the header; history; sheet follows and refuses a typed edit; the Matter cell refuses another
+  client's row and a second row. Playwright not yet run (to run on QA after merge).
+
+### GST Return Filing sheet: GSTR-1 date shown under GSTR-3B (2026-11-14, #279) — E18-S11 🔄 In review
+
+The firm reported (11 Nov) a GSTR-1 filing date (11 Nov 2026) under "Date of GSTR-3B Filing".
+- **Cause (as far as can be told without the live service):** the date columns took the FIRST task,
+  by step NUMBER, whose name contained "GSTR-3B" and "fil" — a task whose name mentions both forms
+  (e.g. "GSTR-1 filed – proceed towards GSTR-3B filing", or a data task "for GSTR-1 & GSTR-3B
+  filing") filled the GSTR-3B column, and step numbers do not follow the flow once tasks are
+  added later. QA has no GST return service and the live service was not read (repository rule),
+  so the firm's exact task names are unconfirmed — **open: ask the firm for the task list of their
+  GST Return Filing service** (or the owner may allow a read-only look at live).
+- **Fix:** a task fills a form's date only if its name names that form first; data, preparation,
+  reminder and mail tasks never fill a filing date; a task saying "filed" wins over "filing";
+  tasks are taken in the service's order, not by number. The matter's "Filed on" tags (#294)
+  use the same rule. Rows already synced under the old rule correct themselves: the rules version
+  is part of the sync's watermark key, so the next openings re-derive every GST matter (200 per
+  page, 3 pages per opening) and the wrong GSTR-3B cell is cleared or set right (a cell a person
+  typed since is kept, as always).
+- Tests: `gstReturnSheet.test.js` +2 (forms named; dates in their own columns with mixed names
+  and out-of-order step numbers).
+
+### GST return matter opened by hand: first email subject "Company - GST Return - period" (2026-11-14, #219)
+
+The firm asked (11 Nov) that the FIRST email of a GST Return Filing matter be "<Company Name> - GST
+Return - <Month Year>" ("ABC PRIVATE LIMITED - GST Return - September 2026"; quarterly "… - Q2
+2026-27"). Matters opened by the GST reminders already did. A GST matter opened by hand — or a
+duplicate or recurring copy — sent the generic "matter created" email with the subject
+"[Legal Terminus] Org | Service (#id)".
+- **Decision:** such a matter now sends the monthly / quarterly GST email (the firm's data-request
+  text, editable under Email Templates) as its first email, instead of "matter created" — so a
+  hand-opened GST matter behaves like one the reminders opened. Subject sent exactly as the template
+  says, still threaded with the matter. One email, never two. The period and company are worked out
+  by the same rules as the Filing Month tag and the sweep (the matter's organisation first).
+- Note: the firm's quarterly example reads "Q1 2026-27"; the label is the quarter the return is FOR
+  (Q1 = April–June), as the reminders already use.
+- Tests: `backend/src/__tests__/gstFirstEmail.test.js` (4: monthly by hand, quarterly and a copy,
+  another service unchanged, the sweep still suppresses and sends one). Not verified by sending.
+
+### GST Return Filing sheet: Completion Check is a dropdown (2026-11-14, #279) — E18-S11 🔄 In review
+
+The firm asked (11 Nov) for Completion Check in "data validation format". It is now a dropdown
+like the other yellow columns, choices **Done** and **Pending** (editable under Edit dropdowns by
+admin, manager and team member; shared by Monthly and Quarterly). The workflow still writes Done
+when the matter is completed. Values already in the column are kept as they are.
+Tests: `gstReturnSheet.test.js` +1; `gst-return-filing.spec.ts` +1.
+
+### GST Return Filing sheet: Return Period filter (2026-11-14, #279) — E18-S11 🔄 In review
+
+The firm asked (11 Nov) for a period filter "as in the Marketing report".
+- A **Return period** dropdown beside Monthly / Quarterly. Monthly lists "October 2026, September
+  2026, …" (24 months); Quarterly "Q2 26-27 (July–September), Q1 26-27 (April–June), …" (8
+  quarters); the list changes with the view. Any period typed on a row that is not in the list is
+  offered too, and "All periods" shows everything.
+- **Default (decision):** the period being filed now — in November, October 2026 (monthly) and Q2
+  26-27 (quarterly) — the one whose matters the reminders opened on the 1st. A literal "current
+  month" (November) has no rows until 1 December, so it would open on an empty sheet. Open: confirm
+  with the firm.
+- The firm's example "Q1 26-27 (July–September)" mixes two quarters; the filter uses the financial
+  year (Q1 = April–June, Q2 = July–September), as the reminders and Return Period already do.
+- The filter works over the whole loaded sheet (search and column filters apply on top); Download
+  Excel exports what is shown.
+- Tests: `gstReturns.test.js` +1 (options and default); `gst-return-filing.spec.ts` +1; the other
+  GST sheet tests now pick "All periods".
+
+### GST Return Filing sheet: GST portal password — masked, click to log in (2026-11-14, #279) — E18-S11 🔄 In review
+
+The firm asked (11 Nov) that clicking the GST password open the GST portal with the user ID and
+password filled in, as their Google Sheet does; masked by default; editable by admin, manager and
+team.
+- **What was NOT possible:** filling in the GST portal's login form. A web page cannot type into
+  another website (the browser forbids it), and the GST portal's login also needs a captcha. The
+  Apps Script attached to the issue is the mail automation only — it contains no login code.
+- **What was built:** the password shows as ••••••••. Clicking it copies the password, shows the
+  GST user ID, and opens the GST portal's login page in a new tab, ready to paste. The same button
+  is in the record's Edit form (so it works on a phone). Changing it: Edit → GST Pswd (an empty box
+  keeps the saved one).
+- **Protection:** only admin, manager and team member can get or change it — refused for clients
+  and professionals on the server. No list, search or Excel download contains it (Download Excel
+  leaves the column empty); a row's password is fetched only when it is clicked. Existing passwords
+  move out of the visible columns at their first edit or use; nothing is lost.
+- **Scope decision (owner, 2026-11-14):** the first version (#301, QA only, never released) also
+  had Show / Copy buttons, a record of every reveal and encryption at rest. Removed as beyond what
+  the firm asked for (PR "simple GST password"). Not encrypted; no access log. Encryption, an access
+  log and the same treatment for the Traces / IT passwords would be a separate change request.
+- Tests: `backend/src/__tests__/worksheetSecrets.test.js` (7: secret field, stored as typed,
+  kept as typed, migration, lists never include it, guard, no caching or logging);
+  `gst-return-filing.spec.ts` (masked; click copies it and opens the GST portal; client 403).
+
+### Invoices on a matter's Payments tab (2026-11-19, #313) 🔄 In review
+
+The firm asked for invoice upload and download in a matter's Payments section. Design in
+architecture.md, "Invoices on a matter's Payments tab".
+- Admins and managers press **Upload invoice** in the Payments tab and choose a PDF (up to
+  10 MB). A matter can hold several; each is listed with its file name and upload date, and
+  can be **Replaced** (the new file takes its place) or **Deleted** (after a confirmation).
+  Each change is on the matter's activity log.
+- The matter's client sees an **Invoices** card on their Payments tab once one is uploaded,
+  and downloads each invoice. A client asking for another client's matter gets 404.
+- **Decision — team members:** the issue does not mention them. They are refused (no
+  Payments tab, API 403), because a team member must not see payment information (#148).
+  Opening invoices to them read-only is one line on two routes if the firm wants it.
+- Only PDFs: the type is checked on the request, pinned into the upload link, and the
+  file's first bytes are checked before it is accepted.
+- Not built: notifying or emailing the client when an invoice is added (not asked).
+- Tests: `backend/src/__tests__/invoices.test.js` (14), `Portal/e2e/invoices.spec.ts` (8).
+
+
+### Chat: received bubble, drafts kept, images shown at one size (2026-11-19, #297 follow-up, #319) 🔄 In review
+
+**#297 follow-up (2026-11-16 comment) — the firm meant the RECEIVED bubble.** It was
+near-white (`surface-soft`, #f8f9fa — 1.05:1 against the white thread). It is now
+`surface-strong` (#e5e7eb) with a visible edge; the sent bubble is unchanged. On the darker
+grey the name, shared/internal hint and time move to `ink-soft` (8.3:1), and "Read more"
+moves to `brand-700` (5.4:1), so all text stays WCAG AA.
+
+**#297 follow-up — drafts.** The Chat tab unmounts when someone opens another tab of the
+matter, so an unsent message was lost. The new-message box and an edit in progress are now
+kept with the step-comment draft store (`hooks/useCommentDraft.ts`, #83): localStorage,
+keyed per matter (and per message for an edit) AND per signed-in user, so a draft never
+shows on another matter or to another person on a shared computer. It survives tab
+switches and reloads, and goes when it is sent/saved, cancelled, or emptied. The hook used
+to DROP the last keystrokes (still in the 800 ms autosave delay) on unmount; it now writes
+them — step comments benefit too. The "Visible to client" tick is not kept: a restored
+draft is internal until ticked again (#115).
+
+**#319 — images in Chat did not display.** Root cause: `RichText` returned its content bare
+while it fitted and wrapped it in a new `<div>` once it overflowed the "Read more" fold.
+A tall image overflows only after it loads, so its load event flipped the fold, React
+remounted the content node from the stored HTML — where an image never has a src (bytes
+are fetched with the viewer's credentials) — and the hydrate effect did not re-run: a
+broken-image box with "Read more" under it. The wrapper is now always rendered. This also
+affected step comments with tall images.
+- **One display size:** every image in Chat (thread and composer) is shown in a 15rem ×
+  11.25rem box (240 × 180 px; narrower on a small phone), the whole picture fitted inside
+  (`object-fit: contain`). Click still opens the original full size.
+- **Dimension check before sending:** at least **20 × 20 px** and at most **8,000 px** on
+  either side. One copy in `shared/richText/limits.js`; the editor reads the image's size
+  in the browser before uploading and shows a clear error (nothing is uploaded or
+  inserted), and the upload endpoint enforces the same rule from the real bytes (sharp
+  header read) with 422 `IMAGE_DIMENSIONS`. Type (JPEG/PNG/WebP) and 5 MB checks unchanged.
+  20 px (not 50) so a cropped screenshot of one line of text is still accepted; 8,000 px
+  because a 5 MB PNG can claim enormous dimensions that every viewer's browser must decode.
+- Tests: `backend/src/__tests__/commentImages.test.js` (+5: limits, edges, messages, reading
+  PNG/JPEG/WebP sizes, unreadable bytes). Playwright: `discussion.spec.ts` (+5: received
+  bubble colour, draft across tab switch/reload/send, edit draft, fixed image box with
+  decoded images, too-small/too-large refused); `comment-images.spec.ts` (API 422 for
+  out-of-range sizes; a tall image in a step comment still decodes; fixtures are now real
+  64×48 PNGs from `e2e/png.ts`, since a 1×1 pixel is refused). Playwright not run by the
+  author (QA after merge). User-visible: yes.
+
+### Completion email: "Explore more services" block (2026-11-19, #310) — E-07 🔄 In review
+
+The firm asked that the thank-you email a client gets when a service is completed also
+promote the firm's other services, with one common text for every service, editable by
+Admin and Manager in Settings.
+- **The existing email:** the one completion email is the client's "Your service is
+  complete" notification, mirrored to email by `createNotification` from `transitionTask`
+  when the matter reaches `completed` (CC the matter's `ccEmails`, threaded with the
+  matter). It goes to the client already; its wording is unchanged.
+- **What was built:** a block appended below the message and its "View in Portal" button —
+  a heading and a text, seeded with the firm's example (services list, tagline,
+  https://legalterminus.com/). Settings → Email Templates → "Client — Service completed:
+  Explore more services". An on/off switch; auto-saves like the templates; Reset restores
+  the seed text. Bare web addresses become links, "- " lines become bullets.
+- **Off or empty → the email is exactly as before** (asserted byte-for-byte in the unit test).
+- **Who:** admin and manager (`GET/PUT /api/settings/completion-marketing`). A manager now
+  reaches Settings → Email Templates but sees only this block; the other templates stay
+  admin-only (their API still refuses a manager).
+- **No database write needed:** the seed text is a code default merged on read; nothing
+  was written to QA or live. Only the client's completion email carries it — not the
+  matter owner's "Matter completed" notice, not the in-app notification.
+- **Unchanged edge:** if the CLIENT performs the final step themselves, no completion
+  notice is sent at all (existing "don't notify the actor" rule), so no block either.
+- Tests: `backend/src/__tests__/completionMarketing.test.js` (6: default in the email,
+  off/empty unchanged, empty stays empty, no markup injection, schema, only the client's
+  notice); `email-templates.spec.ts` (+4: admin/manager allowed, team/client 403;
+  manager round-trip, tags stripped, 400s; manager UI edit + switch save; admin sees it).
+
+### Several assignees on one step — reopened again (2026-11-19, #192) — E10-S01 🔄 In review
+
+The firm wrote (18 Nov): Step settings do not let them add more than one assignee, and when a
+step has several assignees they cannot complete it. Both were real; the September fixes were
+right in the parts they touched but three other writers undid them.
+- **Cause 1 (both symptoms):** saving a Service from the workflow editor dropped every step's
+  assignee list — the save schema did not list `defaultAssigneeUids`. The step went back to one
+  person, so on new matters the others were not assignees and got no Complete button (and the
+  server refused them).
+- **Cause 2 (symptom 1):** after **Save step settings** on the Service page, the picker showed
+  only the first person (the save response left the list out), and the next change built on
+  that one.
+- **Cause 3 (both):** on a matter, **Step owner** was a single dropdown. It could hold one
+  person, and using it on a shared step removed everyone else — who then could not complete it.
+- **Fix:** the list is kept on save and returned after it; the workflow editor gains **Who does
+  this? → Specific people** (tick several); the matter's **Step owner** becomes a tick-list
+  (admin/manager; changes apply at once; each newly added person is notified). Any one owner
+  completes the step. One rule keeps the two stored fields consistent — see architecture.md.
+  The step-owner endpoint gains a role guard and a strict schema; owners must be staff.
+- **Existing data:** a Service saved in the editor since September has lost its lists — re-tick
+  the people (either screen) and save. Matters already open keep their steps as created; add
+  the missing person with **Step owner** on the matter.
+- Tests: `backend/src/__tests__/stepAssignees.test.js` (6); `step-multi-assignee.spec.ts` +6
+  (save response, editor save keeps the list, editor picker, Step Settings after save, step-owner
+  API incl. client 400 / team 403, add a second owner on the matter screen and that person
+  completes the step).
+
+
+### Quarterly GST matters are quarterly everywhere; the period is in every email subject (2026-11-19, #219 follow-up of 16 Nov) — E-07 🔄 In review
+
+The firm marked it "High – Critical": a GST Return Filing matter created as **Quarterly** still
+showed the monthly format in its Filing Month tag, in its email subject and content, and in the
+GST Return Filing sheet (row in Monthly, a month as Return Period). And only the first email to
+the client carried "<Company> - GST Return - <Month Year | Qn YYYY-YY>"; they asked for it on
+every email about the matter, client and staff alike. Design in architecture.md, "GST return
+reminders (#219)".
+- **Root cause:** the only Monthly / Quarterly a person picks when creating a matter is
+  **Repeats** (#167). The rule that decides a GST matter's frequency (`frequencyOf`) read the
+  sweep's period, the quarterly service key and the client's GST setting — never `recurrence`.
+  A matter on the GST Return Filing service for a client without the Quarterly setting fell
+  through to monthly, and the tag, the first email (template and period) and the sheet row all
+  come from that one rule. A copy of such a matter (one click from the recurring reminder) is
+  not itself recurring, so it would have been monthly even after reading `recurrence`.
+- **Fix:** `frequencyOf` reads, in order, the sweep's period, a frequency frozen on the matter at
+  creation (`gstFrequency`, new), `recurrence`, a quarterly service (key, or key/name saying
+  "quarter"), the client's setting. `createTask` stamps `gstFrequency` on every GST return matter
+  (server-side only; a copy inherits its source's through `duplicateMatterCore`), so changing
+  Repeats or the client's setting later, or the series ending, never turns a quarter back into a
+  month. The tag reads "Filing quarter" for a quarter.
+- **Every subject (decision: one place):** `sendTemplatedEmail` and `sendNotificationEmail` (the
+  two paths every matter email takes, with its matter id) ask `gstEmailSubjectForMatter` first:
+  for a GST return matter the subject is its first email's — the firm's GST template subject,
+  filled for the matter's frequency and period — for client and staff, replacing the usual
+  "[Legal Terminus] Org | Service (#id)". No template was edited, so no doubled period. The first
+  email (and the sweep's) keep their own subject as before.
+- **Existing matters (decision): no migration needed to show correctly.** The frequency is
+  computed on read, and their Repeats still says Quarterly, so tag and emails are right at once;
+  the sheet's rules version moved to 4, so the next opening of the sheet re-derives every GST
+  row — a quarterly matter's row moves to Quarterly with the quarter as Return Period (a value a
+  person typed over yields, last change wins). Optional `backend/scripts/backfill-gst-frequency.js`
+  (report by default, `--write` to apply, refuses the default database unless told) freezes
+  `gstFrequency` on older matters; NOT run on live. A matter whose series has already ended no
+  longer says it was quarterly and is not recovered by anything.
+- Tests: `backend/src/__tests__/gstQuarterlyEverywhere.test.js` (10); `gst-return-filing.spec.ts`
+  (+2: a "Repeats: Quarterly" matter — API frequency, period and subject, the tag on the page, its
+  row in Quarterly and not Monthly, its copy stays quarterly; the run's matter's subject; a
+  non-GST matter has no GST subject). Email delivery is off in E2E, so the subject is checked
+  through the matter's `gstEmailSubject`, the same function the email service calls.
+  User-visible: yes.
+
+### The Odisha landing pages have prices of their own (2026-11-21, #241 follow-up of 19 Nov) — E-24 🔄 In review
+
+The firm asked for the prices of two landing pages to be added to Website Prices:
+Company Registration in Odisha (`/company-registration-consultancy-in-odisha`) and Trademark
+Registration in Odisha (`/trademark-registration-in-odisha`). Decision (21 Nov): **the Odisha
+pages are priced separately from the India pages.** Design in architecture.md, "The price
+catalogue".
+- **Root cause:** the pages already took live prices, but from the INDIA products: their cards
+  checked out as `private-limited` and `trademark-application`. Website Prices had no entry
+  for them (they hid under "…in India"), and a price changed for the India page changed the
+  Odisha page too. A third product, "Company Registration in Odisha" (`company-registration`,
+  `/companyregistration-in-odisha`), has the same page title, so it looked like the right
+  entry and is not.
+- **Fix:** the Odisha cards sell their own products — `private-limited-odisha` (SVC-063, both
+  `/company-registration-consultancy-in-odisha` and `/company-registration-odisha`, which share
+  one set of cards) and `trademark-application-odisha` (SVC-064, with the same Proposed to be
+  Used / Prior User question). Same plans and the same portal service as the India products.
+  They start at the live prices of 21 Nov (Private Limited Enriched ₹9,499, Supreme ₹14,999 —
+  the figures the firm had set; trademark as India), so nothing on the site moves on the day.
+  Under Website Prices they are "Company Registration in Odisha — landing pages" and
+  "Trademark Registration in Odisha — landing page"; the third product is renamed
+  "Company Registration in Odisha — /companyregistration-in-odisha".
+- **Also fixed, typed prices that had drifted:** the company hero said "starting from ₹4,999"
+  (cheapest card ₹5,999) and the trademark terms quoted Enriched ₹2,499, Supreme ₹6,499,
+  Supreme Plus ₹14,999 (cards ₹4,499, ₹11,999, ₹21,999). Both heroes and the terms now read
+  the live prices. Visible change: the hero reads ₹5,999 and the terms match the cards.
+- **To do on each environment: `npm run db:seed:pricing`** (QA with
+  `FIRESTORE_DATABASE_ID=qa-data`; live at the release). Until then the two products are not
+  stored there. The seed only adds them and refreshes the India products' page lists; it never
+  overwrites a price.
+- Not changed: the India pages and their prices; the trademark terms' tier descriptions
+  (only the figures); government fees and other fixed charges in the page text.
+- Tests: `backend/src/__tests__/odishaOwnPrices.test.js` (9), `productChoice.test.js` updated;
+  `Frontend/tests/e2e/odisha-own-prices.spec.js` (5: each Odisha page shows its own prices on
+  the cards, hero and terms; the India pages keep theirs).
+  User-visible: yes.
+
+### The apps: main made ready to test, the BeatMyEMI model (2026-11-21, #268) — E29-S14 🔄 In review
+
+Akash only tests from now on (`docs/mobile-testing.md`); the porting of his branch is done on
+`main`. Taken: the iPhone UI tests (D-5 now must pass), the reload after a website deploy, his QA
+reports. Not taken: the three app folders, the `.qa` app, the bundled Portal, iPad. Aligned with
+BeatMyEMI: the Android build number is worked out from the Releases (never below 8), the Apple Team
+ID is filled in, build 8 on both platforms. Both apps build from `main`. Details in E29-S14.
+User-visible: the apps reload onto a new website version after a minute in the background; nothing
+on the website.
+
+### The Portal starts faster: its files are compressed and cached (2026-11-21, #268) 🔄 In review
+
+Found while testing the apps on production: both apps sat on the splash for a long time, and so
+did the Portal in a browser. Measured on `legalterminus.com/portal/`: the whole Portal is one
+2.46 MB JavaScript file, sent **uncompressed** and with `no-cache, no-store`, so it was downloaded
+in full on every start. The website's own files were fine (brotli, cached a year): Hosting serves
+those itself, while the Portal's come from its Cloud Run service through a rewrite, which Hosting
+does not compress, and the "never cache" rule for pages (`**`) also matched `/portal/assets/**`.
+- `Portal/server.js` compresses responses (`compression`, gzip): 2.46 MB → 699 KB.
+- `firebase.json` and `firebase.qa.json`: `/portal/assets/**` cached for a year (`immutable`), like
+  `/assets/**`. The file names carry a content hash, so a deploy is still picked up at once;
+  `index.html` stays `no-store`.
+- Not done yet: splitting the bundle per screen (routes loaded on demand), which would cut the
+  first start further. A larger change; proposed separately.
+- Checked locally: the real `server.js` on the real build sends `Content-Encoding: gzip`,
+  `Vary: Accept-Encoding`, 698,606 bytes for the main file; `index.html` 200.
+  User-visible: the Portal and both apps open faster; nothing else changes.
+
+### Clients have no Reports; staff reports fit a phone (2026-11-21, #268, iPhone app test) 🔄 In review
+
+Found by the owner testing the iPhone app on production.
+- **Clients have no Reports (owner decision, 21 Nov).** The client's "Reports" menu entry was
+  `/reports/my-services` (#84 reports 12–16). It is removed with its page; its "← Reports" link
+  also led a client to `/reports`, which is staff-only, so "Access denied" and then the sign-in
+  page. The client dashboard's **Amount due** tile now opens My Services (`/tasks`), which shows
+  each matter's payment status and filters by it. The API `GET /api/reports/my-services` is left
+  as it was (client-scoped, server-enforced), with nothing in the Portal calling it.
+- **Staff reports on a phone.** The eight reports built on `DataGrid` had no phone layout, so each
+  was a wide table scrolling sideways. Where a page gives no `renderMobileCard`, `DataGrid` now
+  shows every row as a card below `md`: the first column as the title, the other columns as
+  label/value lines. The desktop table is unchanged.
+- Tests: `auth-rbac.spec.ts` (a client is refused `/reports/my-services`); `reports-84.spec.ts`
+  (at 390px a report shows cards and nothing is wider than the screen). Portal build clean.
+  User-visible: yes.

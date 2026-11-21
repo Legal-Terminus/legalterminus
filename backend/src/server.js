@@ -21,11 +21,16 @@ import authRoutes from "./routes/auth.routes.js";
 import publicAccountRoutes from "./routes/publicAccount.routes.js";
 import pricingRoutes, { publicPricingRouter } from "./routes/pricing.routes.js";
 import ordersRoutes from "./routes/orders.routes.js";
+import couponsRoutes from "./routes/coupons.routes.js";
 import paymentRoutes from "./routes/payment.routes.js";
 import contactRoutes from "./routes/contact.routes.js";
 import tasksRoutes from "./routes/tasks.routes.js";
 import { recurringSweepTrigger, runRecurringSweep } from "./controllers/tasks.controller.js";
+import { gstReturnSweepTrigger, runGstReturnSweep } from "./services/gstReturns.service.js";
+import { timingSafeEqual } from "crypto";
+import { isTestEnvironment } from "./config/testEnvironment.js";
 import { verifyToken } from "./middleware/auth.middleware.js";
+import { isSchedulerCall } from "./services/schedulerAuth.service.js";
 import reportsRoutes from "./routes/reports.routes.js";
 import leadsRoutes from "./routes/leads.routes.js";
 import marketingRoutes from "./routes/marketing.routes.js";
@@ -167,6 +172,8 @@ app.use("/api/pricing", pricingRoutes);
 // E24-S02: website orders and their payment. See routes/orders.routes.js for
 // which two routes are public and why.
 app.use("/api/orders", ordersRoutes);
+// #256: coupon codes and the coupon report — admin and manager only.
+app.use("/api/coupons", couponsRoutes);
 app.use("/api/payment", sensitiveLimiter, paymentRoutes);
 app.use("/api/contact", sensitiveLimiter, contactRoutes);
 // #167: any API traffic may trigger the recurring-matter sweep in the
@@ -176,6 +183,42 @@ app.use("/api/contact", sensitiveLimiter, contactRoutes);
 app.use("/api", recurringSweepTrigger);
 // #217: KYC reminders run the same due-on-read way (own lock, own throttle).
 app.use("/api", worksheetReminderTrigger);
+// #219: GST return matters + emails, the same way (own lock, own throttle).
+app.use("/api", gstReturnSweepTrigger);
+
+/** #219: constant-time comparison for the scheduler secret. */
+const secretMatches = (given, expected) => {
+  if (!expected || typeof given !== "string") return false;
+  const a = Buffer.from(given);
+  const b = Buffer.from(expected);
+  return a.length === b.length && timingSafeEqual(a, b);
+};
+
+// #219: run the GST sweep now — Cloud Scheduler or an admin. The scheduler
+// proves itself with a Google-signed token for its own service account
+// (schedulerAuth.service.js); x-cron-secret is still honoured if one is set.
+app.post("/api/internal/run-gst-returns", async (req, res) => {
+  const bySecret = secretMatches(req.headers["x-cron-secret"], process.env.CRON_SECRET);
+  if (!bySecret && !(await isSchedulerCall(req))) {
+    await new Promise((resolve) => verifyToken(req, res, resolve));
+    if (res.headersSent) return;
+    if (req.user?.role !== "admin") {
+      return res.status(403).json({ success: false, error: "Forbidden" });
+    }
+  }
+  try {
+    // TEST ENVIRONMENTS ONLY (QA, the local test stack): run as if it were
+    // `asOf` (YYYY-MM-DD, India) for one client, so a test can open a period
+    // without waiting for the 1st. Ignored on the live site.
+    const testRun = isTestEnvironment() && req.body?.asOf && /^\d{4}-\d{2}-\d{2}$/.test(String(req.body.asOf));
+    res.json(await runGstReturnSweep(testRun
+      ? { force: true, now: new Date(`${req.body.asOf}T06:30:00.000Z`), onlyClientUid: String(req.body.clientUid ?? '') || null }
+      : { force: true }));
+  } catch (err) {
+    logger.error({ err }, "run-gst-returns failed:");
+    res.status(500).json({ success: false, error: "Sweep failed" });
+  }
+});
 
 // #167: explicit trigger for Cloud Scheduler (x-cron-secret) or an admin "Run
 // now". Mounted OUTSIDE the routers because a Scheduler call carries no Firebase

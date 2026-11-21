@@ -1,0 +1,85 @@
+name: "CodeQL"
+
+# Code scanning for Legal Terminus.
+#
+# REQUIRED: the `main` ruleset requires CodeQL results on every pull request
+# (security alerts: all; other alerts: errors and warnings). This workflow is
+# what produces them, so it runs on every PR to main, on every push to main
+# (the baseline PRs are compared against), and weekly so new CodeQL queries
+# reach code nobody has touched.
+#
+# Languages — chosen from what the repo actually contains:
+#   javascript-typescript  backend/, Portal/, Frontend/, shared/, scripts
+#   java-kotlin            MobileApp/android (MainActivity)
+#   python                 the patch_*.py and _bmad/ scripts
+#   actions                .github/workflows/* themselves
+# Deliberately NOT analysed (both failed under GitHub's template, 2026-11-14):
+#   ruby   no Ruby source exists; the iOS Podfile is not a .rb file.
+#   swift  only two Capacitor boilerplate files (AppDelegate, SceneDelegate),
+#          and Swift needs a real Xcode build with CocoaPods installed — 8
+#          minutes on a macOS runner per PR to scan code nobody writes. Add it
+#          back with a manual build step if the iOS app grows real Swift.
+#
+# All four languages use build-mode: none (no compile needed).
+#
+# Actions are pinned to full commit SHAs, like every other workflow here.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: "41 6 * * 5" # Fridays 06:41 UTC
+  workflow_dispatch:
+
+# A newer push to the same PR makes the older scan pointless.
+concurrency:
+  group: codeql-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  analyze:
+    name: Analyze (${{ matrix.language }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      security-events: write # upload results
+      packages: read         # CodeQL query packs
+      actions: read
+      contents: read
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [actions, java-kotlin, javascript-typescript, python]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: none
+          # The default suite plus the extended security queries: more real
+          # findings for a web app handling payments and client documents.
+          queries: security-extended
+          # Generated, vendored and test-only code is not ours to fix.
+          config: |
+            paths-ignore:
+              - "**/node_modules/**"
+              - "**/dist/**"
+              - "**/build/**"
+              - "Portal/public/docs/**"
+              - "MobileApp/android/app/src/androidTest/**"
+              - "MobileApp/android/app/src/test/**"
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
+        with:
+          category: "/language:${{ matrix.language }}"

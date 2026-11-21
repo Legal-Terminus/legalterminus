@@ -8,7 +8,7 @@ import { loadPhaseAssignments } from './workflowDefinitions.controller.js';
 import { createNotification, resolveNotificationsForTask } from './notifications.controller.js';
 import { finalizeMatterDocuments } from './documents.controller.js';
 import { publicSiteUrl, sendTemplatedEmail } from '../services/emailService.js';
-import { renderTemplate } from '../services/emailTemplates.service.js';
+import { renderTemplate, completionMarketingBlock } from '../services/emailTemplates.service.js';
 import { prepareRichText, richTextToPlain } from '../services/richText.service.js';
 import { resolveCommentImages, shareCommentImages } from '../services/commentImages.service.js';
 import { compileDefinition } from '../../../shared/workflows/compileDefinition.js';
@@ -18,6 +18,18 @@ import { evaluateCondition, describeSkipReason } from '../../../shared/workflows
 import { deriveProfile } from '../services/clientProfile.service.js';
 import { deriveRollup, sumLedger, openingBalanceRow, creationPaymentRow } from '../services/paymentLedger.service.js';
 import { getOverrides, makeStatutoryResolver } from '../services/statutoryCalendar.service.js';
+import { clientDisplayName } from '../services/clientName.service.js';
+import { logValue } from '../utils/sanitize.js';
+import { announceStepAssignment } from '../services/stepAssignmentNotice.service.js';
+import { stepAssigneeList, requestedStepOwners, assertStaffOwners } from '../services/stepAssignees.service.js';
+import { STAFF_ROLES } from '../config/roles.js';
+import { isPaymentLedgerEvent } from '../../../shared/payments/ledgerEvents.js';
+
+// #148: the roles that may see a matter's payment figures.
+const PAYMENT_VIEW_ROLES = ['admin', 'manager'];
+import { annotateGstMatter, attachGstFilingPeriods, gstFirstEmailFor, gstFrequencyOf, gstReturnServiceKeys } from '../services/gstMatterTags.service.js';
+import { isGstReturnMatter, frequencyOf } from '../services/gstReturnSheet.service.js';
+import { emailVars as gstEmailVars } from '../services/gstReturns.service.js';
 
 // ─── ETA / due-date helpers (E13-S02) ──────────────────────────────────────
 // Add `days` (may be fractional) to an ISO instant, returning an ISO string.
@@ -169,14 +181,21 @@ async function attachClientContacts(rows) {
 // Fire-and-forget in-app notification. NEVER let a notification failure break the
 // workflow action that triggered it — we log and move on. Skips self-notification
 // (don't ping someone for their own action) and empty recipients.
-async function notify({ recipientUid, actorUid, type = 'info', title, message, taskId, stepNumber }) {
+async function notify({ recipientUid, actorUid, type = 'info', title, message, taskId, stepNumber, emailAppendix }) {
   try {
     if (!recipientUid || recipientUid === actorUid) return;
-    await createNotification({ recipientUid, type, title, message, taskId, stepNumber });
+    // #293: a system actor (`system:gst-returns`) is recorded as a matter's
+    // creator but is nobody's inbox — "Matter approved" to it was a dead write.
+    if (String(recipientUid).startsWith('system:')) return;
+    await createNotification({ recipientUid, type, title, message, taskId, stepNumber, emailAppendix });
   } catch (err) {
     logger.warn({ err: err?.message }, 'notify: failed to create notification');
   }
 }
+
+// #293: the "step is now yours" notice — creation, approval and transitions all
+// go through announceStepAssignment so the three can never drift apart again.
+const assignmentNoticeDeps = { createNotification, renderTemplate, logger };
 
 // All admin UIDs — recipients for "needs approval" notifications. Best-effort.
 async function adminUids() {
@@ -200,7 +219,8 @@ async function adminUids() {
 // masks comments that aren't client-visible (fail closed), but the raw remark on
 // the step record bypassed that — so it must never reach the client either. The
 // client sees a comment only via the (filtered) event feed.
-const CLIENT_STEP_HIDDEN = ['assignedTo', 'assignedToUids', 'assignedRole', 'completedBy', 'isUrgent', 'remark'];
+// #294: filingDate / filedOnCorrection carry who saved a filing date — staff detail; the client sees the date (filedOn).
+const CLIENT_STEP_HIDDEN = ['assignedTo', 'assignedToUids', 'assignedRole', 'completedBy', 'isUrgent', 'remark', 'filedOnCorrection', 'filingDate'];
 
 /**
  * #166 — the client identity a request acts as.
@@ -574,6 +594,10 @@ export async function createTask(req, res) {
     const { clientUid, serviceKey, serviceName, organisation, ccEmails,
             paymentStatus = 'not_paid', totalCost, amountReceived, paymentMode, paymentDescription,
             professionalUid, additionalProfessionalEmails, recurrence, anchorDate } = req.body;
+    // #219: the GST period a matter opened by the GST sweep is for. Set ONLY by
+    // that sweep on the request object it builds — never read from the body, so
+    // no caller can stamp one.
+    const filingPeriod = req.gstFilingPeriod ?? null;
 
     const compiled = await getCompiledForServiceKey(serviceKey);
     if (!compiled) {
@@ -608,7 +632,8 @@ export async function createTask(req, res) {
     const clientDoc = await db.collection('users').doc(clientUid).get();
     if (!clientDoc.exists) return res.status(404).json({ message: 'Client not found' });
     const c = clientDoc.data();
-    const clientName = c.name || c.fullName || c.email || 'Client';
+    // #277: one rule for the name, shared with the rename sync in clientName.service.
+    const clientName = clientDisplayName(c);
 
     // #85: optional handling professional — must be a STAFF user (never a client).
     // Snapshot the name for display/exports; store the UID as the stable ref.
@@ -652,9 +677,11 @@ export async function createTask(req, res) {
     // collection-group index are untouched) and `assignedToUids` carries everyone.
     // The sentinel resolves per-entry, so a mixed client+staff list still works.
     const assigneesForStep = (s) => {
-      const list = Array.isArray(s.defaultAssigneeUids) ? s.defaultAssigneeUids.filter(Boolean) : [];
+      // stepAssigneeList ignores a list that disagrees with the primary (written
+      // by a screen that only knew the single field), so that edit wins.
+      const list = stepAssigneeList(s);
       const resolved = [...new Set(list.map((u) => (u === CLIENT_ASSIGNEE ? clientUid : u)))];
-      if (resolved.length) return resolved;
+      if (resolved.length > 1) return resolved;
       const single = assigneeForStep(s);
       return single ? [single] : [];
     };
@@ -730,11 +757,14 @@ export async function createTask(req, res) {
       nowIso: now,
       matterStart: now,
       anchorDate: anchorDate ?? null,
-      resolveStatutory: (key) => statutoryResolver(key, { anchorDate: anchorDate ?? null }),
+      // #219: a GST matter's due dates come from its PERIOD (opened on 1 Oct for
+      // September, so GSTR-1 is due 11 Oct), not from the day it was created.
+      resolveStatutory: (key) => statutoryResolver(key, { anchorDate: anchorDate ?? null, month: filingPeriod?.month }),
     });
     const matterDueAt = needsApproval ? null : projectMatterDueAt(stepDefs, resolvedFirstStep, now);
 
     const task = {
+      ...(filingPeriod ? { filingPeriod } : {}),
       // Workflow identity: definition + pinned version (NOT the service key).
       workflowDefinitionId: definition.id,
       workflowVersion: definition.version ?? 1,
@@ -781,6 +811,15 @@ export async function createTask(req, res) {
       updatedAt: now,
       createdBy: req.user.uid ?? null,
     };
+    // #219 (firm, 16 Nov): a GST return matter keeps the frequency it was created
+    // with — "Repeats: Quarterly" (or a quarterly service, or the client's setting),
+    // or for a copy the frequency of the matter it copies (`req.gstFrequency`, set
+    // only by duplicateMatterCore, never from the body). Frozen here so the tag,
+    // every email subject and the sheet row keep saying the same period even after
+    // the client's setting or the matter's "Repeats" changes, or its series ends.
+    if (!filingPeriod && isGstReturnMatter(task, await gstReturnServiceKeys())) {
+      task.gstFrequency = frequencyOf({ ...task, gstFrequency: req.gstFrequency ?? null }, c);
+    }
 
     // Atomically create the task doc + its step subcollection.
     const ref = db.collection('tasks').doc();
@@ -870,26 +909,30 @@ export async function createTask(req, res) {
         await notify({ recipientUid: firstAssignee, actorUid: req.user.uid, type: 'info', title, message, taskId: ref.id });
       } else {
         // #109: internal "step assigned" copy from the editable template.
-        const t = await renderTemplate('step_assigned', {
-          clientName, serviceName: task.serviceName,
-          stepName: firstStepDef?.title ?? `Step ${resolvedFirstStep}`,
-        });
-        await notify({
-          recipientUid: firstAssignee, actorUid: req.user.uid, type: 'info',
-          title: t?.subject || 'New step assigned to you',
-          message: t?.body || `${clientName} · ${task.serviceName}: ${firstStepDef?.title ?? `Step ${resolvedFirstStep}`}`,
-          taskId: ref.id,
-        });
+        // #293: EVERYONE on the first step (#192), not only its primary assignee.
+        await announceStepAssignment(db, {
+          taskId: ref.id, task, stepNumber: resolvedFirstStep,
+          stepTitle: firstStepDef?.title ?? `Step ${resolvedFirstStep}`,
+          step: { assignedTo: assigneesForStep(firstStepDef ?? {})[0] ?? null, assignedToUids: assigneesForStep(firstStepDef ?? {}) },
+          actorUid: req.user.uid,
+        }, assignmentNoticeDeps);
       }
     }
 
     // #108: send the CLIENT a "matter created" confirmation email (editable
     // template). Fire-and-forget; never blocks creation. Uses the matter's
     // organisation + service in the subject.
+    // #219: a GST matter sends its own GST email instead (one email, not two).
     try {
       const clientEmail = c.email || (Array.isArray(c.emailIds) ? c.emailIds[0] : null);
-      if (clientEmail) {
-        const rendered = await renderTemplate('matter_created', {
+      if (clientEmail && !req.suppressCreatedEmail) {
+        // #219 (firm, 11 Nov): a GST return matter opened by hand (or copied) sends
+        // the GST data-request email as its FIRST email — "<Company> - GST Return -
+        // <period>", subject kept exactly, still threaded — instead of "matter
+        // created". One email either way; the sweep's matters never reach here.
+        const gst = await gstFirstEmailFor({ id: ref.id, ...task }, c);
+        const gstRendered = gst ? await renderTemplate(gst.templateKey, await gstEmailVars(gst.client, gst.period)) : null;
+        const rendered = gstRendered ?? await renderTemplate('matter_created', {
           clientName, organisation: task.organisation ?? '', serviceName: task.serviceName,
           portalUrl: `${publicSiteUrl()}/portal/`,
         });
@@ -899,6 +942,7 @@ export async function createTask(req, res) {
             cc: task.ccEmails, // #149: additional recipients for this matter
             subject: rendered.subject, body: rendered.body,
             taskId: ref.id, serviceName: task.serviceName, organisation: task.organisation ?? undefined,
+            keepSubject: !!gstRendered,
           });
         }
       }
@@ -945,12 +989,23 @@ export async function approveTask(req, res) {
     // definition can't be loaded, fall back to no due dates rather than failing.
     let matterDueAt = null;
     let firstDueAt = null;
+    // #293: the first step's definition, kept for the assignment notice below.
+    let firstDef = null;
     try {
       const compiled = await getCompiledById(task.workflowDefinitionId);
       if (compiled) {
         const stepDefs = materialisableSteps(compiled.definition.steps);
-        const firstDef = stepDefs.find((s) => s.stepNumber === task.currentStepNumber);
-        firstDueAt = addDaysIso(now, etaDaysOf(firstDef));
+        firstDef = stepDefs.find((s) => s.stepNumber === task.currentStepNumber) ?? null;
+        // #219: the same resolution creation uses, so a first step due on a
+        // statutory date (a GSTR filing) gets that date — for the matter's own
+        // GST period — instead of only its typical duration.
+        const approvalStatutory = makeStatutoryResolver(await getOverrides(db));
+        firstDueAt = resolveStepDueAt(firstDef, {
+          nowIso: now,
+          matterStart: now,
+          anchorDate: task.anchorDate ?? null,
+          resolveStatutory: (key) => approvalStatutory(key, { anchorDate: task.anchorDate ?? null, month: task.filingPeriod?.month }),
+        });
         matterDueAt = projectMatterDueAt(stepDefs, task.currentStepNumber, now);
       }
     } catch (e) {
@@ -983,6 +1038,19 @@ export async function approveTask(req, res) {
       message: `${task.clientName ?? ''} · ${task.serviceName ?? ''} was approved and is now active.`,
       taskId: req.params.taskId,
     });
+
+    // #293 ROOT CAUSE: approval is when a no-payment matter's first step goes
+    // live, but only the creator was told. The people the step is assigned to
+    // (the GST team member, for every sweep-opened GST matter) never got the
+    // "New step assigned to you" email. Tell them now — the same notice a paid
+    // matter's first step gets at creation. A client step is skipped: the
+    // client was already written to when the matter was opened.
+    await announceStepAssignment(db, {
+      taskId: req.params.taskId, task, stepNumber: task.currentStepNumber,
+      stepTitle: firstDef?.title,
+      clientOwned: firstDef ? deriveOwnerType(firstDef) === 'client' : false,
+      actorUid: req.user.uid,
+    }, assignmentNoticeDeps);
 
     res.json({ success: true, status: 'active' });
   } catch (err) {
@@ -1436,6 +1504,7 @@ export async function listTasks(req, res) {
       await backfillClientNames(rows); // #164
       await attachCurrentStepNames(rows); // #191
       await attachClientContacts(rows); // #201
+      await attachGstFilingPeriods(rows); // #292
       return res.json({ data: rows, nextCursor: null });
     }
 
@@ -1459,6 +1528,7 @@ export async function listTasks(req, res) {
       if (isUrgent === 'true') rows = rows.filter((t) => t.isUrgent === true);
       rows.sort((a, b) => (b.updatedAt ?? '').localeCompare(a.updatedAt ?? ''));
       await backfillClientNames(rows); // #164
+      await attachGstFilingPeriods(rows); // #292: the client sees the Filing Month too
       // E20-S01: the client cockpit needs to know which matters await THEM.
       const projected = await annotateAwaitingClient(rows.map(projectTaskForClient));
       return res.json({ data: projected, nextCursor: null });
@@ -1483,6 +1553,7 @@ export async function listTasks(req, res) {
       if (isUrgent === 'true') rows = rows.filter((r) => r.isUrgent === true);
       rows.sort((a, b) => (b.updatedAt ?? '').localeCompare(a.updatedAt ?? ''));
       await backfillClientNames(rows);
+      await attachGstFilingPeriods(rows); // #292
       // E20-S01: same annotation for the client's own list.
       const projected = await annotateAwaitingClient(rows.map(projectTaskForClient));
       return res.json({ data: projected, nextCursor: null });
@@ -1508,6 +1579,7 @@ export async function listTasks(req, res) {
     if (role === 'client' || role === 'professional') data = data.map(projectTaskForClient);
     else await attachClientContacts(data); // #201: staff only
     await attachCurrentStepNames(data); // #191
+    await attachGstFilingPeriods(data); // #292
     res.json({ data, nextCursor });
   } catch (err) {
     logger.error({ err: err }, 'listTasks error:');
@@ -1739,8 +1811,10 @@ export async function getTask(req, res) {
     // reached. Hidden here so a matter nobody touches again (a completed one)
     // shows the same list as one the engine has since tidied. Best effort:
     // without the service to compare, the list is shown as stored.
+    let definitionSteps = null; // #279: the authored order the GST filing tasks are matched in
     try {
       const compiledForView = await getCompiledById(data.workflowDefinitionId);
+      definitionSteps = compiledForView?.definition?.steps ?? null;
       if (compiledForView) {
         const removed = new Set(removedStepNumbers(steps, compiledForView.definition.steps));
         if (removed.size) steps = steps.filter((s) => !removed.has(s.stepNumber));
@@ -1750,6 +1824,10 @@ export async function getTask(req, res) {
     }
 
     const full = { id: doc.id, ...data, steps };
+    // #292 / #294: Filing Month on a GST return matter, "Filed on" on its GSTR-1 /
+    // GSTR-3B filing tasks. Matched on the INTERNAL task names, so before the
+    // client's projection (which swaps in client-facing names).
+    await annotateGstMatter(full, { definitionSteps });
     // E12-S01: clients get a projection with internal ownership/assignment removed,
     // plus steps the workflow marks as not client-visible (clientVisible === false)
     // are dropped from the client's step list.
@@ -1767,7 +1845,10 @@ export async function getTask(req, res) {
       ...steps.flatMap((s) => [s.assignedTo, ...(s.assignedToUids ?? [])]),
     ]);
     full.assignedToName = data.assignedTo ? (names[data.assignedTo] ?? null) : null;
-    full.steps = steps.map((s) => {
+    // Map over full.steps, not the raw `steps`: annotateGstMatter above has
+    // added `filedOn` to the GSTR-1 / GSTR-3B tasks, and rebuilding from the raw
+    // list dropped it for staff (clients, served earlier, kept it) — #294.
+    full.steps = full.steps.map((s) => {
       const list = Array.isArray(s.assignedToUids) && s.assignedToUids.length
         ? s.assignedToUids
         : (s.assignedTo ? [s.assignedTo] : []);
@@ -1822,6 +1903,14 @@ export async function listTaskEvents(req, res) {
     });
 
     const isClient = req.user.role === 'client';
+
+    // #293 / #296: payment entries carry the matter's figures. Only admins and
+    // managers may see those (#148), but the feed returned them to team members
+    // and professionals too, and the Steps tab showed them as a step's note.
+    // Clients are covered by the whitelist below.
+    if (!isClient && !PAYMENT_VIEW_ROLES.includes(req.user.role)) {
+      events = events.filter((e) => !isPaymentLedgerEvent(e.type));
+    }
 
     // E12-S02: clients get a CLIENT-SAFE feed — internal-only events (assignment,
     // approval gate, override) are dropped, and staff actor names are masked to a
@@ -2065,10 +2154,10 @@ export async function patchTask(req, res) {
 // clobber each other. Admin/manager only; Team never sees payments at all.
 
 /** Thrown inside a ledger transaction to answer with a 4xx instead of a 500. */
-class LedgerError extends Error {
+export class LedgerError extends Error {
   constructor(status, message, code) { super(message); this.status = status; this.code = code; }
 }
-const ledgerErrorBody = (e) => ({ message: e.message, ...(e.code ? { code: e.code } : {}) });
+export const ledgerErrorBody = (e) => ({ message: e.message, ...(e.code ? { code: e.code } : {}) });
 
 /**
  * #202: the ONE path for anything that moves a matter's money — recording,
@@ -2079,16 +2168,20 @@ const ledgerErrorBody = (e) => ({ message: e.message, ...(e.code ? { code: e.cod
  * writers each did their own arithmetic, and two of them were not atomic: the
  * row changed in one write and the rollup in another.
  *
- * `change({ task, rows, now })` mutates `rows` (a Map id → row) in memory and
+ * `change({ task, rows, now, pre })` mutates `rows` (a Map id → row) in memory and
  * returns `{ writes(tx), totalCost?, taskFields?, event(rolled), exceeds(available) }`.
  * It must not read — Firestore requires every read before the first write.
  */
-async function commitLedgerChange(db, taskRef, { uid, role }, change) {
+export async function commitLedgerChange(db, taskRef, { uid, role }, change, { preRead } = {}) {
   return db.runTransaction(async (tx) => {
     const taskSnap = await tx.get(taskRef);
     if (!taskSnap.exists) throw new LedgerError(404, 'Matter not found');
     const task = taskSnap.data();
     const ledger = await tx.get(taskRef.collection('payments'));
+    // #222: a caller that must read one more document in the same transaction
+    // (a payment request it is about to mark paid) does it here — every read
+    // has to come before the first write.
+    const pre = preRead ? await preRead(tx) : undefined;
     const now = new Date().toISOString();
 
     const rows = new Map(ledger.docs.map((d) => [d.id, d.data()]));
@@ -2103,7 +2196,7 @@ async function commitLedgerChange(db, taskRef, { uid, role }, change) {
       }
     }
 
-    const plan = change({ task, rows, now });
+    const plan = change({ task, rows, now, pre });
     const totalCost = plan.totalCost ?? task.totalCost ?? 0;
     const paid = sumLedger([...rows.values()]);
     if (totalCost > 0 && paid > totalCost) {
@@ -2364,16 +2457,21 @@ export async function updatePayment(req, res) {
       const paymentDescription = 'paymentDescription' in req.body
         ? (req.body.paymentDescription || null)
         : (task.paymentDescription ?? null);
+      // #220: Pay Now is on for every matter unless an admin/manager switches it
+      // off here. Stored only when it changes, and audited in the same event.
+      const payNow = 'onlinePaymentEnabled' in req.body ? req.body.onlinePaymentEnabled : undefined;
+      const payNowChanged = payNow !== undefined && payNow !== (task.onlinePaymentEnabled !== false);
       return {
         totalCost,
-        taskFields: { paymentMode, paymentDescription },
+        taskFields: { paymentMode, paymentDescription, ...(payNow !== undefined ? { onlinePaymentEnabled: payNow } : {}) },
         exceeds: () => 'The total cost cannot be less than the amount already paid. '
           + 'Correct or remove a payment in the payment history first.',
         event: (r) => ({
           type: 'PAYMENT_UPDATED',
-          comment: `Payment updated: ₹${r.amountPaid} paid / ₹${r.totalCost} total (${r.paymentStatus.replace('_', ' ')})${paymentMode ? ` · ${paymentMode}` : ''}`,
+          comment: `Payment updated: ₹${r.amountPaid} paid / ₹${r.totalCost} total (${r.paymentStatus.replace('_', ' ')})${paymentMode ? ` · ${paymentMode}` : ''}`
+            + (payNowChanged ? ` · Pay Now ${payNow ? 'switched on' : 'switched off'} for the client` : ''),
         }),
-        result: { paymentMode, paymentDescription },
+        result: { paymentMode, paymentDescription, onlinePaymentEnabled: payNow ?? (task.onlinePaymentEnabled !== false) },
       };
     });
 
@@ -2382,6 +2480,54 @@ export async function updatePayment(req, res) {
     if (err instanceof LedgerError) return res.status(err.status).json(ledgerErrorBody(err));
     logger.error({ err }, 'updatePayment error:');
     res.status(500).json({ message: 'Failed to update payment' });
+  }
+}
+
+/**
+ * #220 Pay Now: add a VERIFIED online payment to a matter's payment history.
+ * Called only by services/orders.service.js once the gateway has confirmed the
+ * money (signed return, signed webhook or a staff check) — never from a request.
+ * Goes through `commitLedgerChange` like every other money change, so the
+ * rollups, the overpayment check and the activity event are the same.
+ *
+ * Idempotent: the ledger row's id is derived from the order, so a second call
+ * for the same order changes nothing and answers `{ already: true }`.
+ * Throws an Error with `code` (e.g. PAYMENT_EXCEEDS_TOTAL) when the payment
+ * cannot be added; the caller keeps the payment and tells staff.
+ */
+export async function creditOnlinePayment(taskId, { orderId, amount, mode, reference, payerUid }) {
+  const taskRef = db.collection('tasks').doc(taskId);
+  const paymentRef = taskRef.collection('payments').doc(`online-${orderId}`);
+  try {
+    const rolled = await commitLedgerChange(db, taskRef, { uid: payerUid ?? null, role: 'client' }, ({ rows, now }) => {
+      if (rows.has(paymentRef.id)) throw new LedgerError(409, 'This payment is already in the payment history.', 'ALREADY_CREDITED');
+      const row = {
+        amount, mode, paidAt: now,
+        reference: reference ?? null,
+        notes: `Paid online by the client with Pay Now (order ${orderId}).`,
+        recordedBy: null, recordedByName: 'Online payment', recordedAt: now,
+        source: 'online_gateway', orderId,
+      };
+      rows.set(paymentRef.id, row);
+      return {
+        delta: amount,
+        writes: (tx) => tx.set(paymentRef, row),
+        taskFields: { paymentMode: mode },
+        exceeds: (left) => `The online payment of ₹${amount} is more than the ₹${Math.max(0, left)} now due on the matter.`,
+        event: (r) => ({
+          type: 'PAYMENT_RECORDED',
+          comment: `Paid online: ₹${amount} with Pay Now (order ${orderId}). ₹${r.amountDue} remaining of ₹${r.totalCost}.`,
+        }),
+      };
+    });
+    emitWebhook(db, 'payment.recorded', {
+      matterId: taskId, paymentId: paymentRef.id, amount, paymentStatus: rolled.paymentStatus,
+    });
+    return { ...rolled, paymentId: paymentRef.id };
+  } catch (err) {
+    if (err instanceof LedgerError && err.code === 'ALREADY_CREDITED') return { already: true, paymentId: paymentRef.id };
+    if (err instanceof LedgerError) throw Object.assign(new Error(err.message), { code: err.code ?? 'LEDGER_REFUSED' });
+    throw err;
   }
 }
 
@@ -2396,7 +2542,8 @@ export async function patchStep(req, res) {
     }
 
     const { taskId, stepId } = req.params;
-    const { isUrgent, assignedTo } = req.body;
+    const { isUrgent } = req.body; // shape validated by stepPatchSchema
+    const owners = requestedStepOwners(req.body);
 
     // Try sub-collection approach first
     const stepRef = db.collection('tasks').doc(taskId).collection('steps').doc(stepId);
@@ -2404,20 +2551,29 @@ export async function patchStep(req, res) {
 
     if (stepDoc.exists) {
       const prev = stepDoc.data();
+      const prevOwners = Array.isArray(prev.assignedToUids) && prev.assignedToUids.length
+        ? prev.assignedToUids
+        : (prev.assignedTo ? [prev.assignedTo] : []);
       const now = new Date().toISOString();
       const update = { updatedAt: now };
       if (isUrgent !== undefined) update.isUrgent = isUrgent;
-      // Assign/unassign this step to a specific staff user. `null`/'' clears it
-      // (back to the shared/unassigned pool). Surfaced in the My Tasks worklist.
-      const reassigning = assignedTo !== undefined && (assignedTo || null) !== (prev.assignedTo ?? null);
-      if (assignedTo !== undefined) {
-        update.assignedTo = assignedTo || null;
-        // #192: keep the multi-assignee list in step with a reassignment. Without
-        // this, reassigning a step would leave the PREVIOUS assignees in
-        // `assignedToUids` — they would keep seeing it in My Tasks and could still
-        // complete it. A per-step reassignment is a deliberate "this is now
-        // theirs", so the list collapses to exactly that person (or empties).
-        update.assignedToUids = assignedTo ? [assignedTo] : [];
+      // Assign/unassign this step. An empty list clears it (back to the shared/
+      // unassigned pool). Surfaced in the My Tasks worklist.
+      // #192 (reopened 2026-11-18): the matter screen could only pick ONE owner -
+      // a single dropdown whose every change collapsed the list to that person -
+      // so a step shared by two people lost one of them the moment anyone touched
+      // it, and that person could no longer complete it. `assignedToUids` now
+      // sets the whole list; `assignedTo` stays the first entry so My Tasks
+      // routing, the matters filter and the steps/assignedTo index keep working.
+      // The list is always rewritten, never merged, so a removed person loses
+      // access instead of keeping it through a stale entry.
+      const added = owners ? owners.filter((u) => !prevOwners.includes(u)) : [];
+      const reassigning = owners !== undefined
+        && (owners.length !== prevOwners.length || added.length > 0 || owners[0] !== prevOwners[0]);
+      if (owners !== undefined) {
+        await assertStaffOwners(db, added, { staffRoles: STAFF_ROLES });
+        update.assignedTo = owners[0] ?? null;
+        update.assignedToUids = owners;
       }
 
       const batch = db.batch();
@@ -2427,16 +2583,11 @@ export async function patchStep(req, res) {
       // change takes effect immediately — no acceptance needed — but is audited so
       // everyone can see who routed the step to whom.
       if (reassigning) {
-        const nameFor = async (u) => {
-          if (!u) return null;
-          const s = await db.collection('users').doc(u).get();
-          const d = s.exists ? s.data() : null;
-          return d ? (d.name || d.fullName || d.email || 'User') : 'User';
-        };
-        const [fromName, toName] = await Promise.all([nameFor(prev.assignedTo), nameFor(update.assignedTo)]);
-        const comment = update.assignedTo
-          ? `Reassigned to ${toName}${prev.assignedTo ? ` (from ${fromName})` : ''}`
-          : `Unassigned${prev.assignedTo ? ` (was ${fromName})` : ''}`;
+        const names = await resolveUserNames([...prevOwners, ...owners]);
+        const list = (uids) => uids.map((u) => names[u] ?? 'User').join(', ');
+        const comment = owners.length
+          ? `Reassigned to ${list(owners)}${prevOwners.length ? ` (from ${list(prevOwners)})` : ''}`
+          : `Unassigned${prevOwners.length ? ` (was ${list(prevOwners)})` : ''}`;
         batch.set(db.collection('tasks').doc(taskId).collection('events').doc(), {
           type: 'STEP_REASSIGNED',
           fromStep: prev.stepNumber ?? parseInt(stepId, 10),
@@ -2449,15 +2600,17 @@ export async function patchStep(req, res) {
       }
       await batch.commit();
 
-      // Notify the new step assignee that work was routed to them (E07-S01).
-      if (reassigning && update.assignedTo) {
+      // Notify each person newly given the step (E07-S01) — not the ones who
+      // already had it, and not the person making the change.
+      const toTell = added.filter((u) => u !== req.user.uid);
+      if (toTell.length) {
         const t = (await db.collection('tasks').doc(taskId).get()).data() ?? {};
-        await notify({
-          recipientUid: update.assignedTo, actorUid: req.user.uid, type: 'info',
+        await Promise.all(toTell.map((recipientUid) => notify({
+          recipientUid, actorUid: req.user.uid, type: 'info',
           title: 'Step assigned to you',
           message: `${t.clientName ?? ''} · ${t.serviceName ?? t.workflowType ?? ''}: ${prev.title ?? `Step ${prev.stepNumber}`}`,
           taskId,
-        });
+        })));
       }
 
       return res.json({ success: true });
@@ -2480,6 +2633,7 @@ export async function patchStep(req, res) {
     await taskRef.update({ steps, updatedAt: new Date().toISOString() });
     res.json({ success: true });
   } catch (err) {
+    if (err && err.status) return res.status(err.status).json({ message: err.message });
     logger.error({ err: err }, 'patchStep error:');
     res.status(500).json({ message: 'Failed to update step' });
   }
@@ -2491,6 +2645,21 @@ export async function patchStep(req, res) {
 // resumes it at the task's current step, applies the event under the engine's
 // guards (payment gates etc.), and persists the resulting state. Invalid moves
 // are rejected. Body: { event: { type, ... } }.
+/**
+ * SEC F-01 (ported from Ambyflow, 2026-11-04): a matter's payment status as the
+ * LEDGER has it — the sum of `tasks/{id}/payments` against the total cost, by the
+ * same rule every ledger write uses (`deriveRollup`). A matter from before the
+ * ledger has no rows; its recorded `amountPaid` is its opening balance, exactly as
+ * `openingBalanceRow` treats it. Never reads a status anyone typed.
+ */
+async function ledgerPaymentStatus(taskRef, task) {
+  const ledger = await taskRef.collection('payments').get();
+  const paid = ledger.empty
+    ? (Number(task?.amountPaid ?? 0) || 0)
+    : sumLedger(ledger.docs.map((d) => d.data()));
+  return deriveRollup(task?.totalCost ?? 0, paid).paymentStatus;
+}
+
 export async function transitionTask(req, res) {
   try {
     const { role, uid } = req.user;
@@ -2611,6 +2780,26 @@ export async function transitionTask(req, res) {
       return res.status(403).json({ message: 'Only an admin can override the payment restriction.' });
     }
 
+    // ── SEC F-01: RECORD_PAYMENT is admin/manager-only and ledger-driven ─────
+    // The payment ledger routes are admin/manager-only, but this event was open
+    // to any team member on the matter AND carried the status to store
+    // (`newStatus`), so one request could mark an unpaid matter fully paid with
+    // no ledger entry. Now only the roles that may write the ledger may fire it,
+    // and the caller's `newStatus` is discarded: the event means "re-evaluate the
+    // gate against the payment history", with the status derived from the ledger.
+    let engineEvent = event;
+    let ledgerStatus = null;
+    if (event?.type === 'RECORD_PAYMENT') {
+      if (role !== 'admin' && role !== 'manager') {
+        return res.status(403).json({
+          message: 'Only an admin or manager can confirm a payment.',
+          code: 'PAYMENT_ROLE_REQUIRED',
+        });
+      }
+      ledgerStatus = await ledgerPaymentStatus(taskRef, task);
+      engineEvent = { ...event, newStatus: ledgerStatus };
+    }
+
     // ── #49: restrict step COMPLETION to the assigned user ───────────────────
     // A step's work-advancing events may only be fired by the active step's
     // assignee. A manager's power over someone else's step is limited to REASSIGN
@@ -2659,7 +2848,7 @@ export async function transitionTask(req, res) {
       taskId,
       clientUid: task.clientUid,
       workflowType: task.workflowDefinitionId,
-      paymentStatus: task.paymentStatus ?? 'not_paid',
+      paymentStatus: ledgerStatus ?? task.paymentStatus ?? 'not_paid',
       currentStepNumber: task.currentStepNumber,
       completedSteps: [],
       activeParallelGroup: null,
@@ -2671,10 +2860,22 @@ export async function transitionTask(req, res) {
     const actor = createActor(resumed, { input: context });
     actor.start();
     const before = String(actor.getSnapshot().value);
-    actor.send(event);
+    actor.send(engineEvent); // SEC F-01: carries the ledger-derived status
     const snap = actor.getSnapshot();
     const after = String(snap.value);
     actor.stop();
+
+    // SEC F-01: the payment history does not satisfy this gate. Say so plainly
+    // and change nothing.
+    if (event?.type === 'RECORD_PAYMENT' && currentDef?.type === 'payment_gate'
+      && snap.context.currentStepNumber === task.currentStepNumber && snap.status !== 'done') {
+      return res.status(409).json({
+        message: currentDef.gate?.requires === 'part_paid'
+          ? 'No payment has been recorded for this matter yet. Record the payment under Payments, then try again.'
+          : 'This matter is not fully paid yet. Record the remaining payment under Payments, then try again.',
+        code: 'PAYMENT_NOT_RECORDED',
+      });
+    }
 
     // No state change AND not a payment event that mutated context → invalid move.
     const ctxChanged =
@@ -2792,7 +2993,7 @@ export async function transitionTask(req, res) {
               nowIso: now,
               matterStart: task.createdAt ?? now,
               anchorDate: task.anchorDate ?? null,
-              resolveStatutory: (key) => transitionStatutory(key, { anchorDate: task.anchorDate ?? null }),
+              resolveStatutory: (key) => transitionStatutory(key, { anchorDate: task.anchorDate ?? null, month: task.filingPeriod?.month }),
             },
           ),
         }
@@ -2951,8 +3152,13 @@ export async function transitionTask(req, res) {
       const ctx = `${task.clientName ?? ''} · ${task.serviceName ?? task.workflowType ?? ''}`;
       if (isComplete) {
         // Matter finished — congratulate the client + tell the matter owner.
+        // #310: the CLIENT's completion email also carries the firm's editable
+        // "Explore more services" block (Settings → Email Templates). Null when
+        // it is switched off or empty, and the email is then exactly as before.
+        // The owner's internal notice never carries it.
+        const completionAppendix = await completionMarketingBlock();
         await notify({ recipientUid: task.clientUid, actorUid: uid, type: 'success',
-          title: 'Your service is complete', message: ctx, taskId });
+          title: 'Your service is complete', message: ctx, taskId, emailAppendix: completionAppendix });
         await notify({ recipientUid: task.assignedTo, actorUid: uid, type: 'success',
           title: 'Matter completed', message: ctx, taskId });
       } else if (newStep !== task.currentStepNumber) {
@@ -2970,9 +3176,8 @@ export async function transitionTask(req, res) {
           await notify({ recipientUid: task.clientUid, actorUid: uid, type: 'info',
             title: promptTitle, message: promptMessage, taskId, stepNumber: newStep });
         } else {
-          // Internal step — notify its assignee (pre-assigned or matter owner).
+          // Internal step — notify its assignees (pre-assigned or matter owner).
           const nextStepSnap = await taskRef.collection('steps').doc(String(newStep)).get();
-          const nextAssignee = nextStepSnap.exists ? nextStepSnap.data().assignedTo : null;
           // #53: client-approval → explicit "proceed" copy.
           // #56: REWORK (form-check reject) → tell the prior-step owner correction
           // is required so they can rectify and resubmit for approval.
@@ -2987,8 +3192,13 @@ export async function transitionTask(req, res) {
             title = 'Correction required';
             message = `Correction required for ${ctx}: ${newDef?.title ?? `Step ${newStep}`}.${comment ? ` Note: ${richTextToPlain(comment)}` : ''} Please review, rectify and resubmit for approval.`;
           }
-          await notify({ recipientUid: nextAssignee || task.assignedTo, actorUid: uid, type: isRework ? 'warning' : 'info',
-            title, message, taskId, stepNumber: newStep });
+          // #293: every assignee of a shared step (#192), not only the primary;
+          // the matter owner when nobody holds it — as before.
+          await announceStepAssignment(db, {
+            taskId, task, stepNumber: newStep,
+            step: nextStepSnap.exists ? nextStepSnap.data() : null,
+            actorUid: uid, type: isRework ? 'warning' : 'info', title, message,
+          }, assignmentNoticeDeps);
         }
         // If the CLIENT just acted, also let the matter owner know they responded.
         if (role === 'client') {
@@ -3084,7 +3294,8 @@ export async function deleteTask(req, res) {
     // NOTE: this list is explicit — a NEW subcollection must be added here too.
     const counts = {};
     // #122 follow-up: + commentImages (the bytes go with the Storage prefix below).
-    for (const sub of ['steps', 'events', 'documents', 'payments', 'commentImages']) {
+    // #313: + invoices (their bytes are under tasks/{taskId}/invoices/, swept below).
+    for (const sub of ['steps', 'events', 'documents', 'payments', 'commentImages', 'invoices']) {
       const subSnap = await taskRef.collection(sub).get();
       counts[sub] = subSnap.size;
       if (subSnap.empty) continue;
@@ -3119,11 +3330,11 @@ export async function deleteTask(req, res) {
       filesDeleted = files.length;
       await Promise.all(files.map((f) => f.delete().catch(() => {})));
     } catch (e) {
-      logger.warn({ err: e?.message }, `[deleteTask] storage cleanup failed for ${taskId}`);
+      logger.warn({ err: e?.message, taskId: logValue(taskId) }, '[deleteTask] storage cleanup failed');
     }
 
     await taskRef.delete();
-    logger.info(`[deleteTask] Matter ${taskId} deleted (steps=${counts.steps}, events=${counts.events}, documents=${counts.documents}, notifications=${counts.notifications}, files=${filesDeleted})`);
+    logger.info({ taskId: logValue(taskId), ...counts, files: filesDeleted }, '[deleteTask] matter deleted');
     res.status(200).json({
       id: taskId, deleted: true,
       stepsDeleted: counts.steps, eventsDeleted: counts.events,
@@ -3252,6 +3463,11 @@ async function duplicateMatterCore(taskId, actorUser) {
       // duplicate never spawns a second competing series.
       paymentStatus: 'not_paid',
     },
+    // #219 (16 Nov): the copy is not recurring, so it cannot say "Quarterly" through
+    // `recurrence` — it inherits the source's GST frequency instead (read only for a
+    // GST return matter, in createTask). Without this the next quarter's copy
+    // showed as a month.
+    gstFrequency: await gstFrequencyOf(src).catch(() => null),
   };
 
   let created = null;

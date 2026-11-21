@@ -9,18 +9,24 @@ import {
   ChevronsLeft, ChevronsRight, MoreVertical, Users,
 } from 'lucide-react';
 import PageShell from '../../components/common/PageShell';
+import { GstMatterTags, FiledOnTag, FilingDateControl } from '../../components/tasks/GstFilingTags';
 import CollapsibleSection from '../../components/common/CollapsibleSection';
 import { useToast } from '../../components/common/toastContext';
 import DocumentsPanel from '../../components/documents/DocumentsPanel';
 import DiscussionPanel from '../../components/messages/DiscussionPanel';
 import SendReminderButton from '../../components/tasks/SendReminderButton';
 import SendInternalReminderButton from '../../components/tasks/SendInternalReminderButton';
+import PeoplePicker from '../../components/common/PeoplePicker';
 import RichTextEditor from '../../components/common/RichTextEditor';
 import RichText from '../../components/common/RichText';
 import { CommentImageTaskContext } from '../../components/common/commentImageContext';
 import { getDocuments, openDocument, type TaskDocument } from '../../api/documents';
 import { useAuthStore } from '../../store/authStore';
-import { getTask, advanceTask, assignStep, assignMatter, getTaskEvents, approveTask, rejectTask, stopTask, restartTask, archiveTask, updatePayment, setMatterProfessional, setMatterOrganisation, setMatterCcEmails, setTaskUrgent, setStepUrgent, reopenStep, updateTask, type WorkflowEventInput, type TaskEvent } from '../../api/tasks';
+import PayNowCard from '../../components/tasks/PayNowCard';
+import RefundHistory from '../../components/payments/RefundHistory';
+import InvoicesCard from '../../components/payments/InvoicesCard';
+import PaymentRequestsCard from '../../components/tasks/PaymentRequestsCard';
+import { getTask, advanceTask, setStepAssignees, assignMatter, getTaskEvents, approveTask, rejectTask, stopTask, restartTask, archiveTask, updatePayment, setMatterProfessional, setMatterOrganisation, setMatterCcEmails, setTaskUrgent, setStepUrgent, reopenStep, updateTask, type WorkflowEventInput, type TaskEvent } from '../../api/tasks';
 import { useConfirm } from '../../components/common/confirmContext';
 import { useCommentDraft, draftSavedLabel } from '../../hooks/useCommentDraft';
 import { useRail, type RailState } from '../../hooks/useResizablePanels';
@@ -33,6 +39,7 @@ import { parseCcEmails, validateCcEmails, formatCcEmails } from '../../lib/ccEma
 import { usePageTitle } from '../../hooks/useDocumentTitle';
 import FormStepPanel from '../../components/tasks/FormStepPanel';
 import { useGoBack } from '../../hooks/useGoBack';
+import { isPaymentLedgerEvent as isPaymentEvent } from '@shared/payments/ledgerEvents.js';
 
 type TabKey = 'steps' | 'documents' | 'payments' | 'discussion';
 
@@ -127,13 +134,33 @@ export default function TaskDetailPage() {
   const professionals = assignableUsers;
 
   const assign = useMutation({
-    mutationFn: ({ stepNumber, assignedTo }: { stepNumber: number; assignedTo: string | null }) =>
-      assignStep(taskId!, stepNumber, assignedTo),
+    // #192: the whole owner list — a step may be shared by several people.
+    mutationFn: ({ stepNumber, assignedToUids }: { stepNumber: number; assignedToUids: string[] }) =>
+      setStepAssignees(taskId!, stepNumber, assignedToUids),
+    // Tick the box at once (the picker reads the step from the cache); the
+    // refetch on settle replaces this with the server's version, and a refusal
+    // rolls it back.
+    onMutate: async ({ stepNumber, assignedToUids }) => {
+      await queryClient.cancelQueries({ queryKey: ['task', taskId] });
+      const previous = queryClient.getQueryData<Task>(['task', taskId]);
+      if (previous?.steps) {
+        queryClient.setQueryData<Task>(['task', taskId], {
+          ...previous,
+          steps: previous.steps.map((s) => (s.stepNumber === stepNumber
+            ? { ...s, assignedToUids, assignedTo: assignedToUids[0] ?? null }
+            : s)),
+        });
+      }
+      return { previous };
+    },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['task', taskId] });
       queryClient.invalidateQueries({ queryKey: ['my-steps'] });
     },
-    onError: (err: Error) => toast.error(err.message || 'Could not assign this step.'),
+    onError: (err: Error, _vars, ctx) => {
+      if (ctx?.previous) queryClient.setQueryData(['task', taskId], ctx.previous);
+      toast.error(err.message || 'Could not assign this step.');
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ['task', taskId] }),
   });
 
   const assignOwner = useMutation({
@@ -387,15 +414,19 @@ export default function TaskDetailPage() {
   // #168: a professional is an outside referrer — the client's fees are not
   // theirs to see, so Payments is hidden for them too.
   const canSeePayments = role !== 'team_member' && role !== 'professional';
+  // #222: a team member may raise additional payment requests, so they get a
+  // "Payment requests" tab — showing ONLY the requests, never the matter's
+  // figures or its payment history (#148 still holds: no "Payments" tab).
+  const canSeePaymentsTab = canSeePayments || role === 'team_member';
 
   const TABS: { key: TabKey; label: string; icon: typeof ListChecks }[] = [
     { key: 'steps', label: 'Steps', icon: ListChecks },
     { key: 'documents', label: 'Documents', icon: FileText },
-    ...(canSeePayments
-      ? [{ key: 'payments' as const, label: 'Payments', icon: IndianRupee }]
+    ...(canSeePaymentsTab
+      ? [{ key: 'payments' as const, label: canSeePayments ? 'Payments' : 'Payment requests', icon: IndianRupee }]
       : []),
     // #123: per-matter discussion thread (client + internal team).
-    { key: 'discussion', label: 'Discussion', icon: MessageSquare },
+    { key: 'discussion', label: 'Chat', icon: MessageSquare },
   ];
 
   return (
@@ -404,6 +435,20 @@ export default function TaskDetailPage() {
     <CommentImageTaskContext.Provider value={taskId ?? null}>
     <PageShell
       title={task.serviceName || task.workflowType}
+      // #292 / #294: a GST return matter's Filing Month and its filing dates, for
+      // staff and client alike (completed tasks are folded away in the list below).
+      titleAddon={(task.gstFilingPeriodLabel || task.gstFilings?.length)
+        ? (
+          <GstMatterTags
+            taskId={task.id}
+            period={task.gstFilingPeriodLabel}
+            filings={task.gstFilings}
+            bounds={task.gstFilingDateBounds}
+            // #294: internal staff add or change a filing date; the server also checks
+            // that a team member works this matter.
+            canCorrect={role === 'admin' || role === 'manager' || role === 'team_member'}
+          />
+        ) : undefined}
       // #118: show the matter's ORGANISATION next to the client name — a client can
       // have several matters under different organisations, so the name alone is
       // ambiguous. Clients see it too (they may hold matters for multiple orgs).
@@ -617,7 +662,7 @@ export default function TaskDetailPage() {
           assignment={canAssign ? {
             staff,
             assigning: assign.isPending,
-            onAssign: (stepNumber, assignedTo) => assign.mutate({ stepNumber, assignedTo }),
+            onAssign: (stepNumber, assignedToUids) => assign.mutate({ stepNumber, assignedToUids }),
             onToggleUrgent: (stepNumber, next) => toggleStepUrgent.mutate({ stepNumber, next }),
             urgentPending: toggleStepUrgent.isPending,
           } : undefined}
@@ -630,8 +675,10 @@ export default function TaskDetailPage() {
         />
       )}
       {tab === 'documents' && <DocumentsPanel taskId={taskId!} isStaff={isStaff} workflowType={task.workflowType} />}
-      {tab === 'discussion' && <DiscussionPanel taskId={taskId!} isStaff={isStaff} />}
-      {tab === 'payments' && <PaymentsTab task={task} canEdit={canAssign} />}
+      {tab === 'discussion' && <DiscussionPanel key={taskId} taskId={taskId!} isStaff={isStaff} /* key: a fresh composer (and its saved draft) per matter */ />}
+      {tab === 'payments' && (role === 'team_member'
+        ? <PaymentRequestsCard task={task} canSend canManage={false} isClient={false} />
+        : <PaymentsTab task={task} canEdit={canAssign} isClient={isClient} />)}
       {/* Matter details (#153 organisation, #149 CC recipients) — admin/manager
           only. Deliberately placed LAST and collapsed by default: anything above
           the step content displaces it, and the #111 reminder picker needs room
@@ -1001,7 +1048,8 @@ function StopMatterBanner({
 interface StepAssignment {
   staff: PortalUser[];
   assigning: boolean;
-  onAssign: (stepNumber: number, assignedTo: string | null) => void;
+  /** #192: the step's full owner list (empty = unassigned); first = primary. */
+  onAssign: (stepNumber: number, assignedToUids: string[]) => void;
   // Urgent toggle for the current step (Issue 3).
   onToggleUrgent: (stepNumber: number, next: boolean) => void;
   urgentPending: boolean;
@@ -1118,8 +1166,12 @@ function StepsTab({
   // and a client's own comment ('You') isn't echoed back to them — but it DOES
   // reach the internal team on the next step.
   const approvalNoteFor = (n: number): { text: string; by: string; at: string | null } | undefined => {
+    // #296 (also #293): a payment entry ("Payment received: ₹1000 via UPI. ₹0
+    // remaining of ₹2000.") is stamped on the current step, so it surfaced here
+    // as the step's "From the previous step" note — to team members too, who
+    // must never see payment figures (#148). Payments live on the Payments tab.
     const relevant = events
-      .filter((e) => e.comment && e.toStep === n && e.byName !== 'You')
+      .filter((e) => e.comment && e.toStep === n && e.byName !== 'You' && !isPaymentEvent(e.type))
       .sort((a, b) => (a.at ?? '').localeCompare(b.at ?? ''));
     const last = relevant[relevant.length - 1];
     return last?.comment ? { text: last.comment, by: last.byName, at: last.at } : undefined;
@@ -1220,6 +1272,7 @@ function StepsTab({
     />
   ) : null;
 
+  const currentFiling = task.gstFilings?.find((f) => f.stepNumber === task.currentStepNumber);
   const hero = !completed && isAdvanceable && currentDef ? (
     <StepHeroPanel
       taskId={task.id} step={currentDef} role={role} pending={pending} turn={currentTurn}
@@ -1233,6 +1286,11 @@ function StepsTab({
       description={descFor(task.currentStepNumber)}
       approvalNote={approvalNoteFor(task.currentStepNumber)}
       fallbackView={!!task.currentStepFallback}
+      // #294 (firm, 17 Nov): on the GSTR-1 / GSTR-3B filing task, staff save the
+      // actual filing date here ("Add Filing Date"), then complete the task.
+      filingSlot={currentFiling ? (
+        <FilingDateControl taskId={task.id} filing={currentFiling} bounds={task.gstFilingDateBounds} canEdit={role.isStaff} />
+      ) : undefined}
     />
   ) : completed ? (
     <div className="card p-5 flex items-center gap-2.5 bg-emerald-50 border-emerald-100">
@@ -1356,33 +1414,11 @@ function StepsTab({
     </div>
   );
 
-  // #54: part-payment alert — a blinking banner shown to BOTH client and team when
-  // only part payment has been received, replacing the old "Part Payment Due" step.
-  //
-  // #124/#117: don't nag from step 1. The balance is chased from a specific point
-  // in the service — the alert starts only once the step carrying the
-  // `REMIND_PART_PAYMENT` effect (the same setting that drives the reminder email,
-  // #76) has been COMPLETED (stakeholder: e.g. after "Name Approval Received").
-  // Workflows with no such step configured keep the previous always-on behaviour.
-  // It stops automatically once the balance is cleared (paymentStatus is no longer
-  // part_paid) — and it never shows for Full/No Payment matters, which are not
-  // `part_paid` in the first place.
-  const partPaymentFromStep = stepDefs.find((s) => (s.effects ?? []).includes('REMIND_PART_PAYMENT'))?.stepNumber;
-  const partPaymentDue = partPaymentFromStep == null
-    || allSteps.find((s) => s.stepNumber === partPaymentFromStep)?.status === 'completed';
-  const partPaymentAlert = !completed && task.paymentStatus === 'part_paid' && partPaymentDue && (
-    <div className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 flex items-start gap-2.5 animate-pulse">
-      <CreditCard className="w-4 h-4 text-amber-600 mt-0.5 shrink-0" />
-      <div className="min-w-0">
-        <p className="text-sm font-semibold text-amber-900">Part payment received</p>
-        <p className="text-sm text-amber-800">
-          {role.isClient
-            ? 'Please make the remaining payment for completion and uploading of the final e-forms for company incorporation.'
-            : `Only part payment received${task.amountDue ? ` — ₹${task.amountDue} due` : ''}. Follow up with the client for the balance.`}
-        </p>
-      </div>
-    </div>
-  );
+  // #296: the amber, blinking part-payment banner (#54, with its #124/#117
+  // "start from step N" rule) is gone from the Steps tab for EVERYONE — client
+  // and staff. The firm wants the Steps tab to show step information only; what
+  // is paid and what is due stays on the Payments tab, and the
+  // REMIND_PART_PAYMENT step effect still emails the client the balance reminder.
 
   // Activity as a sticky RIGHT sidebar (xl+). Capped height with internal scroll
   // so a long feed never runs past the viewport while sticky.
@@ -1397,7 +1433,6 @@ function StepsTab({
           style={{ gridTemplateColumns: `1fr auto ${activitySection ? activityCol : '0px'}` }}
         >
           <div className="space-y-7 min-w-0 mr-4">
-            {partPaymentAlert}
             {pendingBar}
             {formPanel}
             {hero}
@@ -1409,7 +1444,6 @@ function StepsTab({
           {activitySection && <ActivityRail rail={activityRail}>{activitySection}</ActivityRail>}
         </div>
         <div className="xl:hidden space-y-7">
-          {partPaymentAlert}
           {pendingBar}
           {formPanel}
           {hero}
@@ -1438,7 +1472,6 @@ function StepsTab({
           ? <PanelHandle onPointerDown={stagesRail.startDrag('left')} />
           : <div />}
         <div className="space-y-7 min-w-0 mx-4">
-          {partPaymentAlert}
           {pendingBar}
           {hero}
           {stepsSection}
@@ -1453,7 +1486,6 @@ function StepsTab({
       <div className="hidden lg:grid xl:hidden lg:grid-cols-[210px_1fr] lg:gap-6 items-start">
         <StagesRail stages={stages} selected={selectedStage} onSelect={setSelectedStage} countsFor={countsFor} rail={stagesRail} />
         <div className="space-y-7 min-w-0">
-          {partPaymentAlert}
           {pendingBar}
           {hero}
           {activitySection}
@@ -1464,7 +1496,6 @@ function StepsTab({
       {/* Mobile: stage dropdown + stacked content. */}
       <div className="lg:hidden space-y-7">
         <MobileStagePicker stages={stages} selected={selectedStage} onSelect={setSelectedStage} countsFor={countsFor} />
-        {partPaymentAlert}
         {pendingBar}
         {hero}
         {activitySection}
@@ -1666,6 +1697,8 @@ const EVENT_VERB: Record<string, string> = {
   BRANCH_DECISION: 'made a decision',
   CLIENT_APPROVE: 'approved',
   STEP_NOTE: 'shared a note', // #105
+  FILED_ON_CORRECTED: 'corrected the filing date', // #294 (older history)
+  FILING_DATE_SET: 'saved the filing date', // #294
   CLIENT_REJECT: 'requested changes',
   GOVT_APPROVE: 'marked Govt approved',
   GOVT_REJECT: 'marked Govt rejected',
@@ -1815,8 +1848,10 @@ function initialsOf(name: string) {
 
 /** The HERO panel: action (left) + meta (right) merged into one elevated card. */
 function StepHeroPanel({
-  taskId, step, role, pending, onEvent, assignment, currentAssignee, currentAssigneeName, displayNumber, turn, stepUrgent, onAttach, statusLabel, description, approvalNote, fallbackView = false, clientOwned = false, currentAssignees = [], currentAssigneeNames = [],
+  taskId, step, role, pending, onEvent, assignment, currentAssignee, currentAssigneeName, displayNumber, turn, stepUrgent, onAttach, statusLabel, description, approvalNote, fallbackView = false, clientOwned = false, currentAssignees = [], currentAssigneeNames = [], filingSlot,
 }: {
+  /** #294: the GST filing date and its "Add Filing Date" control, on a filing task. */
+  filingSlot?: React.ReactNode;
   taskId: string;
   step: WorkflowStepDef;
   role: { isStaff: boolean; isClient: boolean; isExternalViewer?: boolean; canOverrideClient?: boolean; isAdmin?: boolean; uid?: string | null; isMatterOwner?: boolean };
@@ -1860,7 +1895,10 @@ function StepHeroPanel({
   const ownerName = assignment?.staff.find((u) => u.uid === currentAssignee);
   // Prefer the staff-list object's name (admins/managers), else the server-resolved
   // name (#48) so team members also see the real assignee. Empty when truly unassigned.
-  const assigneeLabel = ownerName ? displayName(ownerName) : (currentAssignee ? (currentAssigneeName ?? '') : '');
+  // #192: a shared step names everyone on it, not just the primary.
+  const assigneeLabel = currentAssigneeNames.length > 1
+    ? currentAssigneeNames.join(', ')
+    : ownerName ? displayName(ownerName) : (currentAssignee ? (currentAssigneeName ?? '') : '');
 
   // #49: completion is restricted to the step's assignee. A non-assignee staff
   // member can only reassign (admins/managers via the owner dropdown). ADMIN keeps
@@ -1931,10 +1969,15 @@ function StepHeroPanel({
   let wait: React.ReactNode = null;        // passive "waiting" note for the other role
 
   if (step.type === 'payment_gate') {
-    if (role.isStaff) {
+    // SEC F-01 (ported from Ambyflow): confirming a payment is admin/manager-only
+    // on the server (the roles that may write the payment history), so a team
+    // member gets the waiting note instead of a button that can only answer 403.
+    // The event carries no status: the server derives it from the payment
+    // history, so this passes the checkpoint only once the payment is recorded.
+    if (role.canOverrideClient) {
       actions = (
         <div className="flex flex-wrap gap-2">
-          <button disabled={pending} onClick={() => fire('RECORD_PAYMENT', { extra: { newStatus: 'fully_paid' } })} className="btn-primary disabled:opacity-50">
+          <button disabled={pending} onClick={() => fire('RECORD_PAYMENT')} className="btn-primary disabled:opacity-50">
             {pending ? spin : <CreditCard className="w-4 h-4" />} Mark as Paid
           </button>
           {/* Payment override is admin-only (#74). */}
@@ -2133,15 +2176,17 @@ function StepHeroPanel({
               <span className="text-[10px] font-bold text-ink-muted">{initialsOf(assigneeLabel)}</span>
             </div>
             <div className="min-w-0">
-              <select
-                className="bg-transparent text-sm font-medium text-ink focus:outline-hidden cursor-pointer max-w-[150px]"
-                value={currentAssignee ?? ''}
+              {/* #192 (reopened): this was a single <select>, so a manager could
+                  give a step to only ONE person, and touching it on a shared
+                  step dropped everyone else — who then could not complete it. */}
+              <PeoplePicker
+                label="Step owners"
+                className="w-[170px] max-w-full"
+                selected={currentAssignees.length ? currentAssignees : (currentAssignee ? [currentAssignee] : [])}
+                people={assignment.staff.map((u) => ({ uid: u.uid, name: displayName(u) }))}
                 disabled={assignment.assigning}
-                onChange={(e) => assignment.onAssign(step.stepNumber, e.target.value || null)}
-              >
-                <option value="">Unassigned</option>
-                {assignment.staff.map((u) => <option key={u.uid} value={u.uid}>{displayName(u)}</option>)}
-              </select>
+                onChange={(next) => assignment.onAssign(step.stepNumber, next)}
+              />
               {step.assignedRole && <p className="text-[11px] text-ink-faint flex items-center gap-1"><Briefcase className="w-3 h-3" /> {step.assignedRole.replace(/_/g, ' ')}</p>}
             </div>
           </div>
@@ -2239,6 +2284,7 @@ function StepHeroPanel({
       <div className="grid grid-cols-1 md:grid-cols-[1fr_240px]">
         <div className="p-5">
           <p className="text-base font-semibold text-ink">{step.title}</p>
+          {filingSlot && <div className="mt-2 flex flex-wrap items-center gap-1.5" data-testid="gst-filing-slot">{filingSlot}</div>}
           {/* #81/#82: audience-tagged description (Step Settings' multiple
               descriptions + notes), falling back to the legacy single field. */}
           {(description ?? step.description) && (
@@ -2542,6 +2588,8 @@ function ExpandableStepRow({ step, displayNumber, stageName, description, status
               row layout, icon, or "Done" badge — the checklist cue the client asked
               for, applied lightly to preserve the design language. */}
           <p className={`text-sm ${isCurrent ? 'font-semibold text-ink' : 'text-ink-soft'} ${step.status === 'completed' ? 'line-through decoration-1 decoration-ink-faint/60' : ''}`}>{displayNumber}. {step.title}</p>
+          {/* #294: "Filed on" on a GSTR-1 / GSTR-3B filing task — the date staff saved on it. */}
+          {step.filedOn && <div className="mt-1"><FiledOnTag date={step.filedOn} /></div>}
           {statusLabel && <p className="text-[11px] text-ink-muted mt-0.5">{statusLabel}</p>}
           {description && !open && <p className="text-xs text-ink-muted mt-0.5 truncate">{description}</p>}
           {!open && countBits && <p className="text-[11px] text-ink-faint mt-0.5">{countBits}</p>}
@@ -2619,7 +2667,7 @@ const PAYMENT: Record<PaymentStatus, { label: string; cls: string }> = {
 // Payment modes offered in the editor (#78) — shared with Create Matter (#145)
 // so the two lists cannot drift. See `lib/paymentModes.ts`.
 
-function PaymentsTab({ task, canEdit }: { task: Task; canEdit: boolean }) {
+function PaymentsTab({ task, canEdit, isClient }: { task: Task; canEdit: boolean; isClient: boolean }) {
   const toast = useToast();
   const queryClient = useQueryClient();
   const p = PAYMENT[task.paymentStatus] ?? PAYMENT.not_paid;
@@ -2755,9 +2803,25 @@ function PaymentsTab({ task, canEdit }: { task: Task; canEdit: boolean }) {
       )}
     </div>
 
+    {/* #220: the client's Pay Now button, or the staff switch for it. */}
+    <PayNowCard task={task} isClient={isClient} canEdit={canEdit} />
+
+    {/* #222: additional payment requests (government fees) — staff raise them, the client pays them. */}
+    <PaymentRequestsCard task={task} canSend={canEdit} canManage={canEdit} isClient={isClient} />
+
     {/* #148: the payment LEDGER — clients pay in instalments, so every payment
         received is its own record rather than one overwritten latest figure. */}
     <PaymentHistory task={task} canEdit={canEdit} />
+
+    {/* #313: invoices — admin/manager upload, replace and delete PDFs; the
+        client downloads their own. Team never reaches the Payments tab (#148). */}
+    <InvoicesCard taskId={task.id} canManage={canEdit} />
+
+    {/* #240: Refund History. Staff always see it (to record one); the client
+        sees it, read-only, once a refund has been recorded on their matter. */}
+    {(canEdit || (task.refundSummary?.count ?? 0) > 0) && (
+      <RefundHistory target={{ kind: 'task', id: task.id }} canEdit={canEdit} />
+    )}
     </div>
   );
 }

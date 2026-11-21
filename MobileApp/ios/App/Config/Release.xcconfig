@@ -1,0 +1,8 @@
+// E29: the App target's Release settings. CocoaPods' settings first, then this build's
+// environment (bundle id, display name, link host, Google URL scheme), which
+// MobileApp/scripts/app-env.mjs writes on every `npm run sync:ios`. If Environment.xcconfig
+// is missing, the build fails on purpose: run `npm run sync:ios` (QA) or
+// `LT_APP_ENV=production npm run sync:ios` first. docs/mobile-release.md.
+#include "../Pods/Target Support Files/Pods-App/Pods-App.release.xcconfig"
+#include "Environment.xcconfig"
+#include "Shared.xcconfig"

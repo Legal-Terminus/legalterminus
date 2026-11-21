@@ -8,8 +8,8 @@ import {
   activeGateway, gateway, parseWebhookEvent, simulator,
 } from '../services/paymentGateway.service.js';
 import {
-  applyGatewayEvent, approveMatter, confirmReturn, createOrder, discardOrder, getOrder, listOrders, markFailed,
-  publicOrder, reconcile, retryMatter,
+  applyGatewayEvent, approveMatter, confirmReturn, createMatterBalanceOrder, createOrder, discardOrder, getOrder,
+  listMyOrders, listOrders, markFailed, publicOrder, quoteOrder, reconcile, retryMatter,
 } from '../services/orders.service.js';
 
 const fail = (res, err, context) => {
@@ -27,10 +27,13 @@ export function getPaymentConfig(_req, res) {
   res.json({ enabled: !!activeGateway(), gateway: activeGateway() });
 }
 
-/** POST /api/orders — start an order for a plan. The amount is the server's. */
+/**
+ * POST /api/orders — start an order for a plan, or (#244) for a cart of plans
+ * (`items`). The amount is the server's.
+ */
 export async function postOrder(req, res) {
   try {
-    const { productKey, planId, customer, simulate } = req.body;
+    const { productKey, planId, optionId, items, couponCode, customer, simulate } = req.body;
     const profile = await getDb().collection('users').doc(req.user.uid).get();
     const p = profile.exists ? profile.data() : {};
     const order = await createOrder({
@@ -41,10 +44,54 @@ export async function postOrder(req, res) {
         email: req.user.email || p.email || '',
         phone: customer?.phone || p.phone || p.mobile || '',
       },
-      productKey, planId, simulate,
+      productKey, planId, optionId, items, couponCode, simulate,
     });
     res.status(201).json({ ...publicOrder(order), checkout: order.checkout });
   } catch (err) { fail(res, err, 'postOrder error'); }
+}
+
+/**
+ * POST /api/orders/quote (#256) — what the checkout will charge for these
+ * plans, with a coupon code if one is given: the price before the discount,
+ * the discount, the GST and the total. A code that cannot be used answers 4xx
+ * with the reason in words. Writes nothing.
+ */
+export async function postQuote(req, res) {
+  try {
+    const { productKey, planId, optionId, items, couponCode } = req.body;
+    res.json(await quoteOrder({ uid: req.user.uid, productKey, planId, optionId, items, couponCode }));
+  } catch (err) { fail(res, err, 'postQuote error'); }
+}
+
+/**
+ * POST /api/tasks/:taskId/pay-now (#220) — a client starts paying what is due on
+ * their matter. The matter is the URL's, who pays is the token's, and the amount
+ * is the matter's own amount due. Answers like POST /api/orders, so the Portal
+ * opens the same checkout and confirms through /api/orders/:orderId/verify.
+ */
+export async function postMatterPayNow(req, res) {
+  try {
+    const profile = await getDb().collection('users').doc(req.user.uid).get();
+    const p = profile.exists ? profile.data() : {};
+    const order = await createMatterBalanceOrder({
+      user: req.user,
+      taskId: req.params.taskId,
+      customer: { name: p.name || p.fullName || req.user.name || '', email: req.user.email || p.email || '', phone: p.phone || p.mobile || '' },
+    });
+    res.status(201).json({ ...publicOrder(order), checkout: order.checkout });
+  } catch (err) { fail(res, err, 'postMatterPayNow error'); }
+}
+
+/**
+ * GET /api/orders/mine (#242) — the signed-in client's own service requests
+ * from the website: where each stands (awaiting approval, approved, refunded)
+ * and its refunds. Whose orders comes from the token only; nothing is read from
+ * the request.
+ */
+export async function getMyOrders(req, res) {
+  try {
+    res.json({ data: await listMyOrders(req.user.uid) });
+  } catch (err) { fail(res, err, 'getMyOrders error'); }
 }
 
 /** GET /api/orders/:orderId — the customer's own order (staff may read any). */
@@ -175,6 +222,19 @@ export async function postSimulate(req, res) {
       case 'amount_mismatch': {
         const paid = await sim.pay(g, { amount: order.amount - 1 });
         return res.json({ delivered: await deliver('payment.captured', { gatewayPaymentId: paid.gatewayPaymentId, amount: paid.amount }) });
+      }
+      // #276: Customer Fee Bearer. The fee is worked out like Razorpay's
+      // standard rate — 2% + 18% GST on it — only so the figures look real.
+      case 'success_fee':
+      case 'fee_webhook':
+      case 'fee_mismatch': {
+        const base = Math.round(order.amount * 2) / 100;
+        const tax = Math.round(base * 18) / 100;
+        const fee = Math.round((base + tax) * 100) / 100;
+        const extra = req.body.outcome === 'fee_mismatch' ? 1 : 0;
+        const paid = await sim.pay(g, { amount: order.amount + extra, fee, tax });
+        if (req.body.outcome === 'success_fee') return res.json({ gatewayPaymentId: paid.gatewayPaymentId, signature: paid.signature });
+        return res.json({ delivered: await deliver('payment.captured', { gatewayPaymentId: paid.gatewayPaymentId, amount: paid.amount, fee, tax }) });
       }
       case 'paid_silently': {
         await sim.pay(g);

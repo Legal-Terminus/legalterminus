@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { MESSAGE_MAX_INPUT_CHARS } from "../../../shared/richText/limits.js";
 
 /**
  * Task schemas. Validation for the task endpoints (create/assign, list filters,
@@ -95,6 +96,8 @@ export const taskPaymentUpdateSchema = z.object({
   paymentMode: z.string().trim().max(60).nullable().optional(),
   // #147: editable after creation alongside the other payment details.
   paymentDescription: z.string().trim().max(1000).nullable().optional(),
+  // #220: whether the client sees Pay Now for the amount due on this matter.
+  onlinePaymentEnabled: z.boolean().optional(),
 }).strict().refine((b) => Object.keys(b).length > 0, {
   message: 'No payment fields provided',
 });
@@ -195,6 +198,17 @@ export const taskListQuerySchema = z.object({
   cursor: z.string().trim().min(1).max(1500).optional(),
 }).strip();
 
+// PATCH /api/tasks/:taskId/steps/:stepId — admin/manager. Urgency and who owns
+// the step. #192 (reopened 2026-11-18): `assignedToUids` sets SEVERAL owners at
+// once (the matter screen's step-owner picker); `assignedTo` alone still means
+// "exactly this one person". Each uid is checked against the user record in the
+// controller (staff only).
+export const stepPatchSchema = z.object({
+  isUrgent: z.boolean().optional(),
+  assignedTo: z.string().trim().max(200).nullable().optional(),
+  assignedToUids: z.array(z.string().trim().min(1).max(200)).max(20).optional(),
+}).strict();
+
 // #105: staff "Note to client" on a step — comment-only, no transition.
 export const stepNoteSchema = z.object({
   // #194: sized for the RAW rich text of a 1,000-word note. It was 8,000, which
@@ -212,7 +226,28 @@ export const internalReminderSchema = z.object({
 
 // POST /api/tasks/:taskId/messages — the discussion thread (#123). Mentions
 // (#200) are parsed from the body server-side, never sent as a list.
+// #295: a message may be 5,000 words, so its raw cap is the message cap from
+// shared/richText/limits.js (the word limit itself is applied by prepareRichText).
 export const messageCreateSchema = z.object({
-  body: z.string().max(200000),
+  body: z.string().max(MESSAGE_MAX_INPUT_CHARS),
   clientVisible: z.boolean().optional(),
+}).strict();
+
+// Editing a chat message changes its text only — never who can see it.
+export const messageUpdateSchema = z.object({
+  body: z.string().max(MESSAGE_MAX_INPUT_CHARS),
+}).strict();
+
+// PUT /api/tasks/:taskId/steps/:stepNumber/filed-on — #294: staff save the
+// date a GSTR-1 / GSTR-3B return was filed. A real calendar date, or null to
+// remove the saved date. The matter decides the allowed range
+// (not before its period ended, not in the future) — checked in the handler.
+export const filedOnCorrectionSchema = z.object({
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Enter the date as YYYY-MM-DD.")
+    .refine((v) => {
+      const [y, m, d] = v.split("-").map(Number);
+      const t = new Date(Date.UTC(y, m - 1, d));
+      return t.getUTCFullYear() === y && t.getUTCMonth() === m - 1 && t.getUTCDate() === d;
+    }, "Enter a valid date.")
+    .nullable(),
 }).strict();

@@ -1,6 +1,7 @@
 import { FieldPath } from 'firebase-admin/firestore';
 import { getDb } from '../config/firebase.js';
 import { logger } from '../config/logger.js';
+import { isSafeKey } from '../utils/sanitize.js';
 import { STAFF_ROLES } from '../config/roles.js';
 import {
   SECTIONS, getGrants, levelsForUser, saveGrants,
@@ -116,20 +117,25 @@ export async function putDay(req, res) {
     const db = getDb();
     const sheet = await loadSheet(db, key);
     // Only columns this sheet actually has — an unknown key is refused, not stored.
-    const values = {};
+    // Built with Object.fromEntries, never `obj[userKey] = …`, so a key such as
+    // `__proto__` can only ever be an own property (js/remote-property-injection);
+    // isSafeKey refuses those names outright before the lookup.
+    const groupEntries = [];
     for (const [gKey, cols] of Object.entries(req.body.values)) {
-      const group = sheet.groups.find((g) => g.key === gKey);
+      const group = isSafeKey(gKey) ? sheet.groups.find((g) => g.key === gKey) : null;
       if (!group) return res.status(400).json({ message: `Unknown group "${gKey}".` });
-      values[gKey] = {};
+      const colEntries = [];
       for (const [cKey, v] of Object.entries(cols)) {
-        const col = group.columns.find((c) => c.key === cKey);
+        const col = isSafeKey(cKey) ? group.columns.find((c) => c.key === cKey) : null;
         if (!col) return res.status(400).json({ message: `Unknown column "${cKey}".` });
         if (col.kind === 'count' && !Number.isInteger(v)) {
           return res.status(400).json({ message: `"${col.label}" is a count of clients — use a whole number.` });
         }
-        values[gKey][cKey] = v;
+        colEntries.push([cKey, v]);
       }
+      groupEntries.push([gKey, Object.fromEntries(colEntries)]);
     }
+    const values = Object.fromEntries(groupEntries);
     const ref = db.collection(SHEETS_COL).doc(key).collection('days').doc(date);
     // merge: a save of one group must not wipe the other group's figures.
     await ref.set({ values, updatedAt: new Date().toISOString(), updatedBy: req.user.uid }, { merge: true });

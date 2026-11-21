@@ -1,0 +1,68 @@
+/* #221: the required question above a product's plan cards. Mobile first:
+   the answers stack, and sit side by side from 640px. */
+.plan-choice {
+  border: 1px solid #d9e2dc;
+  border-radius: 14px;
+  background: #fff;
+  padding: 16px;
+  margin: 0 auto 28px;
+  max-width: 760px;
+  min-width: 0;
+}
+.plan-choice:focus { outline: none; }
+.plan-choice--error { border-color: #dc2626; box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12); }
+
+.plan-choice-legend {
+  float: left; /* lets the legend sit inside the border, as a heading */
+  width: 100%;
+  padding: 0;
+  margin: 0 0 12px;
+  font-size: 17px;
+  font-weight: 700;
+  color: #1f2a24;
+  text-align: left;
+}
+.plan-choice-required { font-size: 14px; font-weight: 500; color: #5b6b62; }
+
+.plan-choice-options {
+  clear: both;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+@media (min-width: 640px) {
+  .plan-choice-options { grid-template-columns: 1fr 1fr; }
+}
+
+.plan-choice-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  min-height: 44px;
+  padding: 14px 16px;
+  border: 1.5px solid #d9e2dc;
+  border-radius: 12px;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.15s, background-color 0.15s;
+}
+.plan-choice-option:hover { border-color: #21b738; }
+.plan-choice-option.is-checked { border-color: #21b738; background: #f1fbf3; }
+.plan-choice-option:focus-within { box-shadow: 0 0 0 3px rgba(33, 183, 56, 0.25); }
+.plan-choice-option input {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  margin: 2px 0 0;
+  accent-color: #21b738;
+}
+
+.plan-choice-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.plan-choice-name { font-size: 16px; font-weight: 700; color: #1f2a24; }
+.plan-choice-price { font-size: 14px; font-weight: 600; color: #15803d; }
+.plan-choice-hint { font-size: 14px; color: #5b6b62; line-height: 1.4; }
+
+.plan-choice-error { margin: 12px 0 0; font-size: 15px; font-weight: 600; color: #b91c1c; text-align: left; }
+
+/* On the cards: what the answer added, under the price. */
+.plan-choice-card-note { font-size: 13px; color: #15803d; font-weight: 600; margin-top: 2px; }

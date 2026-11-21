@@ -3,6 +3,7 @@ import {
   createMatter, deleteMatter, createPendingMatter, transition,
   getDefinitionForMatter, firstClientStep, advanceUntil, waitForNotification, currentStep, assignStep, assignMatter,
   waitForTaskNotification, countUnreadNotificationsForTask, getMatter, getNotifications,
+  createPendingTeamStepMatter, deleteDefinition, countNotificationsForTask,
 } from './api';
 
 /**
@@ -45,6 +46,27 @@ test('approving a pending matter notifies the creator (manager)', async ({ admin
     await expect(adminPage.getByText(/awaiting your approval/i)).toBeHidden();
     expect(await waitForNotification('manager', /approved/i)).toBeTruthy();
   } finally { await deleteMatter(pendingId); }
+});
+
+// #293: a no-payment matter (every GST return matter the sweep opens) goes live
+// at APPROVAL. Approval used to tell only the creator, so the team member the
+// first step is assigned to never got "New step assigned to you" (or its email,
+// which mirrors this notification).
+test('#293: approving a no-payment matter tells the first step\'s team member', async ({ adminPage }) => {
+  const { taskId, defId } = await createPendingTeamStepMatter();
+  try {
+    expect(await countNotificationsForTask('team', taskId), 'nothing before approval').toBe(0);
+    await adminPage.goto(`tasks/${taskId}`);
+    await approvalBanner(adminPage).getByRole('button', { name: 'Approve' }).click();
+    await expect(adminPage.getByText(/awaiting your approval/i)).toBeHidden();
+    // The template's wording is editable; the step name or the default subject identifies it.
+    expect(await waitForNotification('team', /Prepare the return|step assigned to you/i, 20_000, taskId)).toBeTruthy();
+    // Exactly one — approval must not double up with any other path.
+    expect(await countNotificationsForTask('team', taskId)).toBe(1);
+  } finally {
+    await deleteMatter(taskId);
+    await deleteDefinition(defId);
+  }
 });
 
 test('rejecting a pending matter notifies the creator (manager)', async ({ adminPage }) => {

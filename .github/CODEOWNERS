@@ -1,0 +1,6 @@
+# Changes to the deploy pipelines and the agent instructions need an owner's
+# review (2026-11-03). QA and production share one Google Cloud project, so an
+# edited workflow could otherwise reach production without the production
+# approval. Enforced by the ruleset on `main` ("Require review from Code Owners").
+# Two owners, because GitHub does not count an author's own approval.
+/.github/ @lokesh-infynia @sales23legalterminus

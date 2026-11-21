@@ -570,6 +570,8 @@ const EVENT_LABELS = {
   PAYMENT_RECORDED: 'Payment recorded',
   PAYMENT_UPDATED: 'Payment updated',
   PAYMENT_DELETED: 'Payment deleted',
+  REFUND_RECORDED: 'Refund recorded',
+  REFUND_UPDATED: 'Refund updated',
   ADMIN_OVERRIDE_PAYMENT: 'Payment requirement overridden',
   TASK_APPROVED: 'Matter approved',
   TASK_REJECTED: 'Matter rejected',

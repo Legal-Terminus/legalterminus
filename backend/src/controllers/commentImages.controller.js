@@ -10,6 +10,8 @@ import {
   isImageId,
   newImageId,
   sniffImageType,
+  readImageDimensions,
+  commentImageDimensionProblem,
 } from '../services/commentImages.service.js';
 import { WRONG_TYPE_MESSAGE } from '../middleware/commentImageUpload.middleware.js';
 
@@ -40,6 +42,14 @@ export async function uploadCommentImage(req, res) {
     const contentType = sniffImageType(file.buffer);
     if (!contentType) return res.status(415).json({ message: WRONG_TYPE_MESSAGE, code: 'IMAGE_TYPE' });
 
+    // #319: the same pixel-size rule the editor applies before uploading — the
+    // editor can be bypassed, so the API is what actually enforces it.
+    const dims = await readImageDimensions(file.buffer);
+    const dimsProblem = commentImageDimensionProblem(dims?.width, dims?.height);
+    if (dimsProblem) {
+      return res.status(422).json({ message: dimsProblem, code: 'IMAGE_DIMENSIONS' });
+    }
+
     const imageId = newImageId();
     const objectPath = commentImageObjectPath(taskId, imageId, COMMENT_IMAGE_TYPES[contentType]);
     await getBucket().file(objectPath).save(file.buffer, {
@@ -53,6 +63,8 @@ export async function uploadCommentImage(req, res) {
       objectPath,
       contentType,
       size: file.buffer.length,
+      width: dims.width,
+      height: dims.height,
       uploadedBy: uid ?? null,
       uploadedByRole: role ?? null,
       // Fail closed: the image becomes visible to the client only when a comment

@@ -323,6 +323,10 @@ export const SEO_META = {
     title: 'Free PDF Tools | Legal Terminus',
     description: 'Free online PDF utilities from Legal Terminus.',
   },
+  '/technology-services': {
+    title: 'Technology Services for New Businesses | Legal Terminus',
+    description: 'Website development, payment gateway integration, business email, online store, mobile apps and custom software for your new company — arranged by Legal Terminus and built by Infynia Labs.',
+  },
 
   /* ── Policies ── */
   '/policies/privacy': { title: 'Privacy Policy | Legal Terminus', description: 'How Legal Terminus collects, uses and protects your data.', canonicalPath: '/privacy-policy' },
@@ -340,4 +344,5 @@ export const SEO_META = {
   '/forgot-password': { title: 'Reset Password | Legal Terminus', description: 'Reset your Legal Terminus password.', noindex: true },
   '/my-profile': { title: 'My Profile | Legal Terminus', description: 'Your Legal Terminus profile.', noindex: true },
   '/payment/result': { title: 'Payment | Legal Terminus', description: 'Payment status.', noindex: true },
+  '/cart': { title: 'Your Cart | Legal Terminus', description: 'Services in your cart.', noindex: true },
 };

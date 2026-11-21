@@ -134,9 +134,9 @@
     </div>
 
     <!-- PDF.js Library -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js" integrity="sha384-uLiAv4VcjM5H2Jsqzl8EajEaxPugj1CIzQaCjQ8c5//vC+elhxO5pZfXGxoLQi1W" crossorigin="anonymous"></script>
     <!-- PDFLib.js Library -->
-    <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+    <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js" integrity="sha384-weMABwrltA6jWR8DDe9Jp5blk+tZQh7ugpCsF3JwSA53WZM9/14PjS5LAJNHNjAI" crossorigin="anonymous"></script>
     
     <script>
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
@@ -357,12 +357,14 @@
                 const statusText = uploadedFile.status === 'processing' ? 'Processing...' : 'Ready to rotate';
                 li.innerHTML = `
                     <div class="file-info">
-                        <div class="file-name">${uploadedFile.name}</div>
+                        <div class="file-name"></div>
                         <div class="file-size">${(uploadedFile.size / 1024).toFixed(2)} KB</div>
                         <div class="file-status ${uploadedFile.status}" id="status-${uploadedFile.id}">${statusText}</div>
                     </div>
                     <div class="file-actions" id="actions-${uploadedFile.id}"></div>
                 `;
+                // The file name is the user's text, never markup (CodeQL js/xss-through-dom).
+                li.querySelector('.file-name').textContent = uploadedFile.name;
                 filesList.appendChild(li);
                 
                 if (uploadedFile.status === 'ready') {

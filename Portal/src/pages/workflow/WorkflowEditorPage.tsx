@@ -16,6 +16,11 @@ import {
   type WorkflowDefinition,
 } from '../../api/workflowDefinitions';
 import { getServiceCatalog } from '../../api/services';
+import { getAllUsers, displayName, type PortalUser } from '../../api/users';
+import { ROLES } from '../../lib/roles';
+
+/** #192: roles that can be given a step (never a client or a view-only professional). */
+const STAFF_ROLE_KEYS = new Set<string>(ROLES.filter((r) => r.staff).map((r) => r.key));
 import { compileDefinition } from '@shared/workflows/compileDefinition.js';
 
 /**
@@ -119,6 +124,16 @@ export default function WorkflowEditorPage() {
 
   // Service catalog — for the required "which service?" picker in create mode. Only
   // offer services that don't already have a workflow (one workflow per service).
+  // #192 (reopened): the editor offers "Who does this? → Specific people".
+  const { data: people = [] } = useQuery({
+    queryKey: ['portalUsers', 'staff'],
+    queryFn: getAllUsers,
+    select: (users: PortalUser[]) => users
+      .filter((u) => STAFF_ROLE_KEYS.has(u.role))
+      .map((u) => ({ uid: u.uid, name: displayName(u) })),
+    staleTime: 60_000,
+  });
+
   const { data: catalog } = useQuery({
     queryKey: ['service-catalog'],
     queryFn: getServiceCatalog,
@@ -259,6 +274,8 @@ export default function WorkflowEditorPage() {
       toast.success(isCreate ? 'Workflow created.' : `Workflow saved (v${updated.version}).`);
       queryClient.invalidateQueries({ queryKey: ['workflow-definition', definitionId] });
       queryClient.invalidateQueries({ queryKey: ['workflow-definitions'] });
+      // The Service page's Step Settings reads the same steps (assignees, ETA).
+      queryClient.invalidateQueries({ queryKey: ['step-settings', definitionId] });
       goBack();
     },
     onError: (err: Error) => toast.error(err.message || 'Could not save workflow.'),
@@ -413,6 +430,7 @@ export default function WorkflowEditorPage() {
             onLocate={locateStep}
             onChange={(steps) => patch({ steps })}
             cardRegistry={cardRefs}
+            people={people}
           />
         </div>
 

@@ -227,6 +227,18 @@ html.theme-c .hpt-cta-btn {
 }
 html.theme-c .hpt-cta-btn:hover { transform: translateY(-1px); gap: 10px; box-shadow: none; }
 
+/* ── Technology Services (light twin of the PDF tile, sits above it) ──── */
+
+html.theme-c .hpt-cta--tech { padding-bottom: 24px; }
+html.theme-c .hpt-cta--tech .hpt-cta-inner {
+  background: var(--lt-canvas-soft); border: 1px solid var(--lt-hairline);
+}
+html.theme-c .hpt-cta--tech .hpt-cta-badge { background: var(--lt-canvas-tint); color: var(--lt-accent-text); }
+html.theme-c .hpt-cta--tech .hpt-cta-text h2 { color: var(--lt-ink); }
+html.theme-c .hpt-cta--tech .hpt-cta-text p { color: var(--lt-body); opacity: 1; }
+html.theme-c .hpt-cta--tech .hpt-cta-btn { background: var(--lt-btn); color: var(--lt-on-btn); }
+html.theme-c .hpt-cta--tech .hpt-cta-btn:hover { background: var(--lt-btn-hover); }
+
 /* ── Our Working Process (#209 Home 5) ────────────────────────────────── */
 
 html.theme-c .WPI-section { padding: var(--lt-section) 0; background: var(--lt-canvas-soft); text-align: left; }

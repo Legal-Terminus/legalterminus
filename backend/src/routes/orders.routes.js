@@ -1,22 +1,26 @@
 import { Router } from 'express';
-import rateLimit from 'express-rate-limit';
+import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
 import { verifyToken, requireRole } from '../middleware/auth.middleware.js';
 import { validate } from '../middleware/validate.middleware.js';
 import { paginationSchema } from '../schemas/common.schema.js';
 import {
-  createOrderSchema, failOrderSchema, simulateSchema, verifyOrderSchema,
+  createOrderSchema, failOrderSchema, quoteOrderSchema, simulateSchema, verifyOrderSchema,
 } from '../schemas/order.schema.js';
 import {
   getOrderById, getOrders, getPaymentConfig, postApprove, postFailed, postOrder, postReconcile,
-  postRetryMatter, postSimulate, postVerify, postWebhook,
+  postQuote, postRetryMatter, postSimulate, postVerify, postWebhook, getMyOrders,
 } from '../controllers/orders.controller.js';
+import { createOrderRefund, listOrderRefunds, patchOrderRefund } from '../controllers/refunds.controller.js';
+import { refundCreateSchema, refundUpdateSchema } from '../schemas/refund.schema.js';
 
 /**
  * /api/orders — website orders and their payment (E24-S02 … S05).
  *
  *   GET  /config                  public   is online payment on?
  *   POST /webhook                 public   the gateway's signed message (signature = its authentication)
+ *   POST /quote                   signed in   price a plan or cart, with a coupon code (#256)
  *   POST /                        signed in   start an order — the server sets the amount
+ *   GET  /mine                    client   their own service requests and refunds (#242)
  *   GET  /:orderId                owner or staff
  *   POST /:orderId/verify         owner    the signed result from the checkout
  *   POST /:orderId/failed         owner    cancelled or declined
@@ -25,6 +29,8 @@ import {
  *   POST /:orderId/approve        admin, manager, team member   approve a paid order: opens its matter
  *   POST /:orderId/retry-matter   admin, manager
  *   POST /:orderId/reconcile      admin, manager
+ *   GET|POST /:orderId/refunds    admin, manager   refund log for an order never approved (#240)
+ *   PATCH /:orderId/refunds/:id   admin, manager   set a refund's status by hand
  *
  * Mounted OUTSIDE /api/payment on purpose: that prefix carries a 20-per-15-min
  * limit meant for sign-in style endpoints, which a result page polling its
@@ -43,10 +49,24 @@ const createLimiter = rateLimit({
   message: { message: 'Too many attempts. Please wait a few minutes and try again.' },
 });
 
+/**
+ * #256: trying coupon codes. Enough for a customer who mistypes a few times,
+ * too few to guess codes by trying them. Counted per signed-in person.
+ */
+const quoteLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: isE2E ? 100_000 : 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req) => req.user?.uid || ipKeyGenerator(req.ip),
+  message: { message: 'Too many tries. Please wait a few minutes and try again.' },
+});
+
 router.get('/config', getPaymentConfig);
 router.post('/webhook', postWebhook);
 
 router.use(verifyToken);
+router.post('/quote', quoteLimiter, validate(quoteOrderSchema), postQuote);
 router.post('/', createLimiter, validate(createOrderSchema), postOrder);
 // #212: an order is approved by a member of staff before its matter opens, and
 // the firm asked that a team member can do it — so team members can see orders
@@ -54,11 +74,18 @@ router.post('/', createLimiter, validate(createOrderSchema), postOrder);
 const staff = requireRole('admin', 'manager', 'team_member');
 router.get('/', staff, validate(paginationSchema, 'query'), getOrders);
 router.post('/:orderId/approve', staff, postApprove);
+// #242: MUST precede '/:orderId' so "mine" is not read as an order id.
+router.get('/mine', requireRole('client'), getMyOrders);
 router.get('/:orderId', getOrderById);
 router.post('/:orderId/verify', validate(verifyOrderSchema), postVerify);
 router.post('/:orderId/failed', validate(failOrderSchema), postFailed);
 router.post('/:orderId/simulate', validate(simulateSchema), postSimulate);
 router.post('/:orderId/retry-matter', requireRole('admin', 'manager'), postRetryMatter);
 router.post('/:orderId/reconcile', requireRole('admin', 'manager'), postReconcile);
+// #240: refunds of an order whose matter was never opened. Recorded and moved
+// on BY HAND — Razorpay's refund API is not wired in.
+router.get('/:orderId/refunds', requireRole('admin', 'manager'), listOrderRefunds);
+router.post('/:orderId/refunds', requireRole('admin', 'manager'), validate(refundCreateSchema), createOrderRefund);
+router.patch('/:orderId/refunds/:refundId', requireRole('admin', 'manager'), validate(refundUpdateSchema), patchOrderRefund);
 
 export default router;

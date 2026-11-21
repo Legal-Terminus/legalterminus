@@ -32,22 +32,29 @@ test('CORS: the firm\'s own sites are allowed', () => {
   ]) assert.equal(isAllowedOrigin(origin, allowed), true, `${origin} must be allowed`);
 });
 
-test('CORS: localhost only outside production', () => {
-  for (const origin of ['http://localhost', 'http://localhost:5173', 'capacitor://localhost']) {
-    assert.equal(isAllowedOrigin(origin, buildAllowedOrigins(PROD)), false);
+test('CORS: localhost is never allowed, in any environment', () => {
+  for (const env of [PROD, { NODE_ENV: 'development' }, {}]) {
+    const allowed = buildAllowedOrigins(env);
+    for (const origin of [
+      'http://localhost', 'http://localhost:5173', 'https://localhost', 'capacitor://localhost',
+      'http://127.0.0.1:5173', 'https://app.localhost',
+    ]) assert.equal(isAllowedOrigin(origin, allowed), false, `${origin} must be refused (${env.NODE_ENV ?? 'unset'})`);
   }
-  assert.equal(isAllowedOrigin('http://localhost:5173', buildAllowedOrigins({ NODE_ENV: 'development' })), true);
 });
 
-test('CORS: CORS_ORIGINS adds exact origins only', () => {
+test('CORS: CORS_ORIGINS adds exact origins only, and never localhost', () => {
   const allowed = buildAllowedOrigins({
-    ...PROD, CORS_ORIGINS: 'https://localhost, *, firm.example, https://*.firm.example, http://localhost:5173/',
+    ...PROD,
+    CORS_ORIGINS: 'https://firm.example, *, firm.example, https://*.firm.example, https://localhost, '
+      + 'http://localhost:5173/, capacitor://localhost, http://127.0.0.1:3000, https://x.localhost, http://0.0.0.0:80',
   });
-  assert.equal(isAllowedOrigin('https://localhost', allowed), true);
-  assert.equal(isAllowedOrigin('http://localhost:5173', allowed), true);
-  assert.equal(isAllowedOrigin('http://localhost:3000', allowed), false);
-  assert.equal(isAllowedOrigin('https://any.firm.example', allowed), false);
+  assert.equal(isAllowedOrigin('https://firm.example', allowed), true);
+  for (const origin of [
+    'https://localhost', 'http://localhost:5173', 'capacitor://localhost', 'http://127.0.0.1:3000',
+    'https://x.localhost', 'http://0.0.0.0:80', 'https://any.firm.example',
+  ]) assert.equal(isAllowedOrigin(origin, allowed), false, `${origin} must be refused`);
   assert.equal(allowed.includes('*'), false);
+  assert.equal(allowed.some((e) => typeof e === 'string' && !/^https?:/.test(e)), false);
 });
 
 test('CORS: every pattern is anchored at both ends', () => {

@@ -8,6 +8,9 @@ import { useCallback, useEffect, useRef, useState } from 'react';
  *
  * Storage key: `commentDraft:{taskId}:{stepNumber}:{uid}`. A `null` uid (not
  * logged in) disables persistence entirely.
+ *
+ * #297: also used by the matter's Chat — `stepNumber` is then `'chat'` for the
+ * new-message box and `'chat-edit-{messageId}'` for an edit in progress.
  */
 const DEBOUNCE_MS = 800;
 
@@ -61,8 +64,25 @@ export function useCommentDraft(
     setSavedAt(stored.at);
   }
 
+  // The value waiting for the debounce timer, with the key it belongs to.
+  const pending = useRef<{ key: string; value: string } | null>(null);
+
+  /** Write (or remove) a draft now. Best-effort: storage may be full or disabled. */
+  const write = useCallback((key: string, value: string) => {
+    try {
+      if (!value.trim()) {
+        localStorage.removeItem(key);
+        return null;
+      }
+      const at = new Date().toISOString();
+      localStorage.setItem(key, JSON.stringify({ value, at }));
+      return at;
+    } catch { return undefined; /* storage full / disabled */ }
+  }, []);
+
   const clear = useCallback(() => {
     if (timer.current) { clearTimeout(timer.current); timer.current = null; }
+    pending.current = null;
     setSavedAt(null);
     if (storageKey) { try { localStorage.removeItem(storageKey); } catch { /* ignore */ } }
   }, [storageKey]);
@@ -70,22 +90,22 @@ export function useCommentDraft(
   const save = useCallback((value: string) => {
     if (!storageKey) return;
     if (timer.current) clearTimeout(timer.current);
+    pending.current = { key: storageKey, value };
     timer.current = setTimeout(() => {
-      try {
-        if (!value.trim()) {
-          localStorage.removeItem(storageKey);
-          setSavedAt(null);
-        } else {
-          const at = new Date().toISOString();
-          localStorage.setItem(storageKey, JSON.stringify({ value, at }));
-          setSavedAt(at);
-        }
-      } catch { /* storage full / disabled — best-effort */ }
+      timer.current = null;
+      pending.current = null;
+      const at = write(storageKey, value);
+      if (at !== undefined) setSavedAt(at);
     }, DEBOUNCE_MS);
-  }, [storageKey]);
+  }, [storageKey, write]);
 
-  // Flush any pending timer on unmount.
-  useEffect(() => () => { if (timer.current) clearTimeout(timer.current); }, []);
+  // On unmount, WRITE what is still waiting for the timer rather than dropping
+  // it (#297: the Chat tab unmounts when someone opens another tab of the
+  // matter — the last few keystrokes before the switch were lost).
+  useEffect(() => () => {
+    if (timer.current) clearTimeout(timer.current);
+    if (pending.current) write(pending.current.key, pending.current.value);
+  }, [write]);
 
   return { initial, savedAt, save, clear };
 }

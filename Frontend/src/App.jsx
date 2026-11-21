@@ -17,6 +17,7 @@ import PdfTools from "./Pages/PdfTools/PdfTools";
 
 const MyProfile = lazy(() => import("./Pages/MyProfile/MyProfile"));
 const PaymentResult = lazy(() => import("./Pages/PaymentResult/PaymentResult"));
+const Cart = lazy(() => import("./Pages/Cart/Cart"));
 const Login = lazy(() => import("./Pages/Login/Login"));
 const Signup = lazy(() => import("./Pages/Signup/Signup"));
 const ForgotPassword = lazy(() => import("./Pages/ForgotPassword/ForgotPassword"));
@@ -98,6 +99,8 @@ const CompanyRegistrationOdisha = lazy(() => import("./Pages/CompanyRegistration
 const CompanyRegistrationLanding = lazy(() => import("./Pages/CompanyRegistrationLanding/CompanyRegistrationLanding"));
 const TrademarkLanding = lazy(() => import("./Pages/TrademarkLanding/TrademarkLanding"));
 const BlogPost = lazy(() => import("./Pages/BlogPost/BlogPost"));
+// Software development services sold by the firm, delivered by Infynia Labs.
+const TechServices = lazy(() => import("./Pages/TechServices/TechServices"));
 
 // Store scroll positions keyed by location.key
 const scrollPositions = {};
@@ -242,6 +245,7 @@ function App() {
             <Route path="/blog/:slug" element={<BlogPost />} />
             <Route path="/my-profile" element={<ProtectedRoute><MyProfile /></ProtectedRoute>} />
             <Route path="/payment/result" element={<PaymentResult />} />
+            <Route path="/cart" element={<Cart />} />
             <Route path="/setting-up-a-business/profit-making-structures/one-person-company-registration-in-india" element={<OPC />} />
             <Route path="/setting-up-a-business/profit-making-structures/public-limited-company-registration-in-india" element={<Publicltd />} />
             <Route path="/setting-up-a-business/profit-making-structures/incorporation-of-wholly-owned-subsidiary-in-india" element={<IncorptionPage />} />
@@ -317,6 +321,7 @@ function App() {
             <Route path="/companyregistration-in-odisha" element={<CompanyRegistrationLanding />} />
             <Route path="/trademark-registration-in-odisha" element={<TrademarkLanding />} />
             <Route path="/pdf-tools" element={<PdfTools />} />
+            <Route path="/technology-services" element={<TechServices />} />
             {/* #175: must stay LAST — matches only when no other route does. */}
             <Route path="*" element={<NotFound />} />
           </Routes>

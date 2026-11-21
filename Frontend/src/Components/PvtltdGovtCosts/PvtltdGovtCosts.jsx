@@ -4,8 +4,8 @@ import "./PvtltdGovtCosts.css";
 const rows = [
   {
     head: "SPICe+ Filing Fee",
-    range: "₹0",
-    note: "Free for authorised capital up to ₹15 lakh",
+    range: "₹143",
+    note: "For authorised capital up to ₹15 lakh",
   },
   {
     head: "RUN Name Reservation",
@@ -29,8 +29,8 @@ const rows = [
   },
   {
     head: "DIN",
-    range: "₹500 / director",
-    note: "Auto-applied via SPICe+ for first 3 directors",
+    range: "₹0",
+    note: "No charge for the first 3 directors. ₹500 per director will be chargeable for every additional director above 3.",
   },
   {
     head: "INC-20A (Commencement)",
@@ -39,7 +39,7 @@ const rows = [
   },
   {
     head: "Total Out-of-Pocket (typical)",
-    range: "₹4,500 – ₹17,000",
+    range: "₹3,842 – ₹16,142",
     note: "Lower than PLC; varies by state and capital",
     isTotal: true,
   },

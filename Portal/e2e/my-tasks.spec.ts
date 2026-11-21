@@ -18,7 +18,7 @@ test.beforeAll(async () => {
 });
 test.afterAll(async () => { await deleteMatter(taskId); });
 
-test('staff My Tasks renders the work grid', async ({ adminPage }) => {
+test('staff My Tasks renders the work grid', async ({ adminPage, isMobile }) => {
   await adminPage.goto('my-tasks');
   await expect(adminPage.getByRole('heading', { name: 'My Tasks' })).toBeVisible();
   // Wait for the query to settle (loading spinner gone) before deciding empty vs grid.
@@ -27,7 +27,7 @@ test('staff My Tasks renders the work grid', async ({ adminPage }) => {
   // work-grid's own "No open steps." (grid empty but approvals present). Skip the
   // column-header check in either case.
   const empty = adminPage.getByText(/all caught up|no open steps/i);
-  if (!(await empty.count())) {
+  if (!(await empty.count()) && !isMobile) { // phones show step cards, not the Priority column
     // Grid rendered → the Priority column header is present (may sit next to a sort
     // icon in the same cell, so match by substring, not exact).
     await expect(adminPage.getByText(/^Priority/).first()).toBeVisible();
@@ -41,7 +41,7 @@ test('team member sees their assigned matter in My Tasks', async ({ teamPage }) 
   // the freshly-assigned matter's step row appears (service name is the stable text).
   await expect(async () => {
     await teamPage.reload();
-    await expect(teamPage.getByText(/Company Incorporation/i).first()).toBeVisible({ timeout: 3_000 });
+    await expect(teamPage.getByText(/Company Incorporation/i).locator('visible=true').first()).toBeVisible({ timeout: 3_000 });
   }).toPass({ timeout: 40_000 });
 });
 

@@ -9,17 +9,19 @@ import { SHEETS, BOOKS, MODULES } from '../config/worksheetDefinitions.js';
 import {
   resolveSheet, bookFields, matchHeaders, normalizeHeader, normalizeDate, normalizeValue, recordKeyFor,
   addPeriod, computeValues, applyColumnEdit, cleanRecordValues, planImport, pickReminder, reminderText,
-  daysBetween, indiaToday, encodeCursor, decodeCursor,
+  daysBetween, indiaToday, encodeCursor, decodeCursor, applyOptionsEdit, cleanOptions, MAX_OPTIONS,
+  matchStaff, staffChoices, withStaffChoices,
 } from '../services/worksheetEngine.service.js';
+import { toStaffList, staffName } from '../services/worksheetStaff.service.js';
 
 const labels = (sheet) => sheet.columns.filter((c) => !c.hidden).map((c) => c.label.toUpperCase());
 
 /* ── Definitions ────────────────────────────────────────────────────────── */
 
-test('five trademark reports share one book; thirteen company worksheets each have their own', () => {
+test('five trademark reports share one book; fourteen company worksheets each have their own', () => {
   assert.deepEqual(MODULES.trademark.sheets, ['tm_master', 'tm_register', 'tm_opposition_raised', 'tm_opposition_received', 'tm_assignment']);
   for (const s of MODULES.trademark.sheets) assert.equal(SHEETS[s].book, 'trademark');
-  assert.equal(MODULES.company.sheets.length, 13);
+  assert.equal(MODULES.company.sheets.length, 14);
   for (const s of MODULES.company.sheets) assert.equal(SHEETS[s].book, s);
   assert.deepEqual(BOOKS.trademark.recordKey, ['application_no']);
 });
@@ -369,4 +371,171 @@ test('cursor round-trip; a forged cursor is rejected', () => {
   assert.deepEqual(decodeCursor(encodeCursor('2026-10-29T00:00:00.000Z', 'abc')), ['2026-10-29T00:00:00.000Z', 'abc']);
   assert.equal(decodeCursor('not-base64-json'), null);
   assert.equal(decodeCursor(Buffer.from(JSON.stringify({ a: 1 })).toString('base64url')), null);
+});
+
+/* ── #280 TDS Sheet and editable dropdowns ──────────────────────────────── */
+
+test('#280 the TDS Sheet has the firm\'s columns, in the firm\'s order, after the GST Sheet', () => {
+  const sheets = MODULES.company.sheets;
+  assert.equal(sheets[sheets.indexOf('gst') + 1], 'tds');
+  const tds = resolveSheet('tds');
+  assert.deepEqual(tds.columns.map((c) => c.label), [
+    'Company Name', 'Assigned to', 'Checker', 'Client', 'TAN NO', 'USER ID', 'Traces Password', 'IT Password',
+    'TDS Data Received', 'Excel Prepared', 'Final Excel Mail to Client', 'Challan paid by client',
+    'SALARY (Form 138) FILING DATE', 'NON-SALARY (form 140) FILING DATE', 'SALARY (Form 138) PR NO',
+    'NON-SALARY (form 140) PR NO', 'STATEMENT STATUS 26Q (Form 140)', 'STATEMENT STATUS 24Q (Form 138)',
+  ]);
+  // The yellow columns of the firm's file are the dropdowns: Assigned to and
+  // Checker list the portal's staff (firm, 11 Nov); the rest are typed lists.
+  assert.deepEqual(tds.columns.filter((c) => c.type === 'staff').map((c) => c.label), ['Assigned to', 'Checker']);
+  assert.deepEqual(tds.columns.filter((c) => c.type === 'select').map((c) => c.label), [
+    'Client', 'TDS Data Received', 'Excel Prepared', 'Final Excel Mail to Client', 'Challan paid by client',
+  ]);
+  assert.equal(tds.serial, true);
+  assert.deepEqual(tds.recordKey, ['tan']);
+  // Not shared with another sheet.
+  assert.deepEqual(tds.memberships.map((m) => m.key), ['tds']);
+});
+
+test('#280 the firm\'s TDS headings (as typed, wrapped and with "Sl. No.") all match; Sl. No. is ignored, not unknown', () => {
+  const sheet = resolveSheet('tds');
+  const headers = ['Sl. No.', 'Company Name', 'Assigned to', 'Checker', 'Client', 'TAN NO', 'USER ID', 'Traces Password', 'IT Password',
+    'TDS Data Received', 'Excel Prepar ed', 'Final Excel Mail to Client', 'Challan paid by client', 'SALARY (Form 138) FILING DATE',
+    'NON-SALARY (form 140) FILING DATE', 'SALARY (Form 138) PR NO', 'NON-SALARY (form 140) PR NO',
+    'STATEM ENT STATUS 26Q (Form 140)', 'STATEM ENT STATUS 24Q (Form 138)'];
+  const rows = [[1, 'ODISHA LIFT IRRIGATION CO-OPERATION LTD', 'Ajay Sir', 'Biswal', 'MGGS', 'BBNO00252A', 'OLICLBBSR', 'OLICL2013BBSR', 'Olic@123',
+    'Yes', 'YES', 'Yes', 'Yes', '27-10-2026', '27-10-2026', 752309600068224, 752309600068235, null, null]];
+  const plan = planImport({ sheet, fields: bookFields('tds'), headers, rows });
+  assert.deepEqual(plan.unknownColumns, []);
+  assert.deepEqual(plan.ignoredColumns, [{ header: 'Sl. No.', reason: 'serial' }]);
+  const v = plan.creates[0].values;
+  assert.equal(v.tan, 'BBNO00252A');
+  assert.equal(v.excel_prepared, 'Yes'); // "YES" lands on the option's spelling
+  assert.equal(v.salary_filing_date, '2026-10-27');
+  // A PR number read as a number from Excel is kept whole, as text.
+  assert.equal(v.salary_pr_no, '752309600068224');
+  assert.equal(plan.creates[0].key, 'BBNO00252A');
+});
+
+test('#280 staff edit a dropdown\'s options; every sheet, the form and uploads see the new list', () => {
+  const { optionOverrides } = applyOptionsEdit('tds', {}, 'client', [' MGGS ', 'Biswal', 'mggs', '<b>Rina</b>', '']);
+  assert.deepEqual(optionOverrides, { client: ['MGGS', 'Biswal', 'Rina'] });
+  const config = { optionOverrides };
+  assert.deepEqual(resolveSheet('tds', config).columns.find((c) => c.key === 'client').options, ['MGGS', 'Biswal', 'Rina']);
+  // A built-in Yes/No list can be changed too (e.g. add "N/A").
+  const yn = applyOptionsEdit('tds', config, 'challan_paid', ['Yes', 'No', 'N/A']).optionOverrides;
+  assert.deepEqual(resolveSheet('tds', { optionOverrides: { ...optionOverrides, ...yn } }).columns.find((c) => c.key === 'challan_paid').options, ['Yes', 'No', 'N/A']);
+  // An upload matches the edited spelling.
+  assert.equal(normalizeValue(bookFields('tds', config).find((f) => f.key === 'client'), 'RINA').value, 'Rina');
+  // Removing every option is allowed (the column stays a dropdown, empty).
+  assert.deepEqual(applyOptionsEdit('tds', config, 'client', []).optionOverrides, { client: [] });
+});
+
+test('#280 only a dropdown column has options; unknown sheet or column is refused', () => {
+  assert.throws(() => applyOptionsEdit('tds', {}, 'tan', ['x']), (e) => e.status === 400);
+  assert.throws(() => applyOptionsEdit('tds', {}, 'nope', ['x']), (e) => e.status === 404);
+  assert.throws(() => applyOptionsEdit('nope', {}, 'client', ['x']), (e) => e.status === 404);
+  assert.throws(() => applyOptionsEdit('tds', {}, 'client', 'x'), (e) => e.status === 400);
+  assert.equal(cleanOptions(Array.from({ length: 500 }, (_, i) => `o${i}`)).length, MAX_OPTIONS);
+});
+
+test('#280 an added dropdown column\'s choices, edited under Edit columns, follow the same override; a column save keeps the others', () => {
+  const config = { optionOverrides: { client: ['MGGS'] } };
+  const cols = resolveSheet('tds', config).columns.map((c) => ({ key: c.key, label: c.label }));
+  const next = applyColumnEdit('tds', config, { columns: [...cols, { label: 'Quarter', type: 'select', options: ['Q1', 'Q2'] }] });
+  assert.deepEqual(next.optionOverrides.client, ['MGGS']);
+  const added = next.customFields.find((cf) => cf.label === 'Quarter');
+  const edited = applyColumnEdit('tds', next, { columns: [...cols, { key: added.key, label: 'Quarter', options: ['Q1', 'Q2', 'Q3'] }] });
+  assert.deepEqual(edited.optionOverrides[added.key], ['Q1', 'Q2', 'Q3']);
+  assert.deepEqual(resolveSheet('tds', edited).columns.find((c) => c.key === added.key).options, ['Q1', 'Q2', 'Q3']);
+});
+
+/* ── #280 Assigned to / Checker list the portal's staff ─────────────────── */
+
+const STAFF = [
+  { uid: 'u-ajay', name: 'Ajay Kumar', email: 'ajay@firm.test', active: true },
+  { uid: 'u-rina', name: 'Rina Das', email: 'rina@firm.test', active: true },
+  { uid: 'u-old', name: 'Old Hand', email: 'old@firm.test', active: false },
+  { uid: 'u-s1', name: 'Same Name', email: 's1@firm.test', active: true },
+  { uid: 'u-s2', name: 'Same Name', email: 's2@firm.test', active: true },
+];
+
+test('#280 Assigned to and Checker are staff columns: Edit dropdowns does not apply, and old typed lists are ignored', () => {
+  for (const key of ['assigned_to', 'checker']) {
+    assert.throws(() => applyOptionsEdit('tds', {}, key, ['x']), (e) => e.status === 400 && /not a dropdown/.test(e.message));
+    // The firm's typed list from before (still stored in the config on live) no longer applies.
+    const col = resolveSheet('tds', { optionOverrides: { [key]: ['Ajay Sir'] } }).columns.find((c) => c.key === key);
+    assert.equal(col.type, 'staff');
+    assert.equal(col.options, undefined);
+  }
+});
+
+test('#280 a staff cell is matched by uid, name (any case/spacing) or email; former staff after active; two of a name is ambiguous', () => {
+  assert.deepEqual(matchStaff('u-rina', STAFF), { uid: 'u-rina' });
+  assert.deepEqual(matchStaff('  rina   DAS ', STAFF), { uid: 'u-rina' });
+  assert.deepEqual(matchStaff('AJAY@firm.test', STAFF), { uid: 'u-ajay' });
+  assert.deepEqual(matchStaff('Old Hand', STAFF), { uid: 'u-old' });
+  assert.deepEqual(matchStaff('Same Name', STAFF), { ambiguous: true });
+  assert.equal(matchStaff('Ajay Sir', STAFF), null);
+  assert.equal(matchStaff('', STAFF), null);
+});
+
+test('#280 the page gets uid and name only — never an email — active people first', () => {
+  const choices = staffChoices(STAFF);
+  assert.deepEqual(choices.map((c) => c.value), ['u-ajay', 'u-rina', 'u-s1', 'u-s2', 'u-old']);
+  for (const c of choices) assert.deepEqual(Object.keys(c).sort(), ['active', 'label', 'value']);
+  assert.ok(!JSON.stringify(choices).includes('@'));
+  const tds = withStaffChoices(resolveSheet('tds'), STAFF);
+  assert.equal(tds.columns.find((c) => c.key === 'checker').choices.length, 5);
+  assert.equal(tds.columns.find((c) => c.key === 'client').choices, undefined);
+  // A sheet without staff columns is returned as it is.
+  const udyam = resolveSheet('udyam');
+  assert.equal(withStaffChoices(udyam, STAFF), udyam);
+});
+
+test('#280 a manual edit must pick an active staff member; clearing is allowed', () => {
+  const fields = bookFields('tds');
+  assert.deepEqual(cleanRecordValues(fields, { assigned_to: 'u-ajay', checker: null }, { staff: STAFF }), { assigned_to: 'u-ajay', checker: null });
+  assert.throws(() => cleanRecordValues(fields, { assigned_to: 'Ajay Sir' }, { staff: STAFF }), (e) => e.status === 400 && /Assigned to/.test(e.message));
+  assert.throws(() => cleanRecordValues(fields, { checker: 'u-old' }, { staff: STAFF }), (e) => e.status === 400);
+  assert.throws(() => cleanRecordValues(fields, { checker: 'u-ajay' }), (e) => e.status === 400, 'no staff list → nothing to pick');
+});
+
+test('#280 upload: names and emails become the person; an unknown or ambiguous name is kept as written, with a warning', () => {
+  const sheet = resolveSheet('tds');
+  const headers = ['Company Name', 'Assigned to', 'Checker', 'TAN NO'];
+  const rows = [
+    ['A Ltd', 'ajay kumar', 'rina@firm.test', 'TAN0000001'],
+    ['B Ltd', 'Ajay Sir', 'Same Name', 'TAN0000002'],
+  ];
+  const plan = planImport({ sheet, fields: bookFields('tds'), headers, rows, staff: STAFF });
+  assert.deepEqual(plan.creates[0].values, { company_name: 'A Ltd', assigned_to: 'u-ajay', checker: 'u-rina', tan: 'TAN0000001' });
+  assert.equal(plan.creates[1].values.assigned_to, 'Ajay Sir');
+  assert.equal(plan.creates[1].values.checker, 'Same Name');
+  assert.deepEqual(plan.warnings.map((w) => [w.row, w.column]), [[3, 'Assigned to'], [3, 'Checker']]);
+  assert.match(plan.warnings[0].message, /not a staff member — kept as written/);
+  assert.match(plan.warnings[1].message, /more than one staff member/);
+
+  // A row typed before (a name) is updated to the person when the file names them.
+  const existingByKey = new Map([['TAN0000001', { id: 'r1', values: { tan: 'TAN0000001', assigned_to: 'Ajay Kumar' }, sheets: ['tds'] }]]);
+  const again = planImport({ sheet, fields: bookFields('tds'), headers, rows: [rows[0]], existingByKey, staff: STAFF });
+  assert.equal(again.updates[0].values.assigned_to, 'u-ajay');
+  assert.equal(again.updates[0].changed, true);
+});
+
+test('#280 the staff list: staff roles only, former staff flagged, test accounts hidden, a name never the full email', () => {
+  const doc = (id, data) => ({ id, data: () => data });
+  const list = toStaffList([
+    doc('a', { role: 'admin', displayName: 'Ajay Kumar', email: 'Ajay@Firm.test' }),
+    doc('m', { role: 'manager', email: 'mona@firm.test', status: 'deactivated' }),
+    doc('c', { role: 'client', displayName: 'A Client' }),
+    doc('p', { role: 'professional', displayName: 'A CA' }),
+    doc('e', { role: 'team_member', displayName: 'E2E Team', e2e: true }),
+  ]);
+  assert.deepEqual(list, [
+    { uid: 'a', name: 'Ajay Kumar', email: 'ajay@firm.test', active: true },
+    { uid: 'm', name: 'mona', email: 'mona@firm.test', active: false },
+  ]);
+  assert.equal(toStaffList([doc('e', { role: 'team_member', displayName: 'E2E Team', e2e: true })], { includeTestAccounts: true }).length, 1);
+  assert.equal(staffName({}), 'Staff member');
 });

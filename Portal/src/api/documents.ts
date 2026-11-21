@@ -2,6 +2,7 @@ import { apiFetch } from './client';
 import { auth } from '../lib/firebase';
 import { getIdToken } from 'firebase/auth';
 import { openBlobNative, shareBlobNative } from '../lib/native';
+import { whileBusy } from '../lib/updateGuard';
 
 /**
  * Document Cycle API (E-05). Upload is a two-step signed-URL flow: ask the backend
@@ -45,8 +46,9 @@ export const ALLOWED_DOC_TYPES = [
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
   'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // .xlsx (#77)
   'application/vnd.ms-excel', // .xls (#77)
+  'text/csv', 'application/json', 'text/plain', 'application/zip', // #219
 ];
-export const ALLOWED_DOC_EXT = '.pdf,.jpg,.jpeg,.png,.docx,.xlsx,.xls';
+export const ALLOWED_DOC_EXT = '.pdf,.jpg,.jpeg,.png,.docx,.xlsx,.xls,.csv,.json,.txt,.zip';
 export const MAX_DOC_BYTES = 10 * 1024 * 1024;
 
 /** MIME by extension — the fallback when the browser gives an empty/wrong
@@ -59,13 +61,22 @@ const EXT_TO_MIME: Record<string, string> = {
   docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
   xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
   xls: 'application/vnd.ms-excel',
+  csv: 'text/csv',
+  json: 'application/json',
+  txt: 'text/plain',
+  zip: 'application/zip',
 };
+
+/** #219: browsers disagree on these (Windows reports a .csv as Excel and a .zip
+ *  as application/x-zip-compressed), so they are always typed by extension. */
+const TYPED_BY_EXTENSION = new Set(['csv', 'json', 'txt', 'zip']);
 
 /** Prefer the browser's MIME if it's on the allow-list; otherwise resolve from
  *  the file extension. Returns '' when neither is recognized. */
 export function effectiveContentType(file: File): string {
-  if (ALLOWED_DOC_TYPES.includes(file.type)) return file.type;
   const ext = file.name.split('.').pop()?.toLowerCase() ?? '';
+  if (TYPED_BY_EXTENSION.has(ext)) return EXT_TO_MIME[ext];
+  if (ALLOWED_DOC_TYPES.includes(file.type)) return file.type;
   return EXT_TO_MIME[ext] ?? file.type ?? '';
 }
 
@@ -83,7 +94,17 @@ interface SignedUploadResponse {
  * Full upload: request a signed URL, PUT the file to storage, then confirm.
  * Returns the confirmed document. Throws with a friendly message on failure.
  */
-export async function uploadDocument(
+export function uploadDocument(
+  taskId: string,
+  file: File,
+  stepNumber?: number,
+  docType?: string,
+): Promise<TaskDocument> {
+  // An upload in flight holds off the app's automatic new-version reload (lib/updateGuard.ts).
+  return whileBusy(() => uploadDocumentNow(taskId, file, stepNumber, docType));
+}
+
+async function uploadDocumentNow(
   taskId: string,
   file: File,
   stepNumber?: number,
@@ -96,7 +117,7 @@ export async function uploadDocument(
   // effective content type from the extension so those still upload (#77).
   const contentType = effectiveContentType(file);
   if (!ALLOWED_DOC_TYPES.includes(contentType)) {
-    throw new Error('Unsupported file type. Allowed: PDF, JPG, PNG, DOCX, XLSX, XLS.');
+    throw new Error('Unsupported file type. Allowed: PDF, JPG, PNG, DOCX, XLSX, XLS, CSV, JSON, TXT, ZIP.');
   }
 
   // Step 1 — signed PUT URL + a pre-created metadata doc.
@@ -107,11 +128,18 @@ export async function uploadDocument(
 
   // Step 2 — PUT the bytes straight to storage (no backend bandwidth). The
   // Content-Type must match what was signed, or the PUT is rejected.
-  const put = await fetch(signedUrl, {
-    method: 'PUT',
-    headers: { 'Content-Type': contentType },
-    body: file,
-  });
+  // A blocked or dropped connection makes fetch throw the browser's own text ("Load failed" on iPhone,
+  // "Failed to fetch" elsewhere). Show a plain sentence instead of that.
+  let put: Response;
+  try {
+    put = await fetch(signedUrl, {
+      method: 'PUT',
+      headers: { 'Content-Type': contentType },
+      body: file,
+    });
+  } catch {
+    throw new Error('The file could not be uploaded. Check your connection and try again.');
+  }
   if (!put.ok) throw new Error('Upload failed. Please try again.');
 
   // Step 3 — confirm; backend stores it as a DRAFT (#113). It becomes reviewable

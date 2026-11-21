@@ -104,6 +104,9 @@ cd Portal && npm run test:e2e    # Playwright; needs Portal/e2e/.env.e2e
 lsof -ti :6500 | xargs kill -9   # free the backend port
 ```
 
+The Android and iPhone apps (`MobileApp/`) are built for QA by default; how to build, switch to
+production and release them is in `docs/mobile-release.md`.
+
 ## Troubleshooting
 
 | Symptom | Fix |

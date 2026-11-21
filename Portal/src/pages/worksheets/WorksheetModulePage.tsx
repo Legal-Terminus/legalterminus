@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useInfiniteQuery, useQuery, useQueryClient, type InfiniteData } from '@tanstack/react-query';
-import { ArrowLeft, Plus, Settings2, Upload } from 'lucide-react';
+import { ArrowLeft, ListPlus, Plus, Settings2, Upload } from 'lucide-react';
 import {
   createWorksheetRecord, deleteWorksheetRecord, getWorksheetModule, listWorksheetRecords, updateWorksheetRecord,
   type CellValue, type MatterRef, type ModuleKey, type WsPage, type WsRecord, type WsSheet,
@@ -13,6 +13,8 @@ import WorksheetGrid from '../../components/worksheets/WorksheetGrid';
 import RecordForm from '../../components/worksheets/RecordForm';
 import ColumnEditor from '../../components/worksheets/ColumnEditor';
 import ImportPanel from '../../components/worksheets/ImportPanel';
+import OptionsEditor from '../../components/worksheets/OptionsEditor';
+import { periodOptions } from '@shared/workflows/gstReturns.js';
 
 /**
  * #210 / #217 — one page for a module of worksheets: a dropdown of sheets (the
@@ -25,7 +27,9 @@ import ImportPanel from '../../components/worksheets/ImportPanel';
  */
 
 const MAX_RECORDS = 5000;
-type View = { kind: 'grid' } | { kind: 'form'; id: string | null } | { kind: 'columns' } | { kind: 'import' };
+/** Today's date in India, 'YYYY-MM-DD' (module scope: no impure call during render). */
+const indiaToday = () => new Date(Date.now() + 330 * 60_000).toISOString().slice(0, 10);
+type View = { kind: 'grid' } | { kind: 'form'; id: string | null } | { kind: 'columns' } | { kind: 'import' } | { kind: 'options' };
 
 export default function WorksheetModulePage({ module, title, subtitle, pickerLabel, back }: {
   module: ModuleKey;
@@ -169,10 +173,17 @@ export default function WorksheetModulePage({ module, title, subtitle, pickerLab
     invalidateSiblings();
   };
 
-  const columnsSaved = (s: WsSheet) => {
+  // A sheet's new definition (columns or dropdown choices). Choices belong to
+  // the book, so every sheet of the same book is re-read too.
+  const sheetSaved = (s: WsSheet) => {
     qc.setQueryData(['worksheet-module', module], (d: typeof mod) => (d ? { ...d, sheets: d.sheets.map((x) => (x.key === s.key ? s : x)) } : d));
-    setView({ kind: 'grid' });
   };
+  const columnsSaved = (s: WsSheet) => { sheetSaved(s); setView({ kind: 'grid' }); };
+  const optionsSaved = (s: WsSheet) => {
+    sheetSaved(s);
+    if (mod?.sheets.some((x) => x.book === s.book && x.key !== s.key)) void qc.invalidateQueries({ queryKey: ['worksheet-module', module] });
+  };
+  const hasDropdowns = !!sheet?.columns.some((c) => c.type === 'select' && !c.hidden);
 
   const bookColumns = useMemo(() => {
     if (!mod || !sheet) return [];
@@ -182,6 +193,27 @@ export default function WorksheetModulePage({ module, title, subtitle, pickerLab
   }, [mod, sheet]);
 
   const editing = view.kind === 'form' && view.id ? all.find((r) => r.id === view.id) ?? null : null;
+
+  // #279 (firm, 11 Nov): the GST Return Filing sheets filter by Return Period, like
+  // the Marketing report's month. Options follow Monthly / Quarterly; the default
+  // is the period being filed now (in November: October 2026, or Q2 26-27); older
+  // periods and any period typed on a row can be picked; "All periods" shows all.
+  const frequency = sheet?.frequency ?? null;
+  const [today] = useState(indiaToday);
+  const periodChoices = useMemo(() => {
+    if (!frequency) return [];
+    const listed = periodOptions(frequency, today) as { key: string; title: string; label: string }[];
+    const known = new Set(listed.map((o) => o.title.toLowerCase()));
+    const typed = [...new Set(all.map((r) => String(r.values.period ?? '').trim()).filter(Boolean))]
+      .filter((p) => !known.has(p.toLowerCase())).sort();
+    return [...listed, ...typed.map((p) => ({ key: p, title: p, label: p }))];
+  }, [frequency, all, today]);
+  const [periodBySheet, setPeriodBySheet] = useState<Record<string, string>>({});
+  const period = frequency ? (periodBySheet[sheetKey] ?? periodChoices[0]?.title ?? '') : '';
+  const shown = useMemo(
+    () => (period ? all.filter((r) => String(r.values.period ?? '').trim().toLowerCase() === period.toLowerCase()) : all),
+    [all, period],
+  );
 
   return (
     <div className="flex flex-col min-h-full">
@@ -213,6 +245,16 @@ export default function WorksheetModulePage({ module, title, subtitle, pickerLab
                   {mod.sheets.map((s) => <option key={s.key} value={s.key}>{s.label}</option>)}
                 </select>
               </label>
+              {frequency && view.kind === 'grid' && (
+                <label className="block sm:w-72">
+                  <span className="input-label">Return period</span>
+                  <select aria-label="Return period" value={period}
+                    onChange={(e) => setPeriodBySheet((m) => ({ ...m, [sheetKey]: e.target.value }))} className="input-field px-4 py-3">
+                    <option value="">All periods</option>
+                    {periodChoices.map((o) => <option key={o.key} value={o.title}>{o.label}</option>)}
+                  </select>
+                </label>
+              )}
               {view.kind === 'grid' && (
                 <div className="flex flex-wrap gap-2 sm:ml-auto">
                   {mod.canEdit && (
@@ -225,6 +267,11 @@ export default function WorksheetModulePage({ module, title, subtitle, pickerLab
                       <Upload className="w-4 h-4" /> Upload Excel
                     </button>
                   )}
+                  {mod.canEdit && hasDropdowns && (
+                    <button type="button" onClick={() => setView({ kind: 'options' })} className="btn-secondary inline-flex items-center gap-1.5 min-h-11">
+                      <ListPlus className="w-4 h-4" /> Edit dropdowns
+                    </button>
+                  )}
                   {mod.canManageColumns && (
                     <button type="button" onClick={() => setView({ kind: 'columns' })} className="btn-secondary inline-flex items-center gap-1.5 min-h-11">
                       <Settings2 className="w-4 h-4" /> Edit columns
@@ -234,6 +281,12 @@ export default function WorksheetModulePage({ module, title, subtitle, pickerLab
               )}
             </div>
 
+            {view.kind === 'grid' && sheet.source && (
+              <p className="text-xs text-ink-muted">
+                Rows of GST return matters fill in and update themselves as the matter moves on. You can add rows and change any cell;
+                a cell you change keeps your value until the matter changes that cell again.
+              </p>
+            )}
             {view.kind === 'grid' && (
               records.isLoading ? <div className="card p-10 text-center text-sm text-ink-muted">Loading records…</div>
                 : records.isError ? <div className="card p-10 text-center text-sm text-red-600">Could not load the records.</div>
@@ -244,7 +297,7 @@ export default function WorksheetModulePage({ module, title, subtitle, pickerLab
                     )}
                     <WorksheetGrid
                       key={sheetKey}
-                      sheet={sheet} records={all} matters={matters} canEdit={mod.canEdit} canDelete={mod.canDelete}
+                      sheet={sheet} records={shown} matters={matters} canEdit={mod.canEdit} canDelete={mod.canDelete}
                       loadingMore={isFetchingNextPage}
                       onSaveCell={saveCell}
                       onOpen={(r) => setView({ kind: 'form', id: r.id })}
@@ -266,6 +319,9 @@ export default function WorksheetModulePage({ module, title, subtitle, pickerLab
             )}
             {view.kind === 'columns' && (
               <ColumnEditor key={sheetKey} sheet={sheet} bookColumns={bookColumns} onSaved={columnsSaved} onCancel={() => setView({ kind: 'grid' })} />
+            )}
+            {view.kind === 'options' && (
+              <OptionsEditor key={sheetKey} sheet={sheet} onSaved={optionsSaved} onCancel={() => setView({ kind: 'grid' })} />
             )}
             {view.kind === 'import' && (
               <ImportPanel key={sheetKey} sheet={sheet} onCancel={() => setView({ kind: 'grid' })}

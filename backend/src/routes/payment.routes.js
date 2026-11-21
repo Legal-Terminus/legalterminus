@@ -4,6 +4,7 @@ import axios from 'axios';
 import { getDb } from '../config/firebase.js';
 import { verifyToken } from '../middleware/auth.middleware.js';
 import { logger } from "../config/logger.js";
+import { logValue } from '../utils/sanitize.js';
 import { publicSiteUrl } from '../services/emailService.js';
 
 const router = express.Router();
@@ -98,7 +99,7 @@ router.post('/redirect', express.urlencoded({ extended: true }), async (req, res
   const { txnId, planName, userId, amount, source, sourceLabel } = req.query;
   const FRONTEND_URL = publicSiteUrl();
 
-  logger.info(`PayU redirect: txnId=${txnId}, status=${body.status}, userId=${userId}`);
+  logger.info({ txnId: logValue(txnId), status: logValue(body.status), userId: logValue(userId) }, 'PayU redirect');
 
   if (!txnId) {
     return res.redirect(`${FRONTEND_URL}/payment/result?status=failed&reason=missing_transaction`);
@@ -122,7 +123,7 @@ router.post('/redirect', express.urlencoded({ extended: true }), async (req, res
   });
 
   if (!hashValid) {
-    logger.error({ txnId }, 'PayU hash verification failed');
+    logger.error({ txnId: logValue(txnId) }, 'PayU hash verification failed');
     const query = new URLSearchParams({ status: 'failed', order_id: txnId, reason: 'Hash verification failed' });
     return res.redirect(`${FRONTEND_URL}/payment/result?${query}`);
   }
@@ -166,7 +167,7 @@ router.get('/redirect', async (req, res) => {
   const { txnId, planName, userId, amount, source, sourceLabel, status_type } = req.query;
   const { FRONTEND_URL } = process.env;
 
-  logger.info(`PayU GET redirect: txnId=${txnId}, status_type=${status_type}`);
+  logger.info({ txnId: logValue(txnId), statusType: logValue(status_type) }, 'PayU GET redirect');
 
   if (!txnId) {
     return res.redirect(`${FRONTEND_URL}/payment/result?status=failed&reason=missing_transaction`);
@@ -198,7 +199,7 @@ router.get('/redirect', async (req, res) => {
     const trustedPlanName = txnData?.udf2 || planName;
     const trustedAmount   = txnData?.amt  || txnData?.amount || amount;
 
-    logger.info(`[PayU Verify] txnId=${txnId}, status=${status}`);
+    logger.info({ txnId: logValue(txnId), status: logValue(status) }, '[PayU Verify] result');
 
     if (isSuccess) {
       await savePayment({ userId: trustedUserId, transactionId: txnId, paymentId, amount: trustedAmount, planName: trustedPlanName, source, sourceLabel, status: 'success' });
@@ -220,7 +221,7 @@ router.get('/redirect', async (req, res) => {
 /* ─── helpers ─── */
 
 async function savePayment({ userId, transactionId, paymentId, amount, planName, source, sourceLabel, status, failureReason }) {
-  logger.info(`[savePayment] userId=${userId}, txnId=${transactionId}, status=${status}, source=${source}`);
+  logger.info({ userId: logValue(userId), txnId: logValue(transactionId), status: logValue(status), source: logValue(source) }, '[savePayment]');
 
   if (!userId) {
     logger.warn('[savePayment] userId is missing — payment NOT saved to database');

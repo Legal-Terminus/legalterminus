@@ -36,10 +36,53 @@ async function call(path, { method = "GET", body } = {}) {
 /** Is online payment switched on for this site, and through which gateway? */
 export const getPaymentConfig = () => call("/api/orders/config").catch(() => ({ enabled: false, gateway: null }));
 
-export const startOrder = (productKey, planId, customer) =>
-  call("/api/orders", { method: "POST", body: { productKey, planId, ...(customer ? { customer } : {}) } });
+/**
+ * #256: the plans being bought, as the server takes them — never a price.
+ * #221: with the answer to a product's question (`optionId`), where it asks one;
+ * the server adds that answer's surcharge itself.
+ */
+const withOption = (line) => ({
+  productKey: line.productKey, planId: line.planId, ...(line.optionId ? { optionId: line.optionId } : {}),
+});
+/**
+ * #244: a cart line also says HOW MANY (a whole number; the server checks the
+ * limits and prices every unit itself). Never a price.
+ */
+const cartLine = (line) => ({
+  ...withOption(line), ...(Number.isInteger(line.quantity) && line.quantity > 1 ? { quantity: line.quantity } : {}),
+});
+const planBody = (lines) => (Array.isArray(lines) ? { items: lines.map(cartLine) } : withOption(lines));
 
-export const confirmPayment = (orderId, result) =>
+export const startOrder = (productKey, planId, customer, couponCode, optionId) =>
+  call("/api/orders", {
+    method: "POST",
+    body: { ...withOption({ productKey, planId, optionId }), ...(couponCode ? { couponCode } : {}), ...(customer ? { customer } : {}) },
+  });
+
+/**
+ * #244: one order, one payment, for every service in the cart. Only the plans
+ * are sent; the server prices each line and the total. #256: and the coupon
+ * code, if one was applied — the server checks it and prices it again.
+ */
+export const startCartOrder = (lines, customer, couponCode) =>
+  call("/api/orders", {
+    method: "POST",
+    body: { ...planBody(lines), ...(couponCode ? { couponCode } : {}), ...(customer ? { customer } : {}) },
+  });
+
+/**
+ * #256: what the checkout will charge, with a coupon code. `lines` is the cart
+ * (an array) or one { productKey, planId }. Resolves with the server's figures
+ * (original price, discount, GST, total), or rejects with the reason the code
+ * cannot be used, in words.
+ */
+export const quoteOrder = (lines, couponCode) =>
+  call("/api/orders/quote", { method: "POST", body: { ...planBody(lines), couponCode } });
+
+/** A refusal about the coupon, not about paying: the customer can still pay without it. */
+export const isCouponError = (err) => typeof err?.code === "string" && err.code.startsWith("COUPON_");
+
+export const confirmPayment =(orderId, result) =>
   call(`/api/orders/${orderId}/verify`, { method: "POST", body: result });
 
 export const reportFailure = (orderId, reason) =>
@@ -89,7 +132,8 @@ export async function payWithRazorpay(order, customer) {
       amount: Math.round(order.amount * 100),
       currency: order.currency || "INR",
       name: "Legal Terminus",
-      description: `${order.label} — ${order.planName}`,
+      // #244: a cart's planName lists every service; Razorpay keeps descriptions short.
+      description: `${order.label} — ${order.planName}`.slice(0, 250),
       prefill: { name: customer?.name || "", email: customer?.email || "", contact: customer?.phone || "" },
       handler: (r) => resolve({ gatewayPaymentId: r.razorpay_payment_id, signature: r.razorpay_signature }),
       modal: {

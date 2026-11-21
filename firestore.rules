@@ -109,6 +109,34 @@ service cloud.firestore {
         allow read: if isAdminOrManager();
         allow write: if false;
       }
+
+      // ── tasks/{taskId}/refunds/{refundId} ────────────────────────────────
+      // #240: the refund log. Same rule as the ledger: admin/manager may read
+      // directly, nobody writes from the client SDK. The client reads their own
+      // matter's refunds through GET /api/tasks/:taskId/refunds, which strips
+      // staff identities. (Refunds of a website order before approval live under
+      // paymentOrders/{orderId}/refunds — denied here by the catch-all.)
+      match /refunds/{refundId} {
+        allow read: if isAdminOrManager();
+        allow write: if false;
+      }
+
+      // ── tasks/{taskId}/paymentRequests/{requestId} ───────────────────────
+      // #222: additional payment requests. Backend-only: every read and write
+      // goes through /api/tasks/:taskId/payment-requests, which enforces who
+      // may see and change them (and masks staff names for the client).
+      match /paymentRequests/{requestId} {
+        allow read, write: if false;
+      }
+
+      // ── tasks/{taskId}/invoices/{invoiceId} ──────────────────────────────
+      // #313: invoices on the Payments tab. Backend-only: listing, upload,
+      // replace, delete and download all go through /api/tasks/:taskId/invoices,
+      // which allows admin/manager and the matter's own client, and refuses team
+      // members (#148). Nothing here is readable from the client SDK.
+      match /invoices/{invoiceId} {
+        allow read, write: if false;
+      }
     }
 
     // ── workflowTemplates/{workflowId} ─────────────────────────────────────
@@ -136,6 +164,18 @@ service cloud.firestore {
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['readAt']);
       // Only backend (admin SDK) creates notifications — no client write
       allow create, delete: if false;
+    }
+
+    // ── coupons/{code} and couponRedemptions/{orderId} (#256) ─────────────
+    // Backend-only. Staff manage coupons through /api/coupons (admin, manager);
+    // a customer only ever applies a code through POST /api/orders/quote, and a
+    // redemption is written once by the payment's own transaction. A browser
+    // reading these could list every live code — so neither is readable.
+    match /coupons/{code} {
+      allow read, write: if false;
+    }
+    match /couponRedemptions/{orderId} {
+      allow read, write: if false;
     }
 
     // ── Deny everything else ───────────────────────────────────────────────

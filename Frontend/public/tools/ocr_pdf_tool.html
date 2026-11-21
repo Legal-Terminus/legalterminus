@@ -150,7 +150,7 @@
     </div>
     
     <!-- PDF.js Library -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js" integrity="sha384-RPl3/z3fjdXhY+fi+x3Ai8ri9BnaFQ2tIZn+wJ4pNmFqp/KvdiIcqMESTEY2MdUz" crossorigin="anonymous"></script>
     
     <script>
         // Set PDF.js worker
@@ -278,7 +278,7 @@
                 li.dataset.fileId = fileObj.id;
                 li.innerHTML = `
                     <div class="file-info">
-                        <div class="file-name">${fileObj.name}</div>
+                        <div class="file-name"></div>
                         <div class="file-size">${(fileObj.size / 1024 / 1024).toFixed(2)} MB</div>
                         <div class="file-status ${fileObj.status}" id="status-${fileObj.id}">${fileObj.status}</div>
                     </div>
@@ -289,6 +289,8 @@
                         <button class="btn btn-danger" onclick="removeFile(${fileObj.id})">Remove</button>
                     </div>
                 `;
+                // The file name is the user's text, never markup.
+                li.querySelector('.file-name').textContent = fileObj.name;
                 filesList.appendChild(li);
             });
             

@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { ArrowLeft, Loader2, Trash2 } from 'lucide-react';
 import type { CellValue, MatterRef, WsRecord, WsSheet } from '../../api/worksheets';
-import { formatDate } from '../../lib/worksheets';
+import { formatDate, staffOptions } from '../../lib/worksheets';
 import WorksheetImage from './WorksheetImage';
 import MatterPicker from './MatterPicker';
+import SecretCell from './SecretCell';
 
 /**
  * #210 / #217 — a whole record on one page (adding a record, and editing on a
@@ -43,6 +44,9 @@ export default function RecordForm({
     const values: Record<string, CellValue> = {};
     for (const c of columns) {
       if (c.type === 'computed') continue;
+      // #279: a password is sent exactly as typed, and only when one was typed —
+      // an empty box keeps the saved password.
+      if (c.secret) { if ((draft[c.key] ?? '').trim()) values[c.key] = draft[c.key]; continue; }
       const raw = (draft[c.key] ?? '').trim();
       const next: CellValue = raw === '' ? null : c.type === 'number' && Number.isFinite(Number(raw)) ? Number(raw) : raw;
       const before = record?.values[c.key] ?? null;
@@ -99,6 +103,20 @@ export default function RecordForm({
               </div>
             );
           }
+          if (c.secret) {
+            const saved = !!record?.secretsSet?.[c.key];
+            return (
+              <div key={c.key}>
+                <label htmlFor={id} className="input-label">{c.label}</label>
+                <input id={id} type="password" autoComplete="new-password" value={draft[c.key] ?? ''}
+                  onChange={(e) => set(c.key, e.target.value)} className="input-field px-4 py-3"
+                  placeholder={saved ? 'Saved — type a new one to change it' : ''} />
+                {record && saved && (
+                  <div className="mt-1"><SecretCell sheetKey={sheet.key} recordId={record.id} column={c} isSet /></div>
+                )}
+              </div>
+            );
+          }
           return (
             <div key={c.key} className={c.type === 'longtext' ? 'md:col-span-2' : ''}>
               <label htmlFor={id} className="input-label">{c.label}</label>
@@ -109,6 +127,12 @@ export default function RecordForm({
                   <option value="">—</option>
                   {draft[c.key] && !(c.options ?? []).includes(draft[c.key]) && <option value={draft[c.key]}>{draft[c.key]}</option>}
                   {(c.options ?? []).map((o) => <option key={o} value={o}>{o}</option>)}
+                </select>
+              ) : c.type === 'staff' ? (
+                // #280: the portal's staff, by name; the row stores who was picked.
+                <select id={id} value={draft[c.key] ?? ''} onChange={(e) => set(c.key, e.target.value)} className="input-field px-4 py-3">
+                  <option value="">—</option>
+                  {staffOptions(c, draft[c.key] ?? '').map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
                 </select>
               ) : (
                 <input id={id} value={draft[c.key] ?? ''} onChange={(e) => set(c.key, e.target.value)} className="input-field px-4 py-3"

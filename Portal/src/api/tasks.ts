@@ -1,5 +1,6 @@
 import { apiFetch } from './client';
 import type { Task, PaymentStatus } from '../types/task';
+import { fetchAllPages } from './pagination';
 
 export interface TasksPage {
   data: Task[];
@@ -12,9 +13,20 @@ export const getTasksPage = (params?: Record<string, string>) => {
   return apiFetch<TasksPage>(`/api/tasks${qs}`);
 };
 
-/** Convenience: first page's rows only (used by the current list view). */
-export const getTasks = async (params?: Record<string, string>): Promise<Task[]> =>
-  (await getTasksPage(params)).data;
+/**
+ * EVERY matter the caller can see, following the cursor to the end.
+ *
+ * #275: this returned only the first page — the 25 most recently updated
+ * matters — and the Matters page filtered that in the browser. Once a firm had
+ * more than 25 matters, a completed one dropped off the list as soon as 25
+ * others were touched after it, and "Status: Completed" could only find the few
+ * still inside the first page. The dashboard's counts had the same blind spot.
+ */
+export const getTasks = (params?: Record<string, string>): Promise<Task[]> =>
+  fetchAllPages(
+    (cursor) => getTasksPage({ ...params, limit: '100', ...(cursor ? { cursor } : {}) }),
+    (t) => t.id,
+  );
 export const getTask = (id: string) => apiFetch<Task>(`/api/tasks/${id}`);
 
 /** A workflow event (intent) sent to the backend-authoritative transition endpoint. */
@@ -92,6 +104,8 @@ export interface PaymentUpdate {
   totalCost?: number;
   paymentMode?: string | null;
   paymentDescription?: string | null; // #147
+  /** #220: whether the client sees Pay Now for the amount due. */
+  onlinePaymentEnabled?: boolean;
 }
 export const updatePayment = (id: string, body: PaymentUpdate) =>
   apiFetch<{ success: boolean } & Required<PaymentUpdate> & { amountPaid: number; paymentStatus: PaymentStatus; amountDue: number }>(
@@ -212,6 +226,16 @@ export const assignStep = (taskId: string, stepNumber: number, assignedTo: strin
     body: JSON.stringify({ assignedTo }),
   });
 
+/**
+ * #192: set EVERY owner of a step at once (an empty list unassigns it). The
+ * first uid becomes the primary. Any one of them may complete the step.
+ */
+export const setStepAssignees = (taskId: string, stepNumber: number, assignedToUids: string[]) =>
+  apiFetch<void>(`/api/tasks/${taskId}/steps/${stepNumber}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ assignedToUids }),
+  });
+
 /** #116: reopen a completed step — ADMIN only. Rewinds the workflow to that step
  *  (later steps revert to pending). Returns the new current step. */
 export const reopenStep = (taskId: string, stepNumber: number, reason?: string) =>
@@ -226,6 +250,14 @@ export const postStepNote = (taskId: string, stepNumber: number, note: string) =
   apiFetch<{ success: boolean; at: string }>(
     `/api/tasks/${taskId}/steps/${stepNumber}/note`,
     { method: 'POST', body: JSON.stringify({ note }) },
+  );
+
+/** #294: staff save (or change) the date a GSTR-1 / GSTR-3B return was filed;
+ *  `null` removes it. The server checks the range and who may. */
+export const saveFilingDate = (taskId: string, stepNumber: number, date: string | null) =>
+  apiFetch<{ stepNumber: number; form: string; date: string | null; previous?: string | null; changed: boolean }>(
+    `/api/tasks/${taskId}/steps/${stepNumber}/filed-on`,
+    { method: 'PUT', body: JSON.stringify({ date }) },
   );
 
 /* ── #167: recurring matters ──────────────────────────────────────────────── */

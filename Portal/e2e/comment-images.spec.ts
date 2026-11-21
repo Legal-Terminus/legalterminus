@@ -5,6 +5,7 @@ import {
   advanceUntil, getMatter, transition,
 } from './api';
 import type { RoleKey } from './helpers';
+import { solidPng } from './png';
 
 /**
  * #122 follow-up — paste or upload images in step comments and the Discussion.
@@ -19,11 +20,8 @@ import type { RoleKey } from './helpers';
 
 const API_BASE = process.env.E2E_API_BASE ?? 'http://localhost:5001';
 
-/** A valid 1×1 PNG. */
-const PNG = Buffer.from(
-  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
-  'base64',
-);
+/** A valid 64×48 PNG (#319: under 20×20 px is now refused, so no 1×1 pixel). */
+const PNG = solidPng(64, 48);
 
 /**
  * A request context with ONLY the bearer token. `apiAs` pins
@@ -94,7 +92,10 @@ test('an image in an INTERNAL step comment is staff-only; sharing it in a client
     const staff = await fetchImageAs('admin', taskId, imageId);
     expect(staff.status).toBe(200);
     expect(staff.type).toContain('image/png');
-    expect(staff.cache).toContain('private');
+    // Never cached. The API sends `private, no-store`; on the deployed site
+    // Firebase Hosting's catch-all header replaces it with
+    // `no-cache, no-store, must-revalidate`. Either way: no-store.
+    expect(staff.cache).toContain('no-store');
 
     // The client may not — and is not told whether it exists.
     expect((await fetchImageAs('client', taskId, imageId)).status).toBe(404);
@@ -171,6 +172,17 @@ test('wrong type and over 5 MB are refused with a reason', async () => {
     expect(tooBig.status).toBe(413);
     expect(tooBig.body.message).toMatch(/5 MB/);
 
+    // #319: outside 20–8,000 px a side is refused with the size and the limit.
+    const tiny = await uploadAs('admin', taskId, { name: 'dot.png', mimeType: 'image/png', buffer: solidPng(1, 1) });
+    expect(tiny.status).toBe(422);
+    expect(tiny.body.code).toBe('IMAGE_DIMENSIONS');
+    expect(tiny.body.message).toMatch(/too small.*at least 20 × 20/);
+    const wide = await uploadAs('admin', taskId, { name: 'strip.png', mimeType: 'image/png', buffer: solidPng(8001, 20) });
+    expect(wide.status).toBe(422);
+    expect(wide.body.message).toMatch(/too large.*8,000 pixels/);
+    // The edges themselves are fine.
+    expect((await uploadAs('admin', taskId, { name: 'edge.png', mimeType: 'image/png', buffer: solidPng(20, 20) })).status).toBe(201);
+
     // A professional is view-only; no upload.
     const pro = await uploadAs('pro', taskId, { name: 'p.png', mimeType: 'image/png', buffer: PNG });
     expect(pro.status).toBe(403);
@@ -216,7 +228,10 @@ test('UI: staff upload an image into a step comment and it renders', async ({ ad
     await adminPage.getByRole('textbox', { name: 'Add a comment' }).first().pressSequentially(note);
     // The current step's composer is first in DOM order.
     await adminPage.getByTestId('comment-image-input').first()
-      .setInputFiles({ name: 'shot.png', mimeType: 'image/png', buffer: PNG });
+      // #319: TALL on purpose. A tall image used to fold the comment behind "Read
+      // more" once it loaded, which remounted the content and left the image
+      // with no src — a broken box. It must still be a loaded picture after.
+      .setInputFiles({ name: 'tall.png', mimeType: 'image/png', buffer: solidPng(40, 1600) });
     // The image appears in the editor, loaded from a local object URL.
     const inEditor = adminPage.getByRole('textbox', { name: 'Add a comment' }).first().locator('img[data-lt-image]');
     await expect(inEditor).toHaveAttribute('src', /^blob:/, { timeout: 15_000 });
@@ -227,6 +242,11 @@ test('UI: staff upload an image into a step comment and it renders', async ({ ad
     await expect(adminPage.getByText(note).first()).toBeAttached({ timeout: 15_000 });
     // Rendered in the activity — again via an authenticated fetch, never a src in the stored HTML.
     await expect(adminPage.locator('.rich-text img[data-lt-image][src^="blob:"]').first()).toBeAttached({ timeout: 15_000 });
+    // #319: no image in the activity is left empty, and the one shown really decoded.
+    await expect.poll(() => adminPage.locator('.rich-text img[data-lt-image]:not([src])').count()).toBe(0);
+    const shown = adminPage.locator('.rich-text img[data-lt-image][src^="blob:"]').filter({ visible: true }).first();
+    await shown.scrollIntoViewIfNeeded();
+    await expect.poll(() => shown.evaluate((el) => (el as HTMLImageElement).naturalWidth), { timeout: 15_000 }).toBeGreaterThan(0);
   } finally { await deleteMatter(taskId); }
 });
 
@@ -234,7 +254,7 @@ test('UI: a wrong-type file in the Discussion composer shows a friendly error', 
   const taskId = await createMatter();
   try {
     await adminPage.goto(`tasks/${taskId}`);
-    await adminPage.getByRole('button', { name: 'Discussion', exact: true }).click();
+    await adminPage.getByRole('button', { name: 'Chat', exact: true }).click();
     await adminPage.getByTestId('comment-image-input').first()
       .setInputFiles({ name: 'notes.txt', mimeType: 'text/plain', buffer: Buffer.from('hello') });
     await expect(adminPage.getByRole('alert').filter({ hasText: /JPEG, PNG or WebP/ })).toBeVisible();
@@ -246,20 +266,38 @@ test('UI: the client sees an image shared in the Discussion, rendered', async ({
   try {
     // Staff add it through the composer and share the message.
     await adminPage.goto(`tasks/${taskId}`);
-    await adminPage.getByRole('button', { name: 'Discussion', exact: true }).click();
+    await adminPage.getByRole('button', { name: 'Chat', exact: true }).click();
     const msg = `IMG-MSG-${Date.now()}`;
-    await adminPage.getByLabel('Message').pressSequentially(msg);
+    await adminPage.getByLabel('Message', { exact: true }).pressSequentially(msg);
     await adminPage.getByTestId('comment-image-input').first()
       .setInputFiles({ name: 'shot.png', mimeType: 'image/png', buffer: PNG });
-    await expect(adminPage.getByLabel('Message').locator('img[data-lt-image]')).toHaveAttribute('src', /^blob:/, { timeout: 15_000 });
+    await expect(adminPage.getByLabel('Message', { exact: true }).locator('img[data-lt-image]')).toHaveAttribute('src', /^blob:/, { timeout: 15_000 });
     await adminPage.getByLabel('Visible to client').check();
     await adminPage.getByRole('button', { name: /^Send$/ }).click();
+    // A message shared with the client asks for confirmation first.
+    await adminPage.getByRole('button', { name: 'Send to client' }).click();
     await expect(adminPage.getByText(msg)).toBeVisible();
 
     await clientPage.goto(`tasks/${taskId}`);
-    await clientPage.getByRole('button', { name: 'Discussion', exact: true }).click();
+    await clientPage.getByRole('button', { name: 'Chat', exact: true }).click();
     await expect(clientPage.getByText(msg)).toBeVisible({ timeout: 15_000 });
-    await expect(clientPage.locator('.rich-text img[data-lt-image][src^="blob:"]').first()).toBeVisible({ timeout: 15_000 });
+    const shown = clientPage.locator('.rich-text img[data-lt-image][src^="blob:"]').first();
+    await expect(shown).toBeVisible({ timeout: 15_000 });
     await expect(clientPage.getByText('Image unavailable')).toHaveCount(0);
+
+    // Clicking opens it full size in a new tab, and opens it DURING the click: a tab
+    // opened after an await has lost the click, and Safari blocks it as a pop-up.
+    await clientPage.evaluate(() => {
+      const w = window as unknown as { __inClick: boolean; __openedInClick: boolean | null };
+      w.__inClick = false; w.__openedInClick = null;
+      window.addEventListener('click', () => { w.__inClick = true; }, true);
+      window.addEventListener('click', () => { w.__inClick = false; });
+      const open = window.open.bind(window);
+      window.open = (...a: Parameters<typeof window.open>) => { w.__openedInClick = w.__inClick; return open(...a); };
+    });
+    const popup = clientPage.waitForEvent('popup');
+    await shown.click();
+    await popup;
+    expect(await clientPage.evaluate(() => (window as unknown as { __openedInClick: boolean | null }).__openedInClick)).toBe(true);
   } finally { await deleteMatter(taskId); }
 });

@@ -61,7 +61,11 @@ export interface DataGridProps<T> {
   searchable?: boolean;
   searchPlaceholder?: string;
   globalFilterFn?: (row: Row<T>, columnId: string, filterValue: string) => boolean;
-  /** Mobile (<md) card renderer. If omitted, the table shows on mobile too (scrolls). */
+  /**
+   * Mobile (<md) card renderer. If omitted, each row is shown as a default card on phones:
+   * the first visible column as its title, the others as label/value lines (#268, the
+   * reports were tables that scrolled sideways on a phone). The desktop table is unchanged.
+   */
   renderMobileCard?: (row: T) => ReactNode;
   /** Rows per page. 0 disables pagination (show all). Default 25. */
   pageSize?: number;
@@ -209,7 +213,7 @@ export default function DataGrid<T>({
       ) : (
         <ErrorBoundary>
           {/* Desktop table */}
-          <div className={`card overflow-hidden ${renderMobileCard ? 'hidden md:block' : ''}`}>
+          <div className="card overflow-hidden hidden md:block">
             <div className="overflow-x-auto">
               <div style={{ width: totalWidth, minWidth: '100%' }}>
                 {table.getHeaderGroups().map((hg) => (
@@ -293,7 +297,52 @@ export default function DataGrid<T>({
             </div>
           </div>
 
-          {/* Mobile cards */}
+          {/* Mobile cards — the page's own, or the default built from the columns. */}
+          {!renderMobileCard && (
+            <div className="space-y-3 md:hidden" data-testid="datagrid-mobile-cards">
+              {rows.length === 0 && (
+                <div className="card px-4 py-6 text-sm text-ink-muted">
+                  No rows match the current column filters.{' '}
+                  <button onClick={() => table.resetColumnFilters()} className="text-brand-700 font-medium hover:underline min-h-11">
+                    Clear filters
+                  </button>
+                </div>
+              )}
+              {rows.map((row) => {
+                const [first, ...rest] = row.getVisibleCells();
+                return (
+                  <div
+                    key={row.id}
+                    onClick={onRowClick ? () => onRowClick(row.original) : undefined}
+                    className={`card p-4 ${onRowClick ? 'cursor-pointer active:bg-surface-soft' : ''}`}
+                  >
+                    {first && (
+                      <div className="text-base font-medium text-ink wrap-break-word [&_.truncate]:whitespace-normal [&_.truncate]:overflow-visible">
+                        {flexRender(first.column.columnDef.cell, first.getContext())}
+                      </div>
+                    )}
+                    {rest.length > 0 && (
+                      <dl className="mt-3 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5">
+                        {rest.map((cell) => {
+                          const h = cell.column.columnDef.header;
+                          return (
+                            <div key={cell.id} className="contents">
+                              <dt className="text-xs font-semibold uppercase tracking-wide text-ink-faint pt-0.5">
+                                {typeof h === 'string' ? h : cell.column.id}
+                              </dt>
+                              <dd className="min-w-0 wrap-break-word [&_.truncate]:whitespace-normal [&_.truncate]:overflow-visible">
+                                {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                              </dd>
+                            </div>
+                          );
+                        })}
+                      </dl>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
           {renderMobileCard && (
             <div className="space-y-3 md:hidden">
               {rows.map((row) => (

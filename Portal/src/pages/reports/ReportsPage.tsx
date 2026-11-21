@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
 import {
-  ListChecks, CheckCircle2, Clock, FileSpreadsheet, Inbox, ArrowRight, AlertTriangle, CreditCard, Users, UserX, IndianRupee, Gauge, HardDrive, Megaphone, ShieldCheck, Contact, Layers, Stamp, Sheet,
+  ListChecks, CheckCircle2, Clock, FileSpreadsheet, Inbox, ArrowRight, AlertTriangle, CreditCard, Users, UserX, IndianRupee, Gauge, HardDrive, Megaphone, ShieldCheck, Contact, Layers, Stamp, Sheet, TicketPercent, Receipt,
 } from 'lucide-react';
 
 const REPORTS = [
@@ -13,6 +13,8 @@ const REPORTS = [
   { to: '/reports/sla',          title: 'SLA / Delay',       desc: 'Overdue & at-risk steps, plus on-time rate by service and phase.', icon: AlertTriangle },
   { to: '/reports/team-performance', title: 'Employee Performance', desc: 'Per person or whole team: daily work, deadlines and delays, trends, first-time-right and approvals.', icon: Gauge },
   { to: '/reports/revenue',      title: 'Revenue Analytics', desc: 'Collected, outstanding & pending revenue by month, service and team.', icon: IndianRupee },
+  // #256: every use of a coupon code, and how often each was used.
+  { to: '/reports/coupons',      title: 'Coupon & Discount', desc: 'Each coupon use — code, discount, client, services, original amount, discount and amount paid — and uses per coupon. CSV export.', icon: TicketPercent },
   { to: '/reports/payment-overrides', title: 'Payment Overrides', desc: 'Matters progressing ahead of payment (no-payment or gate override).', icon: CreditCard },
   { to: '/reports/professional-mapping', title: 'Professional / Group', desc: 'Client counts per handling professional and parent/group company.', icon: Users },
   { to: '/reports/storage',      title: 'Storage Usage',     desc: 'Total & per-client document storage with alert levels.', icon: HardDrive },
@@ -23,7 +25,9 @@ const REPORTS = [
   { to: '/reports/leads',        title: 'Lead Dashboard',  desc: 'Every lead on the lead sheet — source, service, follow-ups and outcome.', icon: Inbox },
   { to: '/reports/marketing',    title: 'Marketing Reports', desc: 'DM cost, DM income, cold calling and the monthly CAC / revenue-to-cost report.', icon: Megaphone },
   { to: '/reports/trademark',    title: 'Trademark Reports', desc: 'TM Master, Register TM, Opposition Raised / Received and TM Assignment — one record per trademark, renewal dates calculated.', icon: Stamp },
-  { to: '/worksheets',           title: 'Worksheets',        desc: 'Incorporation, auditors, KYC, annual filing, ROC, strike off, ADT-3, startup, GST, Udyam, PT and FSSAI sheets.', icon: Sheet },
+  // #279: the firm's GST return register, Monthly / Quarterly, fed by the GST return matters.
+  { to: '/reports/gst-returns',  title: 'GST Return Filing', desc: 'Monthly and quarterly GST returns — one row per client per period, filled in from the GST return matters. Add, upload, edit dropdowns, Excel export.', icon: Receipt },
+  { to: '/worksheets',           title: 'Worksheets',        desc: 'Incorporation, auditors, KYC, annual filing, ROC, strike off, ADT-3, startup, GST, TDS, Udyam, PT and FSSAI sheets.', icon: Sheet },
   { to: '/settings/reporting-access', title: 'Reporting Access', desc: 'Admin: who can view or edit leads and each marketing report.', icon: ShieldCheck, adminOnly: true },
 ];
 

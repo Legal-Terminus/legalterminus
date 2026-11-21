@@ -724,6 +724,41 @@ export async function createClientAssignedMatter(): Promise<{ taskId: string; de
   return { taskId, defId };
 }
 
+/**
+ * #293: a NO-PAYMENT matter (so it waits for admin approval, like every GST
+ * return matter the sweep opens) whose first step is pre-assigned to the e2e
+ * team member. Created by the MANAGER so the admin who approves it is not the
+ * creator. Returns the matter id + def id for teardown.
+ */
+export async function createPendingTeamStepMatter(): Promise<{ taskId: string; defId: string }> {
+  const admin = await apiAs('admin');
+  const stamp = Date.now();
+  const defId = `e2e-pendingteam-${stamp}`;
+  const serviceKey = `e2e-svc-pendingteam-${stamp}`;
+  const def = {
+    id: defId,
+    name: `E2E Pending Team Step ${defId}`,
+    initialStep: 1,
+    serviceKeys: [serviceKey],
+    steps: [
+      { stepNumber: 1, title: 'Prepare the return (team)', type: 'step',
+        defaultAssigneeUid: env('E2E_TEAM_UID'), transitions: [{ event: 'COMPLETE_STEP', to: 2 }] },
+      { stepNumber: 2, title: 'Done', type: 'final' },
+    ],
+  };
+  const dres = await admin.post('/api/workflow-definitions', { data: def });
+  if (!dres.ok()) throw new Error(`createPendingTeamStepMatter def failed: ${dres.status()} ${await dres.text()}`);
+  await admin.dispose();
+  const manager = await apiAs('manager');
+  const tres = await manager.post('/api/tasks', {
+    data: { clientUid: env('E2E_CLIENT_UID'), serviceKey, paymentStatus: 'not_paid' },
+  });
+  if (!tres.ok()) throw new Error(`createPendingTeamStepMatter task failed: ${tres.status()} ${await tres.text()}`);
+  const taskId = (await tres.json()).id as string;
+  await manager.dispose();
+  return { taskId, defId };
+}
+
 /** Delete a workflow definition by id (admin). Best-effort teardown. */
 export async function deleteDefinition(id: string): Promise<void> {
   if (!id) return;
@@ -847,7 +882,12 @@ export function withGrant(base: SectionGrants, uid: string, levels: Record<strin
 export interface WsRecordLite { id: string; sheets: string[]; values: Record<string, string | number | null> }
 export interface WsSheetLite {
   key: string; label: string; linkedServices: string[];
-  columns: { key: string; label: string; hidden: boolean; type: string; builtIn: boolean }[];
+  columns: {
+    key: string; label: string; hidden: boolean; type: string; builtIn: boolean; options?: string[];
+    /** #280: a staff column's people (uid + name). */
+    choices?: { value: string; label: string; active: boolean }[];
+  }[];
+  serial?: boolean;
 }
 
 /** Every record of a sheet (all pages). */
@@ -886,7 +926,7 @@ export async function deleteWorksheetRecordsMatching(sheet: string, field: strin
   await api.dispose();
 }
 
-export async function getWorksheetSheet(module: 'trademark' | 'company', sheet: string): Promise<WsSheetLite> {
+export async function getWorksheetSheet(module: 'trademark' | 'company' | 'gst_return', sheet: string): Promise<WsSheetLite> {
   const api = await apiAs('admin');
   const res = await api.get(`/api/worksheets/modules/${module}`);
   if (!res.ok()) throw new Error(`getWorksheetSheet failed: ${res.status()}`);
@@ -902,5 +942,13 @@ export async function restoreWorksheetColumns(snapshot: WsSheetLite): Promise<vo
     data: { columns: snapshot.columns.map((c) => ({ key: c.key, label: c.label, hidden: c.hidden })), linkedServices: snapshot.linkedServices },
   });
   if (!res.ok()) throw new Error(`restoreWorksheetColumns failed: ${res.status()} ${await res.text()}`);
+  await api.dispose();
+}
+
+/** #280 / #279: put one dropdown column's choices back to a snapshot. */
+export async function restoreWorksheetOptions(sheet: string, field: string, options: string[]): Promise<void> {
+  const api = await apiAs('admin');
+  const res = await api.put(`/api/worksheets/sheets/${sheet}/options/${field}`, { data: { options } });
+  if (!res.ok()) throw new Error(`restoreWorksheetOptions failed: ${res.status()} ${await res.text()}`);
   await api.dispose();
 }

@@ -398,7 +398,7 @@
     },
     "company-registration": {
       "code": "SVC-012",
-      "label": "Company Registration in Odisha",
+      "label": "Company Registration in Odisha — /companyregistration-in-odisha",
       "serviceKey": null,
       "plans": [
         {
@@ -430,28 +430,34 @@
         "Frontend/src/Components/CompanyRegPlans/CompanyRegPlans.jsx"
       ]
     },
-    "company-registration-odisha": {
-      "code": "SVC-013",
-      "label": "Company Registration in Odisha",
-      "serviceKey": null,
+    "private-limited-odisha": {
+      "code": "SVC-063",
+      "label": "Company Registration in Odisha — landing pages",
+      "serviceKey": "private-limited",
       "plans": [
         {
           "id": "elemental",
           "name": "Elemental",
-          "price": 4999,
+          "price": 5999,
           "oldPrice": 7999
         },
         {
           "id": "enriched",
           "name": "Enriched",
-          "price": 7999,
+          "price": 9499,
           "oldPrice": 13999
         },
         {
           "id": "supreme",
           "name": "Supreme",
+          "price": 14999,
+          "oldPrice": 20999
+        },
+        {
+          "id": "supreme-plus",
+          "name": "Supreme Plus",
           "price": 24999,
-          "oldPrice": 29999
+          "oldPrice": 37499
         }
       ],
       "pages": [
@@ -1888,16 +1894,26 @@
         {
           "path": "/trademark/registration-and-compliance-services/trademark-registration-in-india",
           "title": "Trademark Registration in India"
-        },
-        {
-          "path": "/trademark-registration-in-odisha",
-          "title": "Trademark Registration in Odisha"
         }
       ],
       "components": [
-        "Frontend/src/Components/TmarkPlans/TmarkPlans.jsx",
-        "Frontend/src/Components/TrademarkPlans/TrademarkPlans.jsx"
-      ]
+        "Frontend/src/Components/TmarkPlans/TmarkPlans.jsx"
+      ],
+      "choice": {
+        "label": "User type",
+        "options": [
+          {
+            "id": "proposed",
+            "name": "Proposed to be Used",
+            "surcharge": 0
+          },
+          {
+            "id": "prior-user",
+            "name": "Prior User",
+            "surcharge": 2500
+          }
+        ]
+      }
     },
     "trademark-exam-reply": {
       "code": "SVC-055",
@@ -2069,6 +2085,61 @@
         "Frontend/src/Components/TradeLicensePlans/TradeLicensePlans.jsx"
       ]
     },
+    "trademark-application-odisha": {
+      "code": "SVC-064",
+      "label": "Trademark Registration in Odisha — landing page",
+      "serviceKey": "trademark-application",
+      "plans": [
+        {
+          "id": "elemental",
+          "name": "Elemental",
+          "price": 1499,
+          "oldPrice": 2249
+        },
+        {
+          "id": "enriched",
+          "name": "Enriched",
+          "price": 4499,
+          "oldPrice": 9999
+        },
+        {
+          "id": "supreme",
+          "name": "Supreme",
+          "price": 11999,
+          "oldPrice": 22499
+        },
+        {
+          "id": "supreme-plus",
+          "name": "Supreme Plus",
+          "price": 21999,
+          "oldPrice": 32499
+        }
+      ],
+      "pages": [
+        {
+          "path": "/trademark-registration-in-odisha",
+          "title": "Trademark Registration in Odisha"
+        }
+      ],
+      "components": [
+        "Frontend/src/Components/TrademarkPlans/TrademarkPlans.jsx"
+      ],
+      "choice": {
+        "label": "User type",
+        "options": [
+          {
+            "id": "proposed",
+            "name": "Proposed to be Used",
+            "surcharge": 0
+          },
+          {
+            "id": "prior-user",
+            "name": "Prior User",
+            "surcharge": 2500
+          }
+        ]
+      }
+    },
     "trust-registration": {
       "code": "SVC-059",
       "label": "Trust Registration Online",
@@ -2169,6 +2240,34 @@
       ],
       "components": [
         "Frontend/src/Components/WindupPLCPP/WindupPLCPP.jsx"
+      ]
+    },
+    "technology-services": {
+      "code": "SVC-062",
+      "label": "Technology Services for New Businesses",
+      "serviceKey": null,
+      "plans": [
+        {
+          "id": "elemental",
+          "name": "Elemental",
+          "price": 14999,
+          "oldPrice": null
+        },
+        {
+          "id": "enriched",
+          "name": "Enriched",
+          "price": 29999,
+          "oldPrice": null
+        }
+      ],
+      "pages": [
+        {
+          "path": "/technology-services",
+          "title": "Technology Services for New Businesses"
+        }
+      ],
+      "components": [
+        "Frontend/src/Pages/TechServices/TechServices.jsx"
       ]
     }
   }

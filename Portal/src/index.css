@@ -384,6 +384,20 @@ layer(base);
       min-width: 3rem; min-height: 3rem;
     }
     .rich-text img[data-lt-image] { @apply cursor-zoom-in; }
+    /* #319 — in Chat every image shows in the SAME box, whatever its own size or
+       shape: 15rem wide (or the bubble's width on a narrow phone) by 11.25rem
+       tall, the whole picture fitted inside (object-fit: contain), never cropped
+       or stretched. A tall screenshot and a tiny icon take the same space in the
+       thread; clicking opens the original full size. Applies to the thread and
+       to the composer, so what is typed looks like what will be sent. */
+    .lt-chat-images .rich-text img[data-lt-image],
+    .lt-chat-images .ProseMirror img[data-lt-image] {
+      width: 15rem;
+      max-width: 100%; /* a narrow phone bubble: shrink, still contained */
+      height: 11.25rem;
+      max-height: none;
+      object-fit: contain;
+    }
     .ProseMirror .ProseMirror-selectednode img[data-lt-image] { @apply ring-2 ring-brand-400; }
     /* A missing image or one this viewer may not see. Neutral — not an error
        colour: nothing is wrong with the comment itself. */
@@ -392,3 +406,38 @@ layer(base);
     }
 }
 
+
+/* E29-S06 — the mobile apps' shell. `html[data-native]` is set by lib/native.ts inside
+   the Android and iPhone apps only, so none of this can reach the website. The safe-area
+   insets are the notch / Dynamic Island at the top and the home indicator at the bottom
+   (zero on phones without them, and on Android). */
+html[data-native] { overscroll-behavior-y: none; }
+/* D-1 (iPhone QA, 2026-11-17) — iOS zooms into any field with a font under 16px when it is
+   focused, then scrolls the page to it: with the keyboard open the page was ~14% larger and
+   panned sideways (left margin gone, right edge cut off). 14px fields / 16px = 1.14. Fields in
+   the iPhone app are 16px, so there is no zoom. Android and the website are unchanged. */
+html[data-native="ios"] input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']),
+html[data-native="ios"] select,
+html[data-native="ios"] textarea,
+html[data-native="ios"] [contenteditable='true'] { font-size: 16px; }
+html[data-native] .app-topbar {
+  padding-top: env(safe-area-inset-top);
+  height: calc(3.5rem + env(safe-area-inset-top));
+}
+html[data-native] .app-sidebar { padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); }
+html[data-native] .app-bottombar { padding-bottom: env(safe-area-inset-bottom); }
+@media (max-width: 767px) {
+  html[data-native] .app-main { padding-bottom: calc(4rem + env(safe-area-inset-bottom)); }
+}
+/* #295 — while someone types in the Chat composer on a phone, the bottom
+   navigation steps aside. The on-screen keyboard leaves little room, and the
+   fixed bar used to sit over the composer's Send button. (Website and app.) */
+@media (max-width: 767px) {
+  html:has([data-chat-composer]:focus-within) .app-bottombar { display: none; }
+  html:has([data-chat-composer]:focus-within) .app-main { padding-bottom: 0; }
+}
+/* Pages outside the app layout (sign-in, account actions). */
+html[data-native] .app-safe-page {
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+}

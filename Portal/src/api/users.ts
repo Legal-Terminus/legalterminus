@@ -13,6 +13,8 @@ export interface PortalUser {
   email: string;
   phone?: string;
   role: Role;
+  /** E29-S08: set when the person asked for their account to be deleted. */
+  deletionRequestedAt?: string | null;
   createdAt: string;
   // team-member / staff fields
   designation?: string;
@@ -34,6 +36,9 @@ export interface PortalUser {
   altPhone?: string;
   contactDesignation?: string;
   gstNumber?: string;
+  /** #219: how often we file this client's GST returns; '' or absent = not filed by us. */
+  gstReturnFrequency?: '' | 'monthly' | 'quarterly' | null;
+  gstReturnFrequencySetAt?: string | null;
   panNumber?: string;
   aadhaarNumber?: string;
   state?: string;

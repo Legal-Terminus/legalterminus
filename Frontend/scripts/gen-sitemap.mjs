@@ -37,7 +37,7 @@ await writeFile(
 
 await writeFile(
   path.join(ROOT, 'public/robots.txt'),
-  `User-agent: *\nAllow: /\nDisallow: /my-profile\nDisallow: /payment/\n\nSitemap: ${SITE}/sitemap.xml\n`,
+  `User-agent: *\nAllow: /\nDisallow: /my-profile\nDisallow: /payment/\nDisallow: /cart\n\nSitemap: ${SITE}/sitemap.xml\n`,
   'utf8',
 );
 

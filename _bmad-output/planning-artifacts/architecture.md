@@ -1657,6 +1657,35 @@ an account exists. Staff use `POST /api/portal/users/:uid/sign-in-link`
 enabled on the Firebase project; if it is off the backend falls back to a
 password link.
 
+## Sign-up: password rules and terms (#35)
+
+**One rule set.** `shared/auth/passwordRules.js` holds the rules for every
+password a person chooses for themselves: 8–128 characters with an uppercase
+letter, a lowercase letter, a number and a character that is not a letter, digit
+or space. The Portal imports it (sign-up, and the create/reset page from an
+emailed link). The website has a **twin**, `Frontend/src/utils/passwordRules.js`,
+because the website is built from `Frontend/` alone and its deploy rebuilds only
+when `Frontend/` changes; `backend/src/__tests__/passwordRules.test.js` fails if
+the two disagree.
+
+**Enforced in the forms, not by Firebase.** Accounts are created by the Firebase
+client SDK in the browser, so the server never sees a password. The forms refuse
+a weak one before calling Firebase. Firebase's own minimum is 6 until a password
+policy is switched on for the project (console → Authentication → Settings →
+Password policy). That is a setting on the sign-in project QA and production
+share, so it is the owner's decision; if it is switched on with these rules, the
+forms already turn its `auth/password-does-not-meet-requirements` into the same
+sentence. "Notify" mode leaves existing users able to sign in; "Require" stops
+anyone whose old password breaks the rules until they reset it.
+
+**Terms agreement.** The email sign-up forms need the box ticked; every Google
+button carries "By continuing with Google you agree to…". Either way the form
+sends `termsAccepted: true` to `POST /api/auth/register`, and the route stores
+`users.termsAcceptedAt` (ISO string, like `createdAt`) **the first time only**
+(`services/termsAcceptance.js`, pure). The route does not refuse a body without
+it: the same endpoint runs on every sign-in, and the Android build already
+submitted sends the old body.
+
 ## Client contact record and the group fee report (#205, #206)
 
 > **Superseded in part 2026-10-29 (#205, the firm's 6 Oct decision):** the Client
@@ -1821,6 +1850,33 @@ and notifications never carry an image or a link to one.
   the session token into an object URL (revoked on unmount). The matter page
   provides its id through `CommentImageTaskContext`; outside a matter, images show
   as "Image unavailable" and the editor offers no upload.
+- **Pixel dimensions (#319, 2026-11-19).** 20–8,000 px on each side, one rule in
+  `shared/richText/limits.js` (`commentImageDimensionProblem`). The editor reads
+  the size in the browser before uploading (`checkCommentImage`) and refuses with
+  a readable reason; the upload endpoint re-reads it from the bytes (sharp
+  `metadata()`, header only) and answers 422 `IMAGE_DIMENSIONS`. `width` and
+  `height` are stored on the metadata doc.
+- **`RichText` must keep one tree shape (#319).** Its content node holds images
+  whose `src` exists only in the DOM (set after the authenticated fetch). If the
+  node is ever remounted, React re-inserts the stored HTML — images with no src —
+  and the hydrate effect does not re-run for the same html. The "Read more"
+  wrapper is therefore always rendered; only the button is conditional. A tall
+  image flipping the fold after load used to remount it (broken images in Chat).
+- **Chat shows every image at one size (#319).** Inside `.lt-chat-images` (the
+  Chat card) images are a 15rem × 11.25rem box with `object-fit: contain`; step
+  comments keep the natural size up to `max-h-80`.
+
+## Chat drafts (#297 follow-up, 2026-11-19)
+
+The Chat tab unmounts on every tab switch, so its state cannot hold a draft. The
+new-message box and an edit in progress use `useCommentDraft` (the #83 step-comment
+store): localStorage, key `commentDraft:{taskId}:chat:{uid}` and
+`commentDraft:{taskId}:chat-edit-{messageId}:{uid}`, debounced 800 ms and flushed on
+unmount (it used to be dropped). localStorage rather than sessionStorage for one
+store and one behaviour with step comments, and because the firm asked that a draft
+stay until it is sent or deleted. The uid in the key keeps it from another person on
+a shared computer. Cleared on send/save, Cancel, or an empty box. The "Visible to
+client" tick is not stored.
 
 ## The QA environment (E24-S00)
 
@@ -1886,11 +1942,63 @@ a product is keyed by the `source` its component passes to the checkout, and
 - `shared/pricing/catalog.json` is the SEED, generated from the components by
   `scripts/build-pricing-catalog.py` (`--check` fails when it is stale). After
   seeding, Firestore is the source of truth and the seed never overwrites it.
-- Only an admin may change a price (`PUT /api/pricing/:productKey`); plans are
+- Only an admin or a manager (#241, 2026-11-05) may change a price
+  (`PUT /api/pricing/:productKey`); plans are
   matched by id, so an edit cannot invent a plan the website has no card for.
   The portal screen is Settings → Website Prices (`/settings/pricing`).
 - At least one plan per product must stay on sale: a product with none drops out
   of the public catalogue and the website falls back to `DEFAULT_PLANS`.
+- **A landing page priced on its own is its own product (#241, 2026-11-21).** The
+  key comes from the component's checkout `source`, so two pages share prices exactly
+  when their cards pass the same `source`. The Odisha landing pages used to pass the
+  India products' keys and so could not be priced apart; their cards (`CroPlans`,
+  `TrademarkPlans`) now sell `private-limited-odisha` and `trademark-application-odisha`.
+  The same portal service is reached through `SERVICE_ALIASES`, the trademark question
+  is shared through `CHOICES`, and `LABELS` names a product under Website Prices
+  where its page title alone would not tell it apart.
+- **Text that quotes a price reads it live.** A hero's "starting from" uses
+  `useStartingPrice(productKey, fallback)` (cheapest plan on sale + cheapest answer's
+  surcharge); terms that name plan prices use `usePlanPrices(productKey, fallbacks)`
+  (`Frontend/src/utils/pricing.js`). A typed figure drifts from the cards the first time
+  the firm changes a price.
+- **A new product reaches Firestore only by the seed.** No deploy runs it. Until
+  `npm run db:seed:pricing` is run on an environment (`FIRESTORE_DATABASE_ID=qa-data`
+  for QA, unset for live), the new product is missing there: its page shows
+  `DEFAULT_PLANS`, it has no entry under Website Prices, and Buy Now for it fails.
+
+### A required question that changes the price (E24-S07, #221, 2026-11-06)
+
+A product may carry `choice: { label, options: [{ id, name, surcharge }] }` — ONE
+required question whose answer adds `surcharge` (whole rupees, before GST) to
+every plan. Only `trademark-application` asks one today ("User type": Proposed
+to be Used ₹0 / Prior User ₹2,500). Deliberately one question, not a list of
+modifiers: one consumer, and a second question would need its own UI anyway.
+
+- **Ownership.** The question, answer ids and names are the WEBSITE's: declared in
+  `CHOICES` in `scripts/build-pricing-catalog.py`, written into the seed. Each
+  answer's `surcharge` is the FIRM's: edited on Website Prices
+  (`PUT /api/pricing/:key` `{ choice: { options: [{ id, surcharge }] } }` — the
+  label and names cannot be edited) and kept by `mergeSeed`/`mergeChoice`.
+- **No seed run needed to deploy.** `loadCatalog` gives a stored product with no
+  `choice` the seed's (`withSeedChoice`), so the server knows the question the
+  moment the code ships; the first surcharge edit (or `db:seed:pricing`) stores it.
+- **Price.** The request carries `optionId` beside `planId` (top level for one
+  plan, on each `items[]` line for a cart; `.strict()` refuses a surcharge).
+  `findPlan(products, key, planId, optionId)` adds the surcharge, so `price` is
+  plan + surcharge; GST and any coupon then work on that, unchanged. A missing
+  answer (`OPTION_REQUIRED`), an unknown one, or an answer to a product that asks
+  nothing (`OPTION_UNKNOWN`) is a 400 with the customer's message.
+- **Record.** The order (or cart line) adds `optionId, optionName, optionLabel,
+  basePrice, surcharge`, and `planName` names the answer ("Supreme (Prior User)"),
+  so every screen, email, quote and coupon redemption that shows the plan shows
+  it. The matter opened on approval gets it in `paymentDescription` and in
+  `websiteOrderPlanName` / `websiteOrderOption { label, id, name }`.
+- **Website.** `GET /api/public/pricing` includes `choice`. `usePlanChoice`
+  (`Frontend/src/Components/PlanChoice/`) holds the answer (none at first),
+  reprices the cards (cut price moves with it), and makes Buy Now ask first.
+  The cart stores the answer id (and the PLAN price), reprices from the
+  catalogue, offers the answer as a dropdown, and blocks paying while a line
+  that needs an answer has none.
 
 ## Website orders and payments (E24-S02 … S05)
 
@@ -1912,9 +2020,65 @@ a product is keyed by the `source` its component passes to the checkout, and
   The webhook is authenticated by an HMAC over the RAW request body
   (`req.rawBody`, kept for that route only in `server.js`).
 - **Feature switch**: "Buy Now" renders only when the website build sets
-  `VITE_PAYMENTS_ENABLED=true`. QA does; production does not.
+  `VITE_PAYMENTS_ENABLED=true`. QA does (Razorpay TEST keys) and, since
+  2026-11-04, production does (LIVE keys: `RAZORPAY_*` secrets on the
+  `production` environment; webhook `https://legalterminus.com/api/orders/webhook`).
 - The legacy PayU routes under `/api/payment` are still present and unused;
   E24-S06 removes them.
+- **Convenience fee: Razorpay "Customer Fee Bearer" (#276, chosen by the firm
+  2026-11-12, Option 1).** For every online payment — website orders (single
+  plan and cart) and Pay Now / payment requests from the portal — Razorpay
+  itself works out its fee for the payment method the client picks, shows it
+  on its own checkout and adds it to what the client pays. **We never add a
+  fee**: our totals (cart, Pay Now amount, request total) and the Razorpay
+  ORDER amount stay price + GST.
+  - **What Razorpay's docs say** (checked 2026-11-14): the fee is shown on a
+    "Fees Breakup" page in Checkout and "the customer is redirected to the bank
+    page with the total amount, including the Convenience Fee"; a refund
+    returns "the convenience fees and the actual payment amount"; Razorpay's
+    own acknowledgement email shows the fee only inside the total
+    (razorpay.com/docs/payments/optimizer/convenience-fees/). The payment
+    entity has `amount` ("payment amount"), `fee` ("Fee (including GST)
+    charged by Razorpay") and `tax` ("GST charged for the payment")
+    (razorpay.com/docs/api/payments/entity/). **Not stated in the docs**:
+    in so many words, that under Customer Fee Bearer the payment `amount` =
+    order amount + `fee`, nor whether `fee` is filled while a payment is only
+    `authorized`. The code assumes amount = order + fee (the arithmetic is
+    checked exactly, so a different representation is held for review, not
+    settled wrongly) and handles a missing fee safely. Verify both on the
+    TEST account once it is enabled.
+  - **Settlement** (`decideSettlement`, pure, one rule for every order kind):
+    a verified amount equal to the order's settles as before. Otherwise it
+    settles only if amount − `fee` = the order's amount, to the paisa, with
+    `fee` from the verified payment entity (`fetchPayment`/`fetchOrder` via
+    the API, or the signed webhook — `feeOf` reads whole non-negative paise
+    only) and 0 < fee ≤ max(10% of the order, ₹25) (`MAX_FEE_SHARE`,
+    `MIN_FEE_ALLOWANCE`). Any other amount is held for `review` as before.
+    The browser never sends a fee (`.strict()` schemas unchanged). On an
+    ordinary account the entity's `fee` is the firm's cost and the amount
+    equals the order, so nothing is recorded.
+  - **Record** (`feeFields`): `convenienceFee`, `convenienceFeeTax`,
+    `gatewayAmount` (order + fee) on `paymentOrders/{id}`. `amountPaid` stays
+    the ORDER's amount, so what is credited to a matter (`creditMatter`,
+    payment requests), refund limits, `clientOrderView`, receipts, the
+    client's order history and the confirmation emails are unchanged and
+    never mention the fee (the firm: fee shown only at checkout). Staff see
+    "Convenience fee (paid by client)" and "Client paid in all" in the order's
+    details under Website Orders (which lists Pay Now and payment-request
+    orders too). A paid order settled without figures learns its fee from a
+    later verified signal for the same payment (the `noop` branch).
+  - **Return read while `authorized`** with an amount above the order and no
+    fee yet: `confirmReturn` neither settles nor refuses; the order stays
+    `created` (the result page and Pay Now already wait on that) and the
+    signed `payment.captured` webhook — or a reconcile — settles it.
+  - **Refunds**: Razorpay refunds the fee with the payment; our refund
+    records are capped at `amountPaid` (the order), so a full refund made in
+    Razorpay is recorded as the order's amount.
+  - **OWNER ACTION**: Razorpay must enable Customer Fee Bearer on the **TEST**
+    account (QA) and the **LIVE** account (Dashboard → Support → raise a
+    ticket, or the account manager). Until it is enabled behaviour is exactly
+    as before. Simulator outcomes `success_fee`, `fee_webhook`,
+    `fee_mismatch` play a fee-bearer account in tests.
 - **Prices are exclusive of GST (#212, decided by the firm 2026-10-12).**
   `GST_PERCENT` (18) and `withGst()` live in `pricing.service.js`. `findPlan`
   returns `price`, `gst`, `gstPercent` and `amount` = price + GST; an order
@@ -1940,6 +2104,284 @@ a product is keyed by the `source` its component passes to the checkout, and
   approve, so `GET /api/orders`, `GET /api/orders/:id` and the approve route
   admit `team_member`, and the screen is in their navigation. Retrying a matter
   and reconciling a payment with the gateway stay with admin and manager.
+- **Pay Now: a client pays the amount due on an existing matter (#220,
+  2026-11-04).** Same orders collection, same gateway, same verify / webhook /
+  reconcile endpoints; a second order KIND.
+  - `POST /api/tasks/:taskId/pay-now` — client role only, rate-limited, body
+    must be `{}` (`matterPayNowSchema`). `createMatterBalanceOrder` reads the
+    matter: the client must be able to see it (`clientCanSeeMatter`), the
+    matter must be `part_paid` with `amountDue > 0`, and `onlinePaymentEnabled`
+    must not be `false` (`payNowRefusal`, pure). The amount is `amountDue` at
+    that moment, no GST added — the matter's total is already the firm's
+    figure. A `created` order for the same matter, client, gateway and amount
+    from the last half hour is reused, so a double click cannot be paid twice.
+  - The order carries `kind: 'matter_balance'`, `taskId`, and
+    `matter.state: balance → crediting → credited | credit_failed`. It never
+    waits for approval and never opens a matter.
+  - On settlement `settlePaid` calls `creditMatter` instead of `fulfil`. It
+    claims the order in a transaction, then calls `creditOnlinePayment` in
+    `tasks.controller.js`, which writes through `commitLedgerChange` like every
+    other money change. The ledger row id is `online-<orderId>`, so a repeat
+    is a no-op; the row has `source: 'online_gateway'` and the gateway payment
+    id as `reference`. If the ledger refuses it (the cost was lowered, or cash
+    was recorded meanwhile, so it would overpay), the order stays paid,
+    `credit_failed` says why, and admins/managers are told. "Try again" on
+    Website Orders re-runs `creditMatter`.
+  - A refund webhook only tells staff: the ledger row stays until a person
+    removes it.
+  - Paying does NOT move a payment checkpoint step. Staff are told the matter
+    is fully paid and press Mark as Paid, which since F-01 reads the ledger.
+  - `onlinePaymentEnabled` (absent = on) is set through
+    `PATCH /api/tasks/:id/payment` (admin/manager), audited in the payment
+    event. The Portal shows the client's button and the staff switch in the
+    Payments tab (`components/tasks/PayNowCard.tsx`); the checkout script is
+    loaded from `checkout.razorpay.com` only when the client presses Pay Now.
+- **Additional payment requests (#222, 2026-11-05).** Staff ask the client for
+  more money — typically government fees — listed fee by fee; the client pays
+  the total through Razorpay. Rules in `services/paymentRequests.service.js`
+  (pure helpers unit-tested in `__tests__/paymentRequests.test.js`), HTTP in
+  `controllers/paymentRequests.controller.js`, schemas in
+  `schemas/paymentRequest.schema.js`.
+  - Stored at `tasks/{taskId}/paymentRequests/{requestId}`: `lines[{name,
+    description, amount}]`, `total`, `note`, `status: sent → paid | cancelled`.
+    Backend-only in `firestore.rules`.
+  - **The total is the server's.** `POST /api/tasks/:id/payment-requests` takes
+    `{ lines, note? }` (`.strict()`, so a `total` is a 400); `requestTotal`
+    adds the lines in paise. Lines: name required, amount > 0, two decimals at
+    most, ≤ ₹1 crore, ≤ 20 lines; text is stripped of tags.
+  - **A sent request is part of the matter's cost.** Sending adds the total to
+    `totalCost` (and cancelling takes it off) through `commitLedgerChange`, in
+    the same transaction that writes the request, with a `PAYMENT_REQUESTED` /
+    `PAYMENT_REQUEST_CANCELLED` event. So `amountDue`, `paymentStatus` and the
+    dues reports include open requests — a fully paid matter given a request
+    becomes part paid until it is paid, and a later payment checkpoint waits
+    for it. Chosen over "add on payment" because the firm is owed the money from
+    the moment it asks. A matter with no `totalCost` refuses a request
+    (409 `NO_TOTAL_COST`): adding to nothing would make the request its price.
+  - `commitLedgerChange` gained an optional `preRead(tx)` so the request doc is
+    read inside the ledger transaction (all reads before writes) and passed to
+    `change` as `pre`. It, `LedgerError` and `ledgerErrorBody` are now exported.
+  - **Paying.** `POST …/payment-requests/:requestId/pay` (client only, body
+    `{}`, Pay Now's rate limit) → `createPaymentRequestOrder`: a
+    `paymentOrders` doc with `kind: 'payment_request'`, `taskId`, `requestId`,
+    amount = the request's stored `total`, no GST, `matter.state: request →
+    crediting → credited | credit_failed`. A `created` order for the same
+    request, client, gateway and amount from the last half hour is reused.
+    Confirmation uses the existing verify / webhook / reconcile endpoints;
+    `settlePaid` → `creditMatter`, which for this kind calls `settleRequest`.
+  - **Paid once.** `settleRequest` writes the ledger row `request-<requestId>`
+    (id from the REQUEST, not the order) and marks the request paid in one
+    transaction. A repeat signal for the same order is a no-op; a payment from
+    a second order, or one arriving after the request was cancelled or
+    recorded by hand, is refused by the ledger, the order is `credit_failed`
+    with the reason, and admins/managers are told — the money is never
+    silently dropped.
+  - **Pay Now pays the rest.** `payNowAmount(task, outstanding)` = amount due
+    less open requests' totals, so Pay Now and a request cannot both collect
+    the same rupees. The Portal subtracts the same figure (`outstanding` from
+    `GET …/payment-requests`).
+  - Roles: send = admin, manager, team member (the issue: "any team member can
+    send"); cancel and "Record as paid" (`…/cancel`, `…/record`, mode +
+    reference only — the amount is the request's) = admin, manager; list =
+    staff + the matter's client. Team members get a "Payment requests" tab that
+    shows only the requests — never the figures or the history (#148). The
+    client never sees a cancelled request or staff names.
+  - Notifications: on send, the client gets an in-app notification mirrored to
+    email (with the matter's cc addresses) carrying the breakup; on payment,
+    admins/managers and the request's author are notified and the client gets
+    the "Payment received" email.
+  - **No GST.** Government fees are passed through at cost; lines are charged
+    exactly as entered. If the firm ever wants GST on a professional-fee line,
+    that needs a per-line flag.
+  - Not tied to `onlinePaymentEnabled`: that switch is for Pay Now; a request
+    is itself the firm's decision to ask for online payment.
+  - Portal: `components/tasks/PaymentRequestsCard.tsx` in the Payments tab;
+    `api/paymentRequests.ts`. Website Orders shows these orders like Pay Now.
+- **The payment checkpoint follows the ledger (SEC F-01, ported from Ambyflow
+  2026-11-04).** `RECORD_PAYMENT` ("Mark as Paid") is admin/manager only
+  (403 `PAYMENT_ROLE_REQUIRED`), and the caller's `newStatus` is discarded:
+  `transitionTask` derives the status from `tasks/{id}/payments`
+  (`ledgerPaymentStatus`) and answers 409 `PAYMENT_NOT_RECORDED` when the
+  history does not satisfy the gate. Before this, any team member on the
+  matter could mark it fully paid with nothing recorded.
+- **Cart: several services, one checkout (#244, 2026-11-05).** Same
+  collection, same gateway, same endpoints.
+  - `POST /api/orders` takes EITHER `{ productKey, planId }` (unchanged) OR
+    `{ items: [{ productKey, planId }] }` — 1 to `MAX_ORDER_ITEMS` (10) lines,
+    one per service, never a price; `.strict()` on the body and on each line,
+    and a refinement refusing both shapes at once, neither, or a repeated
+    service. The service re-checks the same (`requestedItems`).
+  - Pricing reuses the catalogue, not a copy of it: one fresh `loadCatalog`
+    for the whole cart, `findPlan` per line (so each line's GST is `withGst`'s),
+    and `priceOrder` sums the lines to the paisa. A line not on sale makes the
+    whole cart 404 — nothing is charged for part of a cart. The gateway is asked
+    for the one total.
+  - Shape (pure helpers in `services/orderItems.js`, tested in
+    `__tests__/orderItems.test.js`): a ONE-line request is stored exactly as a
+    single-plan order always was — no `items`. Two or more lines add
+    `items[]` (each with its own `matter`) and top-level `price`/`gst`/`amount`
+    = the sums, `label` "N services", `planName` the lines joined,
+    `productKey`/`planId`/`serviceKey` null. So `decideSettlement`,
+    `settlePaid`, the review hold, reconcile, refunds and the webhook needed no
+    change.
+  - **One approval opens every line's matter** (chosen over per-line
+    approval: the Website Orders screen has one Approve button per order and
+    the customer paid once; per-line approval would let a paid order sit half
+    started). `fulfil` judges each line on its own service
+    (`planLineMatters`, reusing `matterOutcome`); the order waits for approval
+    if ANY line can open a matter, and staff are told which lines to open by
+    hand. `approveMatter` claims the order exactly as before; `openApprovedLines`
+    then opens each waiting line through `openMatter` → `createTask`, with the
+    LINE's service and amount (GST included), stamping `websiteOrderItem` (the
+    line index) beside `websiteOrderId` — the idempotency lookup is on both.
+    A failing line does not stop the others; the order's `matter.state` is
+    `failed` with each line's error and the approval stands, so "Try again"
+    (`retryMatter`) opens only the lines still missing (`linesToOpen`).
+  - `publicOrder` adds `items` (label, plan, price, GST, amount, matterId) and
+    `matterId` = the first opened line's. `listOrders`' "matter deleted" check
+    covers lines too. The confirmation email lists every line.
+  - Website: `Frontend/src/utils/cart.js` keeps the cart in localStorage
+    (`lt-cart-v1`; every access in try/catch; a bad value reads as empty),
+    one line per service — adding another plan of the same service swaps it —
+    and a `useCart` hook kept current across components and tabs. "Add to
+    Cart" is on the plan summary of the existing checkout (`ProCheckoutModal`),
+    so every pricing card gets it without touching ~80 card components. The
+    header shows a cart icon with a count; `/cart` (noindex, disallowed in
+    robots.txt) lists lines with a plan select, Remove and totals, refreshes
+    prices from `/api/public/pricing`, blocks checkout on a plan no longer on
+    sale, and opens the same checkout with `cartLines`. A paid cart is emptied
+    before the result page. All of it is behind `VITE_PAYMENTS_ENABLED`.
+  - Portal: Website Orders lists each line of a cart order under Service with
+    its amount, its matter state and an "Open matter" link per line.
+  - **Quantities (2026-11-14, the firm's request of 2026-11-12).** A cart
+    line may carry `quantity` — an integer 1..`MAX_LINE_QUANTITY` (10),
+    at most `MAX_ORDER_UNITS` (20) units in the order (= the matters one
+    approval opens; bounded so one click stays a bounded amount of work).
+    Both caps are in the Zod schema (`orderItem.quantity`, a refinement on
+    the total; the one-plan body has no quantity) and again in
+    `requestedItems`; the website clamps to the same numbers.
+    - **Each unit is stored as an item.** `expandUnits` turns a line of
+      quantity N into N `findPlan` results; `priceOrder` prices them exactly
+      as separate lines (per-unit `withGst`, coupon discount per unit —
+      percent on each, fixed split by price with the remainder on the last),
+      and the order's `price`/`gst`/`amount` are the sums. So the gateway
+      order, `decideSettlement`'s amount check, the review hold and reconcile
+      all compare against the server's quantity-aware total with no code of
+      their own. A unit of a line of 2+ carries `quantity` and `unitNo`;
+      a quantity-1 line is stored as before (and a 1-unit cart is still a
+      one-service order with no `items`).
+    - **Approval** opens one matter per unit with the unchanged machinery:
+      `linesToOpen` / `openApprovedLines` / `settleLineMatters` work per
+      stored item, `openMatter`'s idempotency lookup is `websiteOrderId` +
+      `websiteOrderItem` (the unit's index), so a re-approval (409 from
+      `canApprove`) or a retry never opens a second matter for a unit. Each
+      matter's total is its unit's `amount`; it also gets
+      `websiteOrderUnit { no, of }`. `fulfil` asks for a service's workflow
+      once per service, not per unit.
+    - **Reading it back.** `groupUnits` (pure) regroups items by
+      `productKey` — a service is in an order once — into lines with
+      `quantity`, sums and `units[]`. `publicOrder.items`, `quoteView.lines`,
+      the email (`itemLines`), the staff notice (`linesSentence`) and the
+      coupon redemption's `services` use it. An item without `quantity`
+      (every order stored before this) is a line of one, so old orders read
+      exactly as before. Portal Website Orders groups the same way and lists
+      each unit's matter under its line.
+    - Website: `cart.js` stores `quantity` per line (`lt-cart-v1` unchanged;
+      a line without one reads as 1, an out-of-range one is clamped, and the
+      stored cart is trimmed to 20 units). The cart page works out one unit's
+      price/GST with `withGst` and multiplies — the server's per-unit sum —
+      so the page, the checkout and the charge agree to the paisa.
+- **Coupon codes (E-27: #256, #257, #260, 2026-11-06).** One code per order,
+  on single-plan and cart orders alike. The page sends only the code; the
+  server checks it and prices the order with it.
+  - **Collections.** `coupons/{CODE}` — the document id IS the code (upper
+    case, `[A-Z0-9-]{3,30}`), so uniqueness is by construction (`create()`
+    fails on a duplicate → 409). Fields: `discountType` percent | fixed,
+    `discountValue` (whole %, 1–100, or whole rupees), `scope` general |
+    services (`productKeys[]`) | min_amount (`minAmount`, before GST),
+    `validity` one_time | period (`startsAt`/`endsAt`: IST start of the first
+    day to IST end of the last, stored as instants), `active`, `usedCount`,
+    `heldBy {orderId, uid, until}`, `consumedBy {orderId, uid, at}`,
+    `createdBy {uid, name}`, `createdAt`, `updatedAt`, `updatedBy`. Only the
+    fields a type uses are kept (`couponDefinition`). `couponRedemptions/{orderId}`
+    — one per PAID order that used a code, written once, with its own copy of
+    every figure (see below). Both are denied to browsers in `firestore.rules`
+    (a readable `coupons` would list every live code).
+  - **Rules are pure** (`services/coupons.js`, tested in
+    `__tests__/coupons.test.js`): `couponRefusal` (unknown / switched off →
+    one "not valid" message, so a guess learns nothing; used; not started;
+    expired; held by another checkout), `couponState` for the staff list,
+    `editRefusal` (a used one-time code cannot be switched on again; a used
+    code cannot become one-time), `deleteRefusal` (only a code never used and
+    not in a checkout), `couponOnPaid`, `redemptionRecord`. I/O is
+    `services/coupons.service.js`; routes `routes/coupons.routes.js`, guarded
+    `verifyToken, requireRole(...COUPON_MANAGER_ROLES)` — a new role group
+    (admin, manager: the same people as website prices, #241) in
+    `config/roles.js` and `Portal/src/lib/roles.ts`.
+  - **Pricing: the discount comes off BEFORE GST.** `couponDiscounts(plans,
+    coupon)` in `orderItems.js` (pure) decides the rupees off each line:
+    eligible lines are all of them (general, min_amount) or those in
+    `productKeys` (services); percent = price × % per line to the paisa;
+    fixed = min(value, eligible subtotal) split in proportion to price, the
+    last eligible line taking the rounding remainder. min_amount compares the
+    whole order's pre-GST subtotal. A result under ₹1 payable is refused.
+    `priceOrder(plans, discount)` then re-runs `withGst` on each discounted
+    price, so every line is still `amount = price + GST`; a line keeps
+    `listPrice` and `discount`, the order gains `couponCode`, `discount` (sum)
+    and `subtotalBeforeDiscount`, and its `price`/`gst`/`amount` are the
+    discounted sums. Hence `decideSettlement`, the review hold, refunds and a
+    matter's `totalCost` (the line's `amount`) needed no change. Without a code
+    nothing about an order changes — no coupon field is written. The order
+    also stores `coupon` — the terms on the day plus who created the coupon
+    and when — so its redemption is built from the order alone.
+  - **Endpoints.** `POST /api/orders/quote` (signed in, `quoteOrderSchema`
+    `.strict()`, its own limiter of 30 / 15 min per uid against code-guessing)
+    prices plans with an optional code and writes nothing; a code that cannot
+    be used answers 422 (409 when held) with the reason in words.
+    `POST /api/orders` accepts an optional `couponCode`; still no amount.
+    `/api/coupons` CRUD (paginated list on `createdAt`) and
+    `/api/coupons/redemptions` (paginated on `paidAt`, IST date range on the
+    same field, `?format=csv` up to 5,000 rows). Every query orders and filters
+    on ONE field, so no composite index was added.
+  - **One-time concurrency.** `createOrder` creates the gateway order, then
+    in ONE transaction re-reads the coupon, re-checks it, re-prices (a coupon
+    edited since the quote → 409 "apply it again"), places
+    `heldBy {orderId, uid, until: now + 30 min}` and writes the order — so the
+    order exists only if the hold does. A second checkout by another person
+    while the hold stands is refused ("This code is being used in another
+    checkout…"); the SAME person returning takes their hold over (decided
+    here: otherwise a customer who closed the window is locked out of their
+    own code for half an hour). A failed or abandoned order just lets the hold
+    expire. Period codes are not held; their price is fixed when the order is
+    made.
+  - **Consumption, exactly once.** `settlePaid`'s transaction now also reads
+    the order's coupon (reads before writes) and, on the `paid` decision only,
+    applies `couponOnPaid`: `usedCount + 1` (every type), and for a one-time
+    code `active: false`, `consumedBy`, hold released. It writes
+    `couponRedemptions/{orderId}` in the same transaction: code, discount
+    type/value, scope, validity, coupon creator and creation date, client uid,
+    name and email, services (label, plan, listPrice, discount, price, gst,
+    amount), `originalAmount` (pre-GST, pre-discount), `discount`, `gst`,
+    `amountCharged`, `amountPaid`, `paidAt`. A repeat confirmation is a
+    `noop`, so nothing is counted twice. A payment arriving after its hold
+    expired and someone else consumed the code is still honoured (money taken
+    is never refused) and its redemption carries a `note` saying so. A
+    payment held for `review` (wrong amount) does not consume the code.
+  - **Test cleanup.** The simulator's `discard` (test environments only)
+    removes the order's redemption and gives back its use, so an e2e run
+    leaves the coupon deletable.
+  - **Screens.** Portal: Settings → Coupons (`/settings/coupons`, list with
+    state and use count, Switch on/off, Delete if unused) and full-page forms
+    (`/settings/coupons/new`, `/settings/coupons/edit/:code`; presets 7 / 30
+    days or chosen dates); Reports → Coupon & Discount (`/reports/coupons`,
+    uses with a date filter, uses per coupon, CSV). Website Orders shows the
+    code and the discount. Website: `ProCheckoutModal`'s details step has
+    "Have a coupon code?" (Apply / Remove); the summary shows the server's
+    quote (price, discount, GST, total) and Pay creates the order with the
+    code; a code that stopped working between Apply and Pay is dropped with
+    its reason and the customer can pay without it. The cart says codes are
+    applied at checkout; the result page and the confirmation email show the
+    discount.
 
 ---
 
@@ -1954,6 +2396,90 @@ a product is keyed by the `source` its component passes to the checkout, and
   to show `gatewayPaymentId`, `gatewayOrderId`, `method`, `paidAt`,
   `settledBy` and `amountPaid` against `amount`. No new endpoint and nothing
   new stored. The customer's own view (`publicOrder`) is unchanged.
+
+## GST return reminders (#219, 2026-11-04)
+
+- **Setting:** a client's `gstReturnFrequency` (`monthly` | `quarterly` | absent)
+  on `users/{uid}`, set in the client form ("GST return filing"). The server
+  stamps `gstReturnFrequencySetAt` whenever it changes; the first period opened
+  is the one whose 1st falls on or after that day — nothing is back-dated.
+- **Periods** (`shared/workflows/gstReturns.js`, pure): India's date (UTC+5:30)
+  decides "today". Monthly → the month just ended, opened on the 1st. Quarterly
+  → the financial-year quarter just ended (Q1 Apr–Jun … Q4 Jan–Mar), opened on
+  1 Jul / 1 Oct / 1 Jan / 1 Apr. Each period has a stable key (`2026-09`,
+  `2026-27-Q2`), the period's last month (for due dates) and the two labels the
+  email uses ("September 2026" / "SEPTEMBER 2026"; "Q2 2026-27" /
+  "Q2 26-27 (July–September)").
+- **Sweep** (`services/gstReturns.service.js`): due-on-read like #167 — API
+  traffic fires it at most every 30 minutes behind `system/gstReturnSweep`;
+  `POST /api/internal/run-gst-returns` (x-cron-secret, compared in constant
+  time, or an admin) runs it now. In a test environment only, the endpoint
+  takes `{ asOf, clientUid }` so a test can act as a given day for one client.
+- **Once per period:** `gstReturnRuns/{clientUid}__{periodKey}` is `create()`d
+  before the matter; a second sweep finds it and does nothing. If the matter
+  cannot be opened the claim is deleted so the next sweep retries, and admins/
+  managers are told.
+- **The matter** is opened through `createTask` (system admin actor), unpaid —
+  so it waits for admin approval like a recurring matter — on service
+  `gst-returns`, or `gst-returns-quarterly` for quarterly clients once that
+  service exists. Named "GST Return - <period>". It carries `filingPeriod`,
+  set by the sweep on the REQUEST object (never the body); creation and step
+  transitions pass `filingPeriod.month` to the statutory resolver, so a GSTR
+  step on September's matter is due 11 Oct even though the matter was opened in
+  October. The generic `matter_created` email is skipped for it.
+- **The email:** templates `gst_return_monthly` / `gst_return_quarterly`,
+  editable under Settings → Email Templates. Fill-ins: `companyName`
+  (organisation → business name → name), `periodTitle`, `period`,
+  `gstr1DueDate`, `gstr3bDueDate` (from the statutory calendar: `gstr1`/`gstr3b`
+  monthly, new `gstr1_qtr` 13th / `gstr3b_qtr` 24th quarterly — editable under
+  Statutory Calendar). Sent with `keepSubject`, so the subject is exactly
+  "<Company> - GST Return - <period>", still threaded with the matter. Extra
+  client email addresses are copied.
+- **A GST return matter opened by hand, or copied (2026-11-14, firm's comment of
+  11 Nov):** `createTask`'s first client email is the same GST email —
+  `gstFirstEmail` (`gstReturnSheet.service.js`): when `isGstReturnMatter` (sweep
+  period, or a service linked to the GST Return Filing sheet), the template for
+  `frequencyOf`, the period from `periodObjectOf` (the Return Period / Filing
+  Month rule), the company from `companyNameOf` with the MATTER's organisation
+  first; rendered with `emailVars` and sent with `keepSubject`. It replaces the
+  `matter_created` email (one first email); if the template cannot render, the
+  `matter_created` email goes as before. The sweep still sets
+  `suppressCreatedEmail` and sends its own, so its matters get exactly one.
+  Covers duplicates and recurring copies, which go through `createTask`.
+- **Monthly or quarterly — one rule (2026-11-19, firm's comment of 16 Nov):**
+  `frequencyOf(task, client)` in `gstReturnSheet.service.js` decides it for the
+  tag, the first email's template and period, every email subject, the filing-date
+  bounds and the sheet: `filingPeriod.frequency` (sweep) → `task.gstFrequency`
+  (frozen at creation) → `task.recurrence` (Create Matter's **Repeats**) → a
+  quarterly service (`gst-returns-quarterly`, or a key/name containing "quarter")
+  → the client's `gstReturnFrequency` → monthly. `frequencyOfMatter` is the first
+  four steps; the client is read only when they decide nothing. Root cause of
+  "quarterly shows as monthly": Repeats was never read. `createTask` stamps
+  `gstFrequency` on every GST return matter (never from the body; a copy gets its
+  source's via `req.gstFrequency` from `duplicateMatterCore`, because copies are
+  not recurring), so a later Repeats edit, a series ending, or a client-setting
+  change cannot flip a matter's period. Older matters compute it on read; the
+  optional `scripts/backfill-gst-frequency.js` freezes theirs.
+- **The period in EVERY email subject (2026-11-19):** one place, in
+  `emailService.js`: `sendTemplatedEmail` (unless `keepSubject`) and
+  `sendNotificationEmail`, when given a `taskId`, first ask
+  `gstEmailSubjectForMatter(taskId)` (`gstMatterTags.service.js`, lazily imported
+  — it reads Firestore and the GST services import the email service). For a GST
+  return matter it returns the first email's subject: `gstFirstEmail` → the GST
+  template for the frequency, rendered with `emailVars` (built-in
+  "<Company> - GST Return - <period>" if rendering fails); null otherwise, and the
+  standard `[Legal Terminus] Org | Service (#id)` is used. Cached per matter for a
+  minute; a failed lookup is not cached and falls back to the standard subject.
+  So client follow-ups and reminders, assignment notices, chat notices, internal
+  reminders and every `createNotification` email carry the same subject for client
+  and staff, and still thread on `<matter-{id}@legalterminus>`. The matter detail
+  response carries it as `gstEmailSubject` (and `gstFrequency`) — E2E checks the
+  subject there, since email is off in E2E.
+- **Uploads:** the document allow-list adds `text/csv`, `application/json`,
+  `text/plain`, `application/zip` (.csv .json .txt .zip). The Portal types these
+  four by extension, because Windows reports a .csv as Excel and a .zip as
+  `application/x-zip-compressed`. No content scanning: a zip is stored and
+  served as uploaded.
 
 ## Website theme: one shared stylesheet behind a build switch (E-25, #209)
 
@@ -2112,6 +2638,261 @@ row. Recipients: every admin and manager, via `createNotification` (in-app + ema
 record delete add `requireRole('admin')`. No per-person grant (unlike Marketing
 Reports): the firm asked for all three roles to view and edit.
 
+**Dropdown choices (#280, 2026-11-10).** Every `select` field's options — built-in
+or added — can be replaced by staff: `PUT /api/worksheets/sheets/:sheet/options/:field
+{ options }` (admin, manager, team member: the router's guard; `optionsSchema`, up to
+200 options of 80 characters). Stored as `worksheetConfig/{book}.optionOverrides[field]`
+with a merge write, so two people editing different lists do not clash, and applied
+in `bookFields`, so the grid, the record form and upload matching all see the new
+list. Options are a book-level property: every sheet of the book shares them. The
+list is replaced whole; records are NOT rewritten — a renamed or removed option
+stays on the rows that hold it (the editors already show a value outside the list).
+`putColumns` now writes with `merge: true` and carries `optionOverrides`, so a column
+save cannot wipe staff-edited choices; the choices of an added select edited under
+Edit columns are written to the same override.
+
+**Row numbers (#280).** A sheet with `serial: true` shows "Sl. No." as its first
+column — the position of the row as displayed (after filters, search and sort), also
+the first column of Download Excel. It is never stored; on upload a heading that
+normalises to `SLNO`/`SNO`/`SRNO`/`SERIALNO` is reported as ignored (`serial`), not
+unknown.
+
+**TDS Sheet (#280).** Company worksheet `tds`, its own book, key `tan`. Columns are
+the firm's Excel file (attached to the issue) verbatim, including its labels "Form
+138" / "form 140" (presumably Form 24Q / 26Q — kept as the firm wrote them; aliases
+accept the 24Q/26Q spelling). The seven yellow columns are selects: Assigned to,
+Checker and Client start empty (the firm fills them under Edit dropdowns); the four
+status columns start Yes/No. PR numbers are text so a 15-digit number is never
+rounded or shown as a percentage. Traces/IT passwords are plain text fields, as in
+the firm's file; the firm confirmed on 11 Nov that they stay visible to Admin,
+Manager and Team, that the Form 138 / 140 labels are right, and one row per TAN.
+Assigned to and Checker are `staff` columns (below), not selects.
+
+**Staff columns (#280, 2026-11-19).** Field type `staff`: a choice list filled from
+the portal's own staff instead of typed options (TDS: Assigned to, Checker).
+- *Source.* `services/worksheetStaff.service.js` `loadWorksheetStaff(db)`: one query
+  `users where role in STAFF_ROLES` (admin, manager, team member — bounded by the
+  team), cached in-process for 60 s, so a sheet open and every 200-row batch of an
+  upload do not each re-read users. Gives `[{ uid, name, email, active }]`;
+  `active: false` for `status: 'deactivated'`; `e2e: true` accounts dropped outside
+  test runs (the @mentions rule). The query runs only for a book that has a staff
+  field — no other sheet touches `users`.
+- *What the page gets.* `withStaffChoices` adds `choices: [{ value: uid, label:
+  name, active }]` to each staff column in `getModule`, `putColumns` and
+  `putOptions` responses. No email leaves the server. Pickers (grid cell, record
+  form) offer active staff, plus whatever the cell holds now if it is not one of
+  them (`staffOptions` in `Portal/src/lib/worksheets.ts`).
+- *What is stored.* The uid. `displayValue` turns it into the name, so search,
+  filters, sort and Download Excel all read the name. A value that is not a known
+  uid — a name typed when the column was a select, or an unmatched upload cell — is
+  shown as written. Existing live rows are not migrated.
+- *Writes.* `cleanRecordValues(fields, values, { staff })`: a staff value must be an
+  active staff uid, or null (400 otherwise). `planImport({ …, staff })` →
+  `normalizeValue(field, raw, { staff })` → `matchStaff`: uid, then display name
+  (case/spacing-insensitive), then email; active staff before former staff; two
+  people of one name is ambiguous. Unmatched or ambiguous → the text is kept, with
+  a warning, like an untidy date.
+- *Edit dropdowns.* `applyOptionsEdit` accepts `select` only, so a staff column
+  answers 400; `bookFields` applies `optionOverrides` to selects only, so the
+  firm's earlier typed list for these columns is ignored (left in the document).
+- Not addable under Edit columns (`ADDABLE_TYPES` unchanged). The GST sheet's Assign
+  Person stays a select: the matter sync writes an assignee *name* there.
+- Known gap: a uid of a user who was later deleted (no user document) has no name
+  to show and displays as the raw id.
+
+### GST Return Filing sheet (#279, 2026-11-10)
+
+**LT only.** `/reports/gst-returns`, module `gst_return` on the worksheet engine:
+book `gst_return`, sheets `gst_return_monthly` ("Monthly") and
+`gst_return_quarterly` ("Quarterly") — the dropdown at the top. A row is one
+client's GST return for one period. Columns: the firm's 21, in its order, then two
+of ours at the end — **Return Period** (without it, months would mix in one sheet)
+and **Matter**.
+
+- **Exclusive book.** `BOOKS.gst_return.exclusive`: a record's `sheets` is exactly
+  one sheet; `memberships` lists only the current sheet; `loadRecord` refuses a
+  record of the other sheet (404); the stored `recordKey` is scoped to the sheet
+  (`gst_return_monthly:<GSTIN>|<PERIOD>`, `sheetRecordKey`), so create, update and
+  upload in one view never match or block the other. A column edit is written to
+  both sheets (the issue: "same columns, dropdowns and functionalities"); dropdown
+  choices are book-level, so shared.
+- **Rows from matters — derived on sync, stored as records.** Matters of the
+  book's linked services (default `gst-returns`, `gst-returns-quarterly`; an admin
+  changes them under Edit columns) are turned into rows by
+  `services/gstReturnSheetSync.service.js` with the pure rules in
+  `services/gstReturnSheet.service.js`:
+  - *Monthly or quarterly*: `frequencyOf` — `filingPeriod.frequency` (#219 sweep) →
+    `gstFrequency` (frozen at creation) → `recurrence` (Repeats) → quarterly service →
+    the client's `gstReturnFrequency` → monthly (2026-11-19; see "GST return reminders").
+    `RULES_VERSION` 4 re-derived every row once, moving quarterly matters' rows to Quarterly.
+  - *Period*: `filingPeriod.title`; a matter opened by hand is for the period that
+    had ended when it was opened (`duePeriod` on its India creation date).
+  - *Client columns* from the matter and `users/{clientUid}` (organisation →
+    business name → name; `entityType` → Constitution; `gstNumber`, `email`,
+    `mobile`). *Assign Person*: the current step's assignee, else the matter's
+    professional. *Current Status*: the current step's title, or Awaiting approval /
+    Completed / Stopped / Rejected / Archived. *Completion Check*: Done when completed
+    (a dropdown since 2026-11-14: Done / Pending, editable choices).
+  - *Step columns* by task NAME (services are editable, so no step numbers are
+    assumed): `STEP_RULES` lists, per column, word sets one of which the
+    normalised title must contain, and words it must not ("GSTR-1 filed mail" is the
+    mail column, not the filing date). First matching step in the service's AUTHORED
+    order (`withAuthoredOrder`; step numbers are identity only, #55), else by step
+    number; "Yes" or its completion date (India) once completed, else blank.
+  - *The two filing dates (fix 2026-11-14, firm's report of a GSTR-1 date under
+    GSTR-3B):* a task fills a form's date only if its name names THAT form first
+    (`formsNamed`: "GSTR-1 filed, proceed towards GSTR-3B filing" is GSTR-1's), never
+    a data / preparation / reminder / mail task (`FILING_NONE`), and a task saying
+    "filed" wins over one that only says "filing". Same function for the sheet, the
+    matter's "Filed on" tags and the date correction.
+  - GST User ID, GST Pswd and Remarks are never derived.
+- **Last change wins.** Each synced row stores `derived` — what the workflow said
+  last time per column. A sync writes a cell only where the workflow's value
+  CHANGED since then (field-path updates, `values.<field>`), so a person's
+  correction survives until the workflow moves that cell, and a workflow update
+  always shows. The first sync of a row never blanks a cell a person filled.
+- **Linking.** `sourceMatterId` on the record. A matter without a row adopts an
+  unlinked row of the same sheet with the same GSTIN + period (typed or uploaded
+  earlier) instead of adding a duplicate; a person who sets a row's Matter cell
+  links it. A key already held by another row is left off the new one (`recordKey:
+  null`) rather than failing the sync. **#294 (2026-11-19):** both are now checked
+  against the matter's client and period, and the sync releases a wrong link
+  instead of writing to it — see "Which row is a matter's" in the next section.
+- **When and how much.** Due on read: `GET …/records` without a cursor (opening
+  the sheet) runs the sync first, at most every 15 s, under a lock in
+  `system/worksheetSync_gst_return`. A watermark `(updatedAt, id)` there means a
+  run reads only matters changed since the last run (every matter write already
+  moves `updatedAt`), 200 per page, ≤ 3 pages per run; per matter one `steps` read,
+  plus batched `getAll` of clients and assignees and `in` lookups of rows (≤ 30
+  per query). Changing the linked services restarts the watermark. A sync failure
+  is logged and the stored rows are shown.
+- **Indexes (deploy with the release):** `tasks (serviceKey, updatedAt)`,
+  `worksheetRecords (book, sourceMatterId)`. Until the first exists the sync falls
+  back to re-deriving the newest 200 matters through `tasks (serviceKey, createdAt
+  desc)` and logs a warning — bounded, but changes to older matters wait for the index.
+- **Not reflected until the matter changes:** a change on the CLIENT (a new GSTIN
+  or email) — it is read when the matter's row is next synced. A deleted matter
+  leaves its row (the firm's record), with no matter label.
+- **Return Period filter (2026-11-14).** `resolveSheet` returns the sheet's
+  `frequency`; the Portal (`WorksheetModulePage`) shows a "Return period" dropdown for
+  sheets that have one, from `periodOptions` (`shared/workflows/gstReturns.js`: the
+  period being filed now, `duePeriod` of today in India, then older ones — 24 months /
+  8 quarters; option value = the row's `period` title, text = the title or the
+  quarter's long label) plus any other period typed on a row. Client-side over the
+  loaded sheet (≤ 5000 rows); default = the first option.
+- **GST Pswd is a secret cell (2026-11-14, firm's comment of 11 Nov).** Field
+  `secret: true` (`services/worksheetSecrets.service.js`):
+  - *Never in a list.* Stored in `secrets.gst_password`, not `values`; `serialize`
+    strips it from every list / create / update response and sends only
+    `secretsSet: { gst_password: true }`. `worksheetRecords` is not readable through
+    the client SDK (no rule), so the API is the only way in.
+  - *Fetched one row at a time.* `POST /api/worksheets/sheets/:sheet/records/:id/
+    secrets/:field/reveal` — router guard `requireRole('admin', 'manager',
+    'team_member')` plus the same on the route; `Cache-Control: no-store`; the value is
+    never logged. Returns `{ value, userId, loginUrl }`.
+  - *Not encrypted, no access log (decision 2026-11-14, owner).* Stored as typed,
+    `{ v: 0, plain }` — the firm asked only for masked + click-to-log-in + staff edit.
+    The first #301 version encrypted it (AES-256-GCM, `WORKSHEET_SECRETS_KEY`) and wrote
+    a `worksheetAudit` entry per reveal; both were removed before any release as out of
+    scope. The `v` tag leaves room to add an encrypted format later without a migration.
+  - *Migration without loss.* A legacy `values.gst_password` is moved into `secrets` on
+    any write of the record (`secretWrites`) and on reveal.
+  - *Writes.* Typed (Edit form, a password box; empty = keep) or uploaded (Excel)
+    values are kept exactly as typed (no tag stripping), ≤ 200 chars.
+  - *"Direct login".* The firm's Apps Script in the issue has no login code. A page
+    cannot fill another site's login form (cross-origin; the GST portal also has a
+    captcha), so clicking the masked password (the cell's one button) copies it,
+    shows the user ID, and opens `https://services.gst.gov.in/services/login` in a new
+    tab. No separate Show / Copy buttons.
+- **Access.** As every worksheet: admin, manager, team member view, add, edit and
+  edit dropdowns; admin changes columns and deletes a record; route
+  `/reports/gst-returns` with the same three roles; clients and professionals 403.
+
+### GST tags on the matter: Filing Month and "Filed on" (#292, #294, 2026-11-14; manual dates and row mapping 2026-11-19)
+
+**LT only.** A GST return matter shows its period and its two filing dates on the
+matter. The period and WHICH tasks are the filings are worked out by the **sheet's
+own rules** (#279), so the matter and the sheet never disagree. The filing date itself
+is **entered by staff** on the filing task (#294, firm 17 Nov) — it is the only thing
+stored.
+
+- **Which matters.** `isGstReturnMatter`: the matter carries `filingPeriod` (opened by
+  the #219 sweep) or its `serviceKey` is one of the GST book's linked services
+  (`resolveSheet(...).linkedServices` over both sheets, i.e. what the sheet syncs).
+  `services/gstMatterTags.service.js` reads `worksheetConfig/gst_return` for that, cached
+  60 s per instance and dropped when this instance saves the sheet's columns
+  (`putColumns`); another Cloud Run instance follows within a minute.
+- **Filing Month** = `periodOf(task, frequencyOf(task, client))` — the sweep's
+  `filingPeriod.title`, else the period that had ended when the matter was opened. The
+  client document is read only for a hand-opened matter on the monthly service (the one
+  case where the client's `gstReturnFrequency` decides). Served as
+  `gstFilingPeriodLabel` on `GET /api/tasks` (every role branch; one batched `getAll`
+  of those clients, no step reads) and `GET /api/tasks/:id`.
+- **Which tasks.** The steps `stepForRule` picks for the `gstr1_date` / `gstr3b_date`
+  rules (`STEP_RULES`, `FILING_DATE_FIELDS`, `filingSteps`) — the steps that fill "Date of
+  GSTR-1 Filing" / "Date of GSTR-3B Filing" (the firm's "Step 6 – GSTR-1 Filed" and "Step 13
+  – Proceed Towards GSTR-3B Filing", matched by name). Matched on the INTERNAL step titles,
+  so `getTask` annotates before the client projection swaps in `clientTitle`.
+- **The date is entered, never derived (#294, firm 17 Nov 2026).** Completing a filing task
+  sets no date. Staff save it with `PUT /api/tasks/:taskId/steps/:stepNumber/filed-on
+  { date: 'YYYY-MM-DD' | null }` (`gstFiling.controller.js`, `saveFilingDate`). Route:
+  `requireRole('admin', 'manager', 'team_member')` + `filedOnCorrectionSchema` (strict; a real
+  calendar date or null). Handler, in one transaction: `canCorrectFiledOn` (a team member only as
+  the matter's owner or an assignee of one of its steps); `checkFilingDate` (GST return matter;
+  the step is one `filingSteps` picks; the matter has **reached** it — `isReached`: active,
+  blocked or completed, so the date can be saved before completing; `filedOnBounds`: min = the 1st
+  of the month after the GST period ends, max = today in India). Writes
+  `filingDate { date, previous, byUid, byRole, at }` on the step (`date: null` = removed; once the
+  field exists it is authoritative), a `FILING_DATE_SET` event ("GSTR-1 filing date set to … /
+  changed from … to … / removed (was …)", `filedOn {form, from, to}`, `commentClientVisible:
+  false`) and the matter's `updatedAt` (the sheet sync's watermark). `completedAt` is never
+  touched; `filingDate` and `filedOnCorrection` are in `CLIENT_STEP_HIDDEN`.
+  - **Completing without a date is allowed** (decision): the workflow is never blocked; the task
+    shows no date and the header keeps offering "Add Filing Date".
+- **Existing matters (decision: nothing visible disappears).** `system/gstFilingDates.manualFrom`
+  is recorded once — create-if-absent by the first instance that needs it, i.e. at deploy — and
+  cached per process (`manualFilingDatesFrom`). A filing task completed before it with no
+  `filingDate` keeps the date it showed under the old rule (`legacyFiledOnOf`: the matching
+  `filedOnCorrection`, else the India date of `completedAt`). No migration script. A task
+  completed after it has a date only once one is saved. If `manualFrom` cannot be read, the
+  matter page shows no legacy dates for that request, and the sheet sync does not run at all
+  (it must not mistake a failed read for "no dates" and blank cells).
+- **One source.** `filedOnDateOf(step, { manualFrom })` — the saved `filingDate`, else the
+  legacy date, else null — is the ONLY reader: `gstMatterTags` (the tags) and `deriveRow` (the
+  sheet's two date columns). Served as `filedOn` + `gstFilingForm` on the two steps and
+  `gstFilings: [{ stepNumber, form, date | null, status }]` on the matter (every filing task
+  reached, or with a date).
+- **Matter → sheet only (owner, 17 Nov).** The sync copies the date into that matter's row
+  (`RULES_VERSION` 3 re-derives every row once). On a row with `sourceMatterId` whose
+  `derived.<gstr1_date|gstr3b_date>` is set, `matterOwnedDateFields` makes `updateRecord` refuse
+  a changed value (409 `MATTER_OWNED_DATE`, "change it on the matter's filing task") and
+  `importRows` drop it. Nothing in the sheet code writes to `tasks`.
+- **Which row is a matter's (#294 wrong-record fix).** Root cause: `sourceMatterId` was also set
+  whenever a PERSON picked a matter in a row's Matter cell (`matterLink`), with no check that the
+  matter was for that row's client and period or that it had no row yet; the sync then wrote to
+  `linkedRows.get(id)[0]` — whichever linked row the query returned first — and, the row never
+  having been synced, overwrote every derived cell (client, GSTIN, period, statuses, dates). Now:
+  - `pickMatterRow` (sync): of the rows linked to a matter, keep one synced before FROM THIS
+    matter (`derived.matter`), or one that `rowFitsMatter` (GSTIN, Return Period and client name
+    each blank or the matter's own — names compared loosely: case, punctuation, "Pvt Ltd"/"M/s");
+    prefer `source: 'matter'`, then synced-here, then oldest. Every other link is RELEASED
+    (`sourceMatterId`, `derived` and a Matter cell pointing at that matter are deleted; the cells
+    stay) and logged.
+  - Adoption of a typed / uploaded row also requires `rowFitsMatter` (a client login can hold
+    matters for several organisations while GSTIN comes from the one profile).
+  - `guardMatterLink` (`createRecord` / `updateRecord`, only when the link changes):
+    `checkMatterLink` — the matter's frequency matches the sheet (400), the row fits the matter
+    (`matterIdentityOf`, 409), no other row is linked to it (409).
+  - Not changed: a hand-opened matter's period is still the period that had ended when it was
+    opened (a matter opened late for an older month maps to the later month — open item).
+- **Portal.** `components/tasks/GstFilingTags.tsx`: `FilingDateControl` — the saved date
+  (`badge-green`) with a pencil ("Change … filing date"), or a dashed "Add Filing Date" button
+  while none is saved (staff only; clients see only a saved date) — opening a native date input
+  bounded by `gstFilingDateBounds`, with Save / Remove date / Cancel (44 px targets on a phone).
+  Rendered in the matter's header for every reached filing task (`GstMatterTags`, beside the
+  `badge-gray` Filing Month in `PageShell`'s `titleAddon`) and beside the current task's title in
+  `StepHeroPanel` (`filingSlot`); the step row's tag shows the date read-only.
+
 ## Dependency sources and the Node.js pin (#218, 2026-10-30)
 
 **SheetJS (`xlsx`) comes from the SheetJS CDN, not npm.** The npm `xlsx` package
@@ -2150,9 +2931,56 @@ Drop the override once a firebase release depends on a fixed grpc-js.
 `backend/src/config/corsOrigins.js` replaces patterns that matched every `*.web.app` and
 `*.firebaseapp.com` site and lookalike domains such as `evillegalterminus.com`. Allowed:
 the firm's domains, this project's and the QA site's Firebase hosts with preview channels,
-localhost outside production, and exact origins from `CORS_ORIGINS`. In production
-`http://localhost` and `capacitor://localhost` are no longer allowed; the mobile app's
-origin is added through `CORS_ORIGINS` for each environment.
+and exact origins from `CORS_ORIGINS`.
+
+**No localhost, anywhere (owner, 2026-11-19).** No `localhost`, loopback or `*.localhost` origin
+is allowed in any environment, and `CORS_ORIGINS` cannot add one (it is dropped). Neither
+deploy workflow sets `CORS_ORIGINS` any more. The two reasons localhost was there are gone:
+the mobile apps open the hosted Portal (see "Mobile apps: one app on the hosted Portal"), and
+local development reaches the API same-origin through the Vite dev server's `/api` proxy
+(`VITE_API_BASE_URL` empty). The buckets follow the same rule: `storage-cors.json`
+(production) and `storage-cors.qa.json` (QA) list only the sites' own origins.
+
+## Mobile apps: one app on the hosted Portal (E-29 D7, 2026-11-19)
+
+**This supersedes the bundled design described in the two sections below** (kept as the record
+of what was built 2026-11-02 to 2026-11-18).
+
+- **One app**, `com.legalterminus.app`, "Legal Terminus", on Android and iOS. It is a Capacitor 8
+  shell (`MobileApp/`) whose `server.url` is the **hosted Portal** of one environment:
+  `https://legal-terminus-qa.web.app/portal/` (QA, the default) or
+  `https://legalterminus.com/portal/`. `LT_APP_ENV` picks it at build time
+  (`MobileApp/environments.json`, `scripts/app-env.mjs`); the app id and name never change, so the
+  QA-pointed builds and the production build are the same app in both stores.
+- **Nothing of the Portal is bundled.** `webDir` holds only `error.html` (no connection; Android
+  WebView older than 111) and a placeholder `index.html`. A Portal deploy changes what the apps
+  show immediately; a store build is needed only for a native-shell change.
+- **Origin.** The page's origin is the site, so API calls are same-origin through the Hosting
+  rewrite and uploads use the site's bucket CORS entry. No app origin exists; none is allowed.
+- **Navigation.** `allowNavigation` is the environment's host only; every other host opens in
+  Safari / the browser. Native plugins are reachable only from that host.
+- **Native code in the Portal** stays in `Portal/src/lib/native.ts` (plus the sign-in branches and
+  persistence), behind `Capacitor.isNativePlatform()` with dynamic `import()`. Because installed
+  shells lag behind the hosted Portal, a Portal feature that needs a newly added plugin must check
+  `Capacitor.isPluginAvailable()` and degrade without it. Inside the app only, `initNative` adds
+  `viewport-fit=cover` to the page's viewport tag and sets `html[data-native]` for the safe-area CSS.
+- **Release.** Android signed by the pipeline from a tag, iOS from Xcode
+  (`docs/mobile-release.md`). Switching from QA to production is a new store build with
+  `LT_APP_ENV=production`.
+- **A new website version reaches an open app** (E29-S14, 2026-11-21). The app stays open for
+  days on the Portal version it loaded. When it comes back from at least a minute in the
+  background it fetches `/portal/` (served `no-store`) and reloads only if the hashed entry script
+  changed and nobody is typing or uploading (`updateGuard.ts`; `uploadDocument` counts as busy).
+  The sign-in survives the reload (same origin, IndexedDB).
+- **The Portal's files are compressed and cached** (2026-11-21). The Portal comes from Cloud
+  Run through a Hosting rewrite, which Hosting neither compresses nor caches by itself:
+  `Portal/server.js` gzips, and `firebase*.json` give `/portal/assets/**` (content-hashed names) a
+  one-year `immutable` cache while `index.html` stays `no-store`. Without this the apps
+  downloaded the 2.46 MB bundle raw on every start.
+- **BeatMyEMI is the model** (`docs/mobile-release.md`, last section): one app id, one config with
+  `server.url`, native sign-in handed to the web SDK, Android from the pipeline with the build
+  number taken from the Releases, iOS from Xcode. The UI tests in `MobileApp/ios/App/AppUITests/`
+  run against a QA-pointed build only.
 
 ## Android app: Capacitor wrapper (E-26, 2026-11-02)
 
@@ -2184,13 +3012,16 @@ plugins loaded by dynamic `import()`. A browser takes the old path unchanged.
   unauthenticated requests, which a bare `window.open` cannot avoid.
 - **Account links.** The manifest has a QA-only `https` intent filter for
   `/portal/account/action`; `appUrlOpen` routes it to the existing page. Real phones need
-  `/.well-known/assetlinks.json` on the host with the app's signing fingerprint (not done).
+  `/.well-known/assetlinks.json` on the host with the app's signing fingerprint. It was live
+  briefly and was removed on 2026-11-03 until the app's launch is approved.
 - **Launch.** Android 12+ system splash is white; the splash is held (`launchAutoHide: false`)
   until the first paint (`hideNativeSplash`). Icons and splash come from `lt-mark.svg` via
   `@capacitor/assets`.
 - **WebView.** The Portal needs Chrome 111+ (Vite default target, Tailwind 4).
   `android.minWebViewVersion: 111` with `server.errorPath: webview-update.html` shows a
-  no-JavaScript page instead of a blank screen on an older WebView.
+  no-JavaScript page instead of a blank screen on an older WebView. The page lives in
+  `MobileApp/web/` and only `vite build --mode mobile` emits it (`Portal/vite.config.ts`):
+  the website must not serve app pages while the app is unreleased (2026-11-03).
 
 **Origins.** The app runs at `https://localhost`. QA allows it on the API (`CORS_ORIGINS`) and, as
 of 2026-11-02, on the QA storage bucket (`storage-cors.json`, applied to `legal-terminus-web-qa`
@@ -2199,3 +3030,435 @@ only). **Production allows neither yet**; add both before a production build.
 **Secrets.** `google-services.json`, signing keystores and `local.properties` are never
 committed. A throwaway key was used only to prove the release build installs.
 
+
+## iOS app (E-29, planned 2026-11-10)
+
+The iPhone app is the same `MobileApp/` shell with an `ios/` platform added; the Portal bundle,
+`native.ts` and the plugin set are shared with Android. Decisions, in `epics.md` E-29:
+
+- **Origin.** WKWebView cannot serve a custom-scheme app over `https`, so the iOS app's origin is
+  `capacitor://localhost`. `corsOrigins.js` accepts that one exact origin (and still nothing else
+  on the `capacitor` scheme) when it is listed in `CORS_ORIGINS`; the buckets' CORS carry it too.
+- **Sign-in.** Native Google on iOS as on Android (the picker's ID token into the web SDK, one
+  Firebase session), **and Sign in with Apple** in the same build — App Store 4.8 requires it
+  once Google is offered; the website gets the Apple provider too (parity). A "Hide my email"
+  relay address is treated as a new sign-up; the admin links it to the firm's client record by
+  the existing additional-emails path. Session persistence stays `indexedDBLocalPersistence`
+  unless a device test shows eviction.
+- **Emailed links.** Universal Links (`apple-app-site-association` + Associated Domains), from the
+  same source as `assetlinks.json` so the two files cannot disagree; the host is a build setting,
+  like Android's `linkHost`; production gets the file only when launch is approved.
+- **Account deletion** is started in the app (both stores require it): `POST
+  /api/auth/me/deletion-request` disables the Auth user, marks the profile, tells the firm; an
+  Admin completes it with the existing delete. Records the firm must keep are kept.
+- **Release.** Android is built and signed by the GitHub pipeline from a release tag and attached to
+  a GitHub Release; iOS is archived and uploaded from Xcode. One version name and build number for
+  both. `docs/mobile-release.md`.
+
+**Built 2026-11-11 (branch `feat/ios-app`).** Structural decisions made while building it:
+
+- **One environment switch (owner, 2026-11-11: QA first).** `MobileApp/environments.json` is the only
+  place the apps' environments are described; `LT_APP_ENV` (`qa` default | `production`) picks one at
+  build time. `MobileApp/scripts/app-env.mjs` runs first in every `npm run sync:*` and writes the
+  derived files (all git-ignored): `MobileApp/.app-env.json` (read by `capacitor.config.ts` and
+  `android/app/build.gradle`), `Portal/.env.mobile.local` (Vite's highest-precedence file for
+  `--mode mobile`, so the environment-defining values always beat a developer's `.env.local`), and
+  `ios/App/Config/Environment.xcconfig` (included by the App target's Debug/Release xcconfigs:
+  bundle id, display name, `LT_LINK_HOST`, Google URL scheme). Followers: app id and name, API/site
+  base URL (and with it every endpoint, account deletion included), database and bucket, auth
+  domain, Universal/App Link host, Firebase files, the bundle guard. A QA build is a separate app,
+  **"Legal Terminus QA", `com.legalterminus.app.qa`**; production keeps `com.legalterminus.app`.
+  Gradle and Xcode build whatever was synced and refuse a mismatch or a missing sync.
+- **The guard** (`MobileApp/scripts/check-bundle.mjs`) runs inside every sync and in CI: forbidden
+  patterns per environment plus the environment's own API URL as a required string.
+- **iOS dependencies by CocoaPods**, not Capacitor 8's SPM default: the Google subspec of
+  `@capacitor-firebase/authentication` is a Podfile line. Firebase ends CocoaPods releases after
+  October 2026; moving to SPM is a later change.
+- **App-shell CSS is opt-in.** `initNative` sets `html[data-native=<platform>]`; the safe-area
+  padding classes (`app-topbar`, `app-sidebar`, `app-bottombar`, `app-main`, `app-safe-page`) apply
+  only under it, and `viewport-fit=cover` is added by a Vite plugin in `--mode mobile` only. The
+  website's HTML and CSS behaviour are unchanged.
+- **External links need no helper.** Capacitor iOS hands every navigation to another host, every
+  `window.open`, and non-web schemes to the system (`WebViewDelegationHandler`); no
+  `allowNavigation` list is set, so nothing foreign loads inside the app. Website links built from
+  `window.location.origin` were wrong inside both apps; `siteOrigin()` in `native.ts` returns the
+  environment's host there.
+- **App-link files come from the repo, per host.** Firebase Hosting generates ONE
+  `assetlinks.json` / `apple-app-site-association` per *project* and serves it on every site
+  (seen 2026-11-11: the QA site serves production's Android entry). That cannot keep the QA app off
+  the live host, so `MobileApp/scripts/app-links.mjs` writes the files for one environment's app,
+  and `deploy-qa.yml` puts the QA pair into the QA site (`firebase.qa.json` now deploys
+  `.well-known` and serves the AASA as `application/json`). Production's files wait for launch
+  approval. This supersedes "same source as `assetlinks.json`" above.
+- **Account deletion** (`POST /api/auth/me/deletion-request`, `services/accountDeletion.service.js`):
+  `ACCOUNT_DELETION_ROLES` = every role but admin (role service, both sides). A transaction marks
+  `users/{uid}` (`deletionRequestedAt`, `deletionReason`, `status: 'deletion_requested'`); the Auth
+  user is disabled and its refresh tokens revoked; one email to the admins; a structured log line
+  `account_deletion_requested` is the audit record (LT has no account-level audit collection).
+  Idempotent. The Users page shows a "Deletion requested" tab and amber badge; the existing admin
+  delete completes it. `verifyToken` is unchanged: an already-issued ID token lives out its hour.
+- **Sign in with Apple** is shown by a pure rule (`showAppleSignIn` in `lib/nativeRules.ts`): always
+  on iOS, never on Android, on the web only with `VITE_APPLE_SIGN_IN=true` (off until the Firebase
+  provider exists). The native first-sign-in name comes from the plugin result, not the ID token,
+  and is sent as `fullName` to `/api/auth/register`.
+- **Android release signing** reads `MobileApp/android/key.properties` (absent → debug key);
+  `minifyEnabled true` for `mapping.txt`; the `build-android` job in `deploy-production.yml` runs
+  only by hand from a release tag in the `production` environment.
+
+## Chat: editing, deleting and confirming a shared message (2026-11-05)
+
+The matter's discussion thread (#123) is labelled **Chat** in the Portal. Code names are
+unchanged (`messages` subcollection, `DiscussionPanel`, tab key `discussion`), so links
+and stored data are untouched.
+
+**Edit and delete.** `PATCH` and `DELETE /api/tasks/:taskId/messages/:messageId`.
+- **Superseded by #297 (2026-11-14):** EDIT is the author's only
+  (`canEditMessage`); DELETE is the author or an admin (`canDeleteMessage`). The
+  earlier rule let an admin edit anyone's message, including a client's.
+  Managers are not given blanket rights: a message is its author's words.
+- A client gets 404 for an internal message, so its existence is never revealed, and 403
+  for a firm message they can see.
+- The edit schema accepts `body` only (`.strict()`), so an edit can never change who sees
+  a message.
+- Delete is soft: `body` is emptied and `deletedAt` set, so replies around it still make
+  sense. A deleted message cannot be edited again (409).
+- Both keep the replaced text in `revisions` (`{ body, replacedAt, replacedBy }`), never
+  returned by the API. The firm keeps a record of what a client was actually sent.
+- ~~Neither notifies anyone.~~ **Superseded by #297:** an EDIT is announced exactly
+  like a new message (below); a delete still notifies nobody.
+- `listMessages` returns `editedAt`, `deleted`, `canEdit` and (#297) `canDelete` per message.
+
+**Confirm before sharing.** In the Portal, a staff message with "Visible to client" ticked
+opens a preview (the app-wide `useConfirm` dialog) before it is posted. This is a UI step
+only: the API still accepts `clientVisible: true` directly, as integrations and tests use
+it.
+
+## Who is told that a step is theirs (#293, 2026-11-14)
+
+`services/stepAssignmentNotice.service.js` — `announceStepAssignment(db, {...}, deps)`
+is the ONE place that tells people a step is now theirs. `createTask` (an active
+matter's first step), `approveTask` (a no-payment matter's first step, when approval
+makes it live) and `transitionTask` (every move onto an internal step) all call it.
+Each recipient gets one in-app notification, mirrored to email by
+`createNotification` (so the `EMAIL_DISABLED` kill-switch applies).
+
+- **Recipients** (`stepAssignmentRecipients`, pure): every assignee of the step
+  (`assignedToUids`, #192), minus the client; if nobody on our side holds it and it
+  is not the client's step, the matter owner. Never the actor, never a
+  `system:*` actor.
+- **Why approval:** a matter created with no payment (every GST matter the #219 sweep
+  opens, every #167 recurring copy) is `pending_admin_approval` at creation, so
+  creation tells only the admins. Approval used to tell only the creator — the first
+  step's assignee was never told. That was the missing GST assignment email.
+- Copy: the editable `step_assigned` template, unless a transition passes its own
+  ("Step ready for you", "Client approval received", "Correction required").
+- `notify()` in `tasks.controller.js` skips `system:*` recipients ("Matter approved"
+  to `system:gst-returns` was a dead write).
+
+## Payment entries are not step information (#296, #293 part 2, 2026-11-14)
+
+Ledger changes write an event on the matter's CURRENT step (`commitLedgerChange`,
+`paymentRequests`, `refunds`), so the Steps tab showed "Payment received: ₹… ₹…
+remaining" as that step's "From the previous step" note — to team members too.
+`shared/payments/ledgerEvents.js` (`PAYMENT_LEDGER_EVENT_TYPES`,
+`isPaymentLedgerEvent`) is the one list of event types that carry figures:
+- `listTaskEvents` drops them for every role outside `PAYMENT_VIEW_ROLES`
+  (`admin`, `manager`); clients never got them (`CLIENT_EVENT_WHITELIST`).
+- `TaskDetailPage` never uses one as a step's carried-forward note, for any role.
+- The amber, blinking part-payment banner (#54/#124) is removed from the Steps tab
+  for everyone. Figures stay on the Payments tab; the `REMIND_PART_PAYMENT` effect
+  still emails the client.
+- `RECORD_PAYMENT` / `ADMIN_OVERRIDE_PAYMENT` are gate transitions, not ledger
+  entries, and are not on the list.
+
+## Chat on a phone, and 5,000-word messages (#295, 2026-11-14)
+
+- **One copy of the limits:** `shared/richText/limits.js` — `COMMENT_WORD_LIMIT`
+  (1,000: step comments, notes), `MESSAGE_WORD_LIMIT` (5,000: Chat messages),
+  `wordLimitFor(what)`, and the matching size caps (sanitised markup 60,000 /
+  300,000; raw input 200,000 / 600,000, under the 1 MB JSON body limit).
+  `prepareRichText(raw, { what })` picks by `what`; the message Zod schemas use
+  `MESSAGE_MAX_INPUT_CHARS`; the Portal's `RichTextEditor` takes `wordLimit` and the
+  Chat passes `MESSAGE_WORD_LIMIT`. Supersedes the 1,000-for-everything rule of the
+  #194 section above for messages only.
+- **Edit history stays under Firestore's 1 MiB document limit:** `appendRevision`
+  in `messages.controller.js` keeps the newest `revisions` that fit in 900 KB beside
+  the current text (measured in UTF-8 bytes), dropping the oldest and logging it.
+  It replaces `FieldValue.arrayUnion`, which grew without bound.
+- **Composer on a phone:** the card no longer has a height cap — the thread does
+  (`55dvh`) — and the editor grows to `min(35dvh, 18rem)` then scrolls inside itself
+  (`RichTextEditor` `maxHeight`). The Send row is scrolled into view on focus and
+  while typing, and `index.css` hides the fixed bottom navigation while
+  `[data-chat-composer]` has focus below `md`. Before, a long message made the
+  composer taller than the 70vh card and Send spilled out under the bottom bar.
+- **"Discussion" → "Chat":** the tab has been Chat since 2026-11-05 (lt.17); the
+  mobile app bundles the Portal, so an app built earlier still says Discussion until
+  rebuilt. The last user-visible "discussion" (an error message) now says chat. Code
+  names stay (`DiscussionPanel`, tab key `discussion`, `messages`).
+
+## Chat: an edit is announced; only the author edits (#297, 2026-11-14)
+
+- `services/chatMessageNotify.service.js` — `notifyChatMessage({ ..., edited })` is
+  the one path for a new AND an edited message: a client's message → owner + current
+  step's assignees, else admins (#200), template `matter_message_team` /
+  `matter_message_team_edited`; a staff message shared with the client → the client
+  (CC the matter's `ccEmails`), `matter_message` / `matter_message_edited`; an
+  internal staff message → only @mentioned colleagues (on an edit, only those
+  mentioned for the first time; `mentionedUids` keeps the union). Each person gets
+  one bell notification (`email: false`) and one templated email; the
+  `EMAIL_DISABLED` kill-switch applies through `sendTemplatedEmail`. The two
+  `*_edited` templates are editable in Settings → Email Templates and carry the
+  updated text in `{{message}}`.
+- **No duplicates:** one server path serves the internal and the client portal;
+  `updateMessage` compares and writes in a Firestore transaction, so an unchanged
+  body (a double-clicked Save) writes and notifies nothing.
+- **Edit = author only, enforced by the API:** `loadModifiableMessage(req, res,
+  'edit')` → `canEditMessage(req.user, m)` (`m.authorUid === req.user.uid`, the
+  verified token's uid), re-checked inside the transaction; 403 "You can only edit
+  messages you wrote." The Portal shows Edit only when `canEdit`. Delete stays
+  author-or-admin as moderation.
+- Own ("sent") bubbles are `bg-emerald-100` with an `emerald-300` edge (were
+  `emerald-50`, barely distinct from the white thread).
+
+## Scheduled calls without a shared secret (2026-11-05)
+
+`/api/internal/run-gst-returns` accepts three callers: an admin (Firebase token), a
+matching `x-cron-secret` if `CRON_SECRET` is ever set, or **Cloud Scheduler signing as
+`lt-scheduler@legal-terminus-web.iam.gserviceaccount.com`** (`schedulerAuth.service.js`).
+- The scheduler call carries a Google ID token (OIDC). The API verifies Google's
+  signature, the audience (`legal-terminus-internal-scheduler`, or `SCHEDULER_AUDIENCE`),
+  and that the token names `SCHEDULER_SA_EMAIL` with a verified email.
+- Neither setting is a secret, and `SCHEDULER_SA_EMAIL` is set in
+  `deploy-production.yml`. Unset, nothing is accepted this way.
+- The service account holds no project roles. A leaked token is useful only for this
+  call, and only until it expires (one hour).
+- Job `lt-gst-returns-daily` (asia-south1) runs at 09:00 Asia/Kolkata, retries 3 times,
+  and targets the Cloud Run URL directly. Running it more often is harmless: each
+  client period is claimed once (`gstReturnRuns`).
+- The traffic trigger (`gstReturnSweepTrigger`) stays as the fallback, but only from
+  09:00 India time (`sweepWindowOpen`). Before, the first request after midnight
+  emailed clients at 00:05.
+
+## Service step settings saved by the API (2026-11-05)
+
+`workflow.schema.js` `stepSchema` now lists `condition`, `form` and `actions`, with
+Ambyflow's shapes, and `validateDefinition` runs `validateCondition`, `validateForm`
+and `validateDueRule`. Step objects are not `.strict()`, so before this an unlisted
+field was dropped without an error. When the Portal editor gains a step field, add it
+here in the same change.
+
+## Several assignees on a step: one rule, every writer (#192 reopened, 2026-11-19)
+
+The September model stands (`defaultAssigneeUids` + `defaultAssigneeUid` = first on the
+definition; `assignedToUids` + `assignedTo` = first on the matter's step). The reopen found
+three writers that broke it:
+
+1. `stepSchema` did not list `defaultAssigneeUids` (same bug class as the entry above), so
+   every Service save from the workflow editor stripped the list. Now listed.
+2. `PUT …/step-settings` returned rows without `assigneeUids`; the Service page caches that
+   response, so its picker showed one person after saving. Now returned.
+3. The matter screen's **Step owner** was a single `<select>` driving
+   `PATCH /api/tasks/:id/steps/:n { assignedTo }`, which collapses the list to one. The
+   endpoint now takes `assignedToUids` (the whole list, rewritten, never merged) and has a
+   route guard (`requireRole('admin','manager')`) and a strict schema (`stepPatchSchema`).
+   New owners must be staff users; people already on the step are not re-checked.
+
+**Reconciliation rule** (`backend/src/services/stepAssignees.service.js`): a definition
+step's list counts only while its first entry equals `defaultAssigneeUid`. A writer that
+knows only the single field (the legacy `/step-assignees` endpoint, an old Portal bundle)
+therefore replaces the list instead of being outvoted by it. Applied on create/update of a
+definition, on both step-settings endpoints, and when `createTask` materialises steps. A
+list of one is stored as the single field only. Saving a definition refuses a client in any
+list; a since-deleted user is tolerated (as before).
+
+Portal: one checkbox popover, `components/common/PeoplePicker.tsx`, used by the matter
+screen and by the editor's new **Who does this? → Specific people** (`StepCard`, people
+passed in from `WorkflowEditorPage`; the card itself still does no fetching). Pickers list
+staff only — never clients or view-only professionals.
+
+Matter-level reassignment (`PATCH /api/tasks/:id { assignedTo }`) still collapses the
+current step to the new owner — deliberate, unchanged.
+
+## Refund log and the client dashboard before approval (#240, #242, 2026-11-05)
+
+**Refunds are recorded, not sent.** Razorpay's refund API is not wired in. Staff
+make the refund in Razorpay (or at the bank) and record it; its status is moved on
+by hand: initiated → processing → credited ("Successfully Credited") | failed.
+`credited` and `failed` are final, so the log keeps what happened; a retry is a new
+refund. `credited` needs a `transactionId`. (Razorpay's `refund.processed` webhook
+still marks a website order `refunded`, as before; it writes nothing to this log.)
+
+- **Storage.** `tasks/{taskId}/refunds/{id}` for a matter;
+  `paymentOrders/{orderId}/refunds/{id}` for a website order whose matter was never
+  opened (refused with `USE_MATTER` once the matter exists, and for Pay Now orders).
+  The parent carries `refundSummary` (`count`, `activeTotal` — every refund not
+  failed, `creditedTotal`, `latest`), recomputed from the subcollection in the same
+  transaction as each write — the ledger-rollup pattern. It holds no staff names,
+  because the client reads it. The client dashboard therefore needs no subcollection
+  or collection-group read, and no new index.
+- **Amounts are the server's.** `paymentAmount` is the matter's `amountPaid` (or the
+  order's `amountPaid ?? amount`) at the time; the schema (`refund.schema.js`,
+  `.strict()`) refuses `paymentAmount`/`clientUid`. In the transaction:
+  `refundAmount ≤ paid − activeTotal`, else 400 `REFUND_EXCEEDS_PAID`. A failed
+  refund frees its amount.
+- **Decision: a refund does not change the payment ledger.** `amountPaid`,
+  `amountDue` and `paymentStatus` stay derived from `tasks/{id}/payments` only.
+  Rewriting them would reopen a payment checkpoint on a paid matter and erase the
+  record of money received. The Refund History shows **Net received** =
+  `amountPaid − creditedTotal` beside the ledger instead. If the firm wants a refunded
+  matter to read differently in reports, that is a new decision.
+- **Order before approval.** While an order has `refundSummary.activeTotal > 0`,
+  `canApprove` refuses (409): the service was cancelled. When `creditedTotal ≥` paid
+  the order becomes `status: 'refunded'` with `refundedAt`.
+- **Access.** `GET /api/tasks/:id/refunds` admin, manager, client (owner via
+  `clientCanSeeMatter`, otherwise 404); `POST`/`PATCH` admin, manager. Team members
+  are refused, as for payments (#148). `/api/orders/:id/refunds` (GET/POST/PATCH) is
+  admin/manager. Clients never get `recordedBy*` or `statusHistory`. Each matter
+  change writes a `REFUND_RECORDED` / `REFUND_UPDATED` event (staff-only feed) and an
+  in-app notification to the client (with the usual email mirror) on record and on
+  credited/failed. Firestore rule: `tasks/{id}/refunds` read admin/manager, write
+  never; order refunds fall to the catch-all deny.
+- Code: `services/refunds.service.js` (pure rules + I/O), `controllers/refunds.controller.js`,
+  `schemas/refund.schema.js`; Portal `components/payments/RefundHistory.tsx`, used in the
+  matter's Payments tab and in Website Orders → Details.
+
+**Client dashboard before approval (#242).** `GET /api/orders/mine` (client only,
+`req.user.uid` from the token; registered before `/:orderId`) returns the client's
+own paid / under-review / refunded website orders (not Pay Now) as `clientOrderView`:
+`publicOrder` plus `amountPaid`, `stage` and the refund rollup. One equality query on
+`uid`, capped at 100, sorted in memory — no composite index. `clientOrderStage` is
+pure: `approved` (matter created) · `refunded` · `refund_in_progress` ·
+`under_review` · `awaiting_approval`. Approval is never inferred from payment.
+
+`ClientCockpit` polls both `/api/tasks` and `/api/orders/mine` every 30 s. With no
+matters and at least one unapproved request it renders the pre-approval cards
+(Payment status, Matter status, Amount paid, Service requests) and the Pending
+Approval notice, and no amount due or progress. Otherwise the usual four cards, plus
+a "Waiting for approval" list when requests are still open. A fifth **Refund** card
+(`activeTotal` across matters and orders, latest status and reason) appears only when
+a refund exists. The switch after approval needs nothing: the matter appears in
+`/api/tasks` and the order's stage becomes `approved`.
+
+
+## Invoices on a matter's Payments tab (#313, 2026-11-19)
+
+Admins and managers upload a matter's invoices as PDFs; the matter's client downloads
+them. Several per matter; each can be replaced or deleted.
+
+- **Storage.** Metadata `tasks/{taskId}/invoices/{invoiceId}` (`fileName`, `size`,
+  `status` `awaiting_upload|uploaded`, `replaces`, `uploadedBy`, `uploadedByName`,
+  `createdAt`, `uploadedAt`); bytes `tasks/{taskId}/invoices/{invoiceId}/{fileName}` in
+  the bucket — under the matter's prefix, so `deleteTask` sweeps them, and `invoices` is
+  on its subcollection list. A separate subcollection rather than `documents` with a
+  type: documents have their own review lifecycle, client-visibility toggle and staff
+  access (team members see all of them), and invoices must have none of that.
+- **Upload reuses the document transport** (§7, E-05): `POST …/invoices/signed-upload-url`
+  `{ fileName, contentType: 'application/pdf', replaces? }` (`invoice.schema.js`,
+  `.strict()`, PDF literal) returns a 15-minute V4 signed PUT URL with the content type
+  pinned; the browser PUTs; `POST …/invoices/:id/confirm` then checks the object exists,
+  its size is ≤ 10 MB and its first bytes are `%PDF-` (the signed URL bounds the type
+  label only), and marks it `uploaded`. A refused upload is deleted, bytes and record.
+  An `awaiting_upload` record is never listed or downloadable.
+- **Replace** is a fresh upload with `replaces: <invoiceId>`; on its confirm the replaced
+  invoice's record and bytes are removed, so the list never shows both and a failed
+  replacement leaves the original untouched. The new upload date is the replacement's.
+- **Download** `GET …/invoices/:id/download` streams through the backend
+  (`Content-Disposition: attachment`, `Cache-Control: private, no-store`, `nosniff`) —
+  never a signed URL (security rule 8).
+- **Access.** Route guards: list and download admin, manager, client; upload, confirm and
+  `DELETE` admin, manager. The controller re-checks (`canManageInvoices`,
+  `canReadInvoices` in `services/invoices.service.js`, pure and unit-tested) and adds
+  ownership: a client only via `clientCanSeeMatter` (own scope #166, matter contact
+  #188), otherwise **404**, as refunds. **Team members and professionals are refused
+  (403)**: an invoice is payment information (#148), and the Payments tab is already
+  hidden from them. Clients are not sent `uploadedBy*`. Firestore rule:
+  `tasks/{id}/invoices` read and write never — everything goes through the API.
+- **Activity.** `INVOICE_UPLOADED` / `INVOICE_REPLACED` / `INVOICE_DELETED` events; they
+  are on `PAYMENT_LEDGER_EVENT_TYPES` (shared), so team members and professionals do not
+  get them in the feed, and clients never do (not on the client whitelist).
+- **List is not paginated**: a matter holds a handful of invoices (as with documents);
+  one subcollection read per Payments tab open.
+- **Not built:** emailing or notifying the client when an invoice is added (not asked —
+  a one-line `createNotification` on confirm if the firm wants it); generating invoices.
+- Code: `services/invoices.service.js`, `controllers/invoices.controller.js`,
+  `schemas/invoice.schema.js`; Portal `api/invoices.ts`,
+  `components/payments/InvoicesCard.tsx` (in the Payments tab, after Payment History).
+
+## Whole lists in the browser; a client's name on their matters (#275, #277, 2026-11-10)
+
+**Lists the browser filters are loaded whole.** The Matters page (`TasksPage`) and the
+Clients page filter, search and sort in the browser over the rows they hold, but they
+held only the first page of a cursor-paginated endpoint (25 matters ordered by
+`updatedAt`, 100 clients ordered attention-first) and never asked for the next. Older
+completed matters and late-alphabet clients were simply not on the page (#275, #277).
+`Portal/src/api/pagination.ts` `fetchAllPages` follows `nextCursor` to the end
+(de-duplicated by id, capped at 100 pages); `getTasks()` and `getAllClients()` use it.
+The endpoints keep paginating — the rule "all list endpoints paginate" stands; the
+caller just reads every page. The Matters page refreshes every 60 s (was 15 s), the
+board's pace, because a refresh now reads every page. `/api/clients` allows `limit` up
+to 500 (was 100): it builds every client's rollup on each request to sort them, so one
+large page is cheaper than several. The Matters page also honours `?status=` from the
+dashboard links.
+
+**`clientName` on a matter is a cache with one writer.** A matter's `clientName` is a
+copy of the client's name made at creation, read by some twenty consumers (Matters list,
+board, search, reports, the workbook export, the public API, every email). It was never
+refreshed, so a rename did not reach existing matters (#277). Reading the name at
+display time everywhere was rejected: every consumer would need a users lookup (several
+run outside a request) and any one missed would keep showing the stale copy. Instead
+the profile is the source of truth and `services/clientName.service.js` is the only
+code that rewrites the copy: `afterClientProfileWrite` runs after every write that can
+change a client's name — `PATCH /api/portal/users/:uid`, `PATCH /api/auth/me`, and the
+merge branch of `upsertUser` — and rewrites `clientName` on every matter with that
+`clientUid` (batched, idempotent, `updatedAt` untouched so the list order does not
+move). Matters where the client is only an additional contact (#188, `ccEmails`) name
+their owner and are not touched. A failed sync never fails the profile save; it is
+logged and repaired by the next save of that client or by
+`scripts/syncClientNamesOnMatters.mjs` (dry run by default, `--apply` to write).
+Historical records keep the name they were written with: refunds, website orders'
+customer name, sent notifications. The Client Database (#205) keeps its own saved
+values by design. Not changed: `professionalName` on matters and users is the same kind
+of copy and has the same staleness on a professional's rename.
+
+`scripts/backfillTaskUpdatedAt.mjs` (dry run by default) reports and repairs matters
+whose `updatedAt` is missing or not an ISO string — an ordered query leaves those out,
+so such a matter could never be listed. QA had none on 2026-11-10; production was not
+checked (the owner decides whether to run it there).
+
+## Completion email: the "Explore more services" block (#310, 2026-11-19)
+
+- **Storage:** `settings/completionMarketing` → `{ enabled, heading, body }`, apart from
+  `settings/emailTemplates` because it is not a subject/body template and a wider set of
+  roles edits it. `emailTemplates.service.js` owns it: `COMPLETION_MARKETING_DEFAULT`
+  (the firm's seed text) is merged on READ field by field, so the block works with no
+  document written. Unlike the templates, an empty stored field stays empty (clearing the
+  text is a way to stop sending it). Cached 60 s like the templates; a save busts it.
+- **API:** `GET/PUT /api/settings/completion-marketing`, `verifyToken` +
+  `requireRole('admin', 'manager')`, PUT validated by `completionMarketingSchema`
+  (`schemas/settings.schema.js`: `.strict()`, `enabled` required, `stripTags` + length caps).
+- **Send path:** `transitionTask`'s completion branch calls `completionMarketingBlock()`
+  (null when off or empty; never throws) and passes it as `emailAppendix` on the CLIENT's
+  "Your service is complete" `notify` only → `createNotification({ emailAppendix })` →
+  `sendNotificationEmail({ appendix })` → `renderEmail({ appendix })`, which adds one
+  tinted section below the CTA (HTML) and after the link (text). No appendix → output is
+  byte-identical to before. The in-app notification never carries it.
+- **Safety:** the text is plain text. Every piece is HTML-escaped; the only markup added
+  is `<a>` around a bare `http(s)://` URL (href = the escaped URL) and "- " → "•".
+- **Portal:** `pages/settings/CompletionMarketingSection.tsx` on the Email Templates page
+  (first card under "Client emails"). The route is open to `manager`; for a manager the
+  page renders only this section and does not request the admin-only templates.
+
+## Input sanitising is linear and lives in one module (CodeQL, 2026-11-14)
+
+`backend/src/utils/sanitize.js` is the only place the backend strips tags, checks an email's
+shape, vets a request-supplied object key or prepares a value for a log line. Rules:
+
+- **No regex tag stripping.** `replace(/<[^>]*>/g, '')` is quadratic on many `<` with no `>`
+  and was reachable from the public contact form. `stripTags` is a single pass with the same
+  output on ordinary text; a dangling `<` that would begin markup is dropped, so the result never
+  holds the start of a tag. `removeDelimited(s, '(', ')')` does the same for parentheticals.
+- **Keys from a request** are used through a `Map`, `Object.fromEntries` or `Object.hasOwn`, and
+  `isSafeKey` refuses `__proto__`, `constructor` and `prototype` — never `obj[userKey] = …`.
+- **Log values** go in pino fields through `logValue` (CR/LF collapsed, length capped), never
+  interpolated into the message.
+- A new cleaner imports from this module rather than adding its own copy.

@@ -101,6 +101,19 @@ export const USER_MANAGER_ROLES: Role[] = ['admin', 'manager'];
 /** Roles allowed to delete users. */
 export const USER_DELETE_ROLES: Role[] = ['admin'];
 
+/**
+ * E29-S08: roles that may ask for their OWN account to be deleted — everyone but an
+ * admin (a lone admin must not lock the firm out). Mirrors ACCOUNT_DELETION_ROLES in
+ * backend/src/config/roles.js.
+ */
+export const ACCOUNT_DELETION_ROLES: Role[] = ALL_ROLE_KEYS.filter((r) => r !== 'admin');
+
+/**
+ * #256: roles that create, edit and switch coupon codes, and read the coupon
+ * report. Mirrors COUPON_MANAGER_ROLES in backend/src/config/roles.js.
+ */
+export const COUPON_MANAGER_ROLES: Role[] = ['admin', 'manager'];
+
 export const can = (role: Role | null, allowed: Role[]): boolean =>
   !!role && allowed.includes(role);
 

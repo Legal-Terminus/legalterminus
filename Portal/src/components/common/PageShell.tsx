@@ -6,9 +6,11 @@ interface Props {
   children: ReactNode;
   action?: ReactNode;
   back?: ReactNode;
+  /** #292: a tag beside the title (e.g. a GST matter's Filing Month). Wraps under it on a phone. */
+  titleAddon?: ReactNode;
 }
 
-export default function PageShell({ title, subtitle, children, action, back }: Props) {
+export default function PageShell({ title, subtitle, children, action, back, titleAddon }: Props) {
   return (
     <div className="flex flex-col min-h-full">
       <div className="page-header">
@@ -18,7 +20,14 @@ export default function PageShell({ title, subtitle, children, action, back }: P
         <div className="flex items-center gap-2 min-w-0 w-full md:w-auto">
           {back && <div className="shrink-0">{back}</div>}
           <div className="min-w-0">
-            <h1 className="text-base font-semibold text-ink">{title}</h1>
+            {titleAddon ? (
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                <h1 className="text-base font-semibold text-ink">{title}</h1>
+                {titleAddon}
+              </div>
+            ) : (
+              <h1 className="text-base font-semibold text-ink">{title}</h1>
+            )}
             {subtitle && <p className="text-sm text-ink-muted mt-0.5">{subtitle}</p>}
           </div>
         </div>

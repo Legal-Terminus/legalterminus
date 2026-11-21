@@ -5,10 +5,11 @@ import {
 } from 'lucide-react';
 import type { CellValue, MatterRef, WsColumn, WsRecord, WsSheet } from '../../api/worksheets';
 import {
-  BLANK, displayValue, isRangeColumn, matchesQuery, passesFilter, slugify, sortValue, splitMatches, type ColumnFilter,
+  BLANK, displayValue, isRangeColumn, matchesQuery, passesFilter, slugify, sortValue, splitMatches, staffOptions, type ColumnFilter,
 } from '../../lib/worksheets';
 import { exportToXlsx } from '../../lib/exportXlsx';
 import WorksheetImage from './WorksheetImage';
+import SecretCell from './SecretCell';
 
 /**
  * #210 / #217 — the sheet itself, Excel-style: a filter on every column, sort
@@ -20,9 +21,9 @@ import WorksheetImage from './WorksheetImage';
 const PAGE_SIZE = 50;
 const WIDTH: Record<string, string> = {
   longtext: 'min-w-[16rem]', text: 'min-w-[11rem]', date: 'min-w-[8.5rem]', computed: 'min-w-[8.5rem]',
-  number: 'min-w-[8rem]', select: 'min-w-[10rem]', image: 'min-w-[8rem]', matter: 'min-w-[14rem]',
+  number: 'min-w-[8rem]', select: 'min-w-[10rem]', staff: 'min-w-[10rem]', image: 'min-w-[8rem]', matter: 'min-w-[14rem]',
 };
-const EDITABLE = new Set(['text', 'longtext', 'date', 'number', 'select']);
+const EDITABLE = new Set(['text', 'longtext', 'date', 'number', 'select', 'staff']);
 
 export interface GridProps {
   sheet: WsSheet;
@@ -120,9 +121,15 @@ export default function WorksheetGrid({
     });
   };
 
+  // #280 / #279: "Sl. No." numbers the rows as they are shown (after filters,
+  // search and sort), in the grid and in the download — the firm's layout.
+  const serialOf = useMemo(() => new Map(rows.map((r, i) => [r.id, i + 1])), [rows]);
   const download = () => exportToXlsx(
     rows,
-    columns.map((c) => ({ header: c.label, value: (r: WsRecord) => (c.type === 'number' && typeof r.values[c.key] === 'number' ? r.values[c.key] as number : displayValue(c, r, matters)) })),
+    [
+      ...(sheet.serial ? [{ header: 'Sl. No.', value: (r: WsRecord) => serialOf.get(r.id) ?? '' }] : []),
+      ...columns.map((c) => ({ header: c.label, value: (r: WsRecord) => (c.type === 'number' && typeof r.values[c.key] === 'number' ? r.values[c.key] as number : displayValue(c, r, matters)) })),
+    ],
     slugify(sheet.label),
     sheet.label,
   );
@@ -162,6 +169,9 @@ export default function WorksheetGrid({
                 <th className="sticky left-0 z-20 bg-surface-soft px-2 py-2 text-left text-xs font-medium text-ink-muted border-b border-hairline w-20">
                   <span className="sr-only">Actions</span>
                 </th>
+                {sheet.serial && (
+                  <th scope="col" className="px-3 py-2 text-left text-xs font-semibold text-ink-muted border-b border-hairline align-top uppercase tracking-wide whitespace-nowrap">Sl. No.</th>
+                )}
                 {columns.map((c) => (
                   <th key={c.key} scope="col" className={`px-3 py-2 text-left text-xs font-semibold text-ink-muted border-b border-hairline align-top ${WIDTH[c.type] ?? ''}`}>
                     <div className="flex items-start gap-1">
@@ -182,7 +192,7 @@ export default function WorksheetGrid({
             </thead>
             <tbody>
               {shown.length === 0 && (
-                <tr><td colSpan={columns.length + 1} className="px-4 py-10 text-center text-sm text-ink-muted">
+                <tr><td colSpan={columns.length + 1 + (sheet.serial ? 1 : 0)} className="px-4 py-10 text-center text-sm text-ink-muted">
                   {records.length === 0 ? 'No records yet.' : 'No record matches the search or filters.'}
                 </td></tr>
               )}
@@ -198,6 +208,7 @@ export default function WorksheetGrid({
                       </button>
                     )}
                   </td>
+                  {sheet.serial && <td className="px-3 py-1.5 text-ink-muted tabular-nums">{serialOf.get(r.id)}</td>}
                   {columns.map((c) => (
                     <td key={c.key} className="px-1 py-1">
                       <Cell sheet={sheet} column={c} record={r} matters={matters} q={q} canEdit={canEdit}
@@ -253,6 +264,10 @@ function Cell({ sheet, column, record, matters, q, canEdit, onSave, onImageChang
   onSave: (v: CellValue) => Promise<void>; onImageChanged: (v: string | null) => void;
 }) {
   const text = displayValue(column, record, matters);
+  // #279: a secret cell (GST Pswd) — masked, revealed on demand; changed through the record's Edit form.
+  if (column.secret) {
+    return <SecretCell sheetKey={sheet.key} recordId={record.id} column={column} isSet={!!record.secretsSet?.[column.key]} compact />;
+  }
   if (column.type === 'image') {
     return (
       <div className="flex items-center gap-1 px-2">
@@ -314,6 +329,14 @@ function EditableCell({ column, value, text, q, onSave }: {
           <option value="">—</option>
           {draft && !options.includes(draft) && <option value={draft}>{draft}</option>}
           {options.map((o) => <option key={o} value={o}>{o}</option>)}
+        </select>
+      );
+    }
+    if (column.type === 'staff') {
+      return (
+        <select autoFocus aria-label={editorLabel} value={draft} onChange={(e) => setDraft(e.target.value)} onBlur={commit} onKeyDown={keys} className={cls} disabled={saving}>
+          <option value="">—</option>
+          {staffOptions(column, draft).map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
         </select>
       );
     }

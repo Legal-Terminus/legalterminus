@@ -1,0 +1,22 @@
+{
+  "$comment": "The ONE place the mobile apps' target environment is described (owner decision 2026-11-19: one app, the hosted Portal, QA first then production). LT_APP_ENV picks it at build time (default qa); the app id and name are the same for both, only the Portal URL and the link host change. Read by capacitor.config.ts, scripts/app-env.mjs (iOS Environment.xcconfig, web/app-env.js), scripts/app-links.mjs and android/app/build.gradle. Nothing here is a secret.",
+  "default": "qa",
+  "appId": "com.legalterminus.app",
+  "appName": "Legal Terminus",
+  "environments": {
+    "qa": {
+      "host": "legal-terminus-qa.web.app",
+      "portalUrl": "https://legal-terminus-qa.web.app/portal/"
+    },
+    "production": {
+      "host": "legalterminus.com",
+      "portalUrl": "https://legalterminus.com/portal/"
+    }
+  },
+  "appLinks": {
+    "$comment": "Universal Links / App Links. Filled by the owner once the Apple team and the signing keys exist (docs/mobile-release.md, owner checklist). Empty = scripts/app-links.mjs writes nothing, so no host claims the app by accident.",
+    "path": "/portal/account/action",
+    "appleTeamId": "LMD2KSCQZX",
+    "androidSha256": []
+  }
+}

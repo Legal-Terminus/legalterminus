@@ -26,10 +26,24 @@ export interface PriceProduct {
   /** The portal service a paid order opens a matter on; null when there is none. */
   serviceKey: string | null;
   plans: PricePlan[];
+  /**
+   * #221: a required question the website asks above the plans (trademark:
+   * "Proposed to be Used" / "Prior User"). Each answer adds `surcharge` (whole
+   * rupees, before GST) to every plan. Absent on products that ask nothing.
+   */
+  choice?: PriceChoice;
 }
 
+export interface PriceChoiceOption { id: string; name: string; surcharge: number }
+export interface PriceChoice { label: string; options: PriceChoiceOption[] }
+
 export type PlanEdit = { id: string; price?: number; oldPrice?: number | null; active?: boolean };
-export interface ProductEdit { serviceKey?: string | null; plans?: PlanEdit[] }
+export interface ProductEdit {
+  serviceKey?: string | null;
+  plans?: PlanEdit[];
+  /** #221: only the surcharges can be changed; the question is the website's. */
+  choice?: { options: { id: string; surcharge: number }[] };
+}
 
 export const PRICING_QUERY_KEY = ['pricing'] as const;
 

@@ -1,3 +1,5 @@
+import type { RefundSummary } from '../api/refunds';
+
 export type TaskStatus =
   | 'pending' | 'active' | 'completed' | 'cancelled' | 'on_hold'
   | 'pending_admin_approval' | 'rejected' | 'archived';
@@ -28,6 +30,20 @@ export interface TaskStep {
   startedAt?: string;
   dueAt?: string | null;
   onTime?: boolean;
+  /** #294: on a GST return matter's GSTR-1 / GSTR-3B filing task — the filing
+   *  date staff saved ('YYYY-MM-DD'), shown as "Filed on". Never the completion day. */
+  filedOn?: string;
+  /** #294: set on the two filing tasks of a GST return matter. */
+  gstFilingForm?: 'GSTR-1' | 'GSTR-3B';
+}
+
+/** #294: a GST filing task the matter has reached (or that has a date). `date`
+ *  is the date staff saved on it, or null — staff are offered "Add Filing Date". */
+export interface GstFiling {
+  stepNumber: number;
+  form: 'GSTR-1' | 'GSTR-3B';
+  date: string | null;
+  status?: string | null;
 }
 
 export interface Task {
@@ -56,6 +72,10 @@ export interface Task {
   paymentMode?: string | null;
   /** #147: free-text note on how the payment was received (e.g. split across modes). */
   paymentDescription?: string | null;
+  /** #220: Pay Now is on unless an admin/manager switched it off (`false`). */
+  onlinePaymentEnabled?: boolean;
+  /** #240: rollup of the matter's refund log, kept in step server-side. Absent until a refund is recorded. */
+  refundSummary?: RefundSummary;
   professionalUid?: string | null; // #85
   professionalName?: string | null; // #85 (snapshot for display)
   /** #167: recurring cadence, or null/absent when the matter is one-off. */
@@ -82,6 +102,18 @@ export interface Task {
    *  current step's owner; absent (not false) when the definition is unavailable,
    *  because a wrong "needs you" is worse than no badge at all. */
   awaitingClient?: boolean;
+  /** #292: a GST return matter's filing period ("September 2026", "Q2 2026-27"),
+   *  server-derived by the GST Return Filing sheet's rules; absent on other matters. */
+  gstFilingPeriodLabel?: string | null;
+  /** #219: matter detail only — monthly or quarterly, as the matter was created. */
+  gstFrequency?: 'monthly' | 'quarterly';
+  /** #219: matter detail only — the subject every email about this GST return matter carries. */
+  gstEmailSubject?: string | null;
+  /** #294: matter detail only — the GSTR-1 / GSTR-3B filing tasks reached so far,
+   *  each with its saved filing date or null. */
+  gstFilings?: GstFiling[];
+  /** #294: the range a filing date may be saved in (inclusive, 'YYYY-MM-DD'). */
+  gstFilingDateBounds?: { min: string | null; max: string };
   isUrgent?: boolean;
   // Projected matter completion (E13-S02); null while pending approval/untracked.
   matterDueAt?: string | null;

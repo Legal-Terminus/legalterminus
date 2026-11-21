@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createUser, updateUser, getAllUsers, displayName, type PortalUser } from '../../api/users';
-import { CONTACT_DESIGNATIONS, getClientGroups } from '../../api/clients';
+import { CONTACT_DESIGNATIONS, CLIENTS_QUERY_KEY, getClientGroups } from '../../api/clients';
 import { getServiceCatalog } from '../../api/services';
 import { assignServiceToClient } from '../../api/tasks';
 import { getWorkflowDefinitions } from '../../api/workflowDefinitions';
@@ -30,6 +30,8 @@ interface Client {
   contactDesignation?: string;
   professionalUid?: string;
   gstNumber?: string;
+  /** #219: '' = we do not file this client's GST returns. */
+  gstReturnFrequency?: '' | 'monthly' | 'quarterly';
   panNumber?: string;
   aadharNumber?: string;
   state?: string;
@@ -70,6 +72,7 @@ export default function ClientForm({ client, onClose, onSuccess }: ClientFormPro
     contactDesignation: client?.contactDesignation ?? '',
     professionalUid: client?.professionalUid ?? '',
     gstNumber: client?.gstNumber,
+    gstReturnFrequency: client?.gstReturnFrequency ?? '',
     panNumber: client?.panNumber,
     aadharNumber: client?.aadhaarNumber,
     state: client?.state,
@@ -118,6 +121,16 @@ export default function ClientForm({ client, onClose, onSuccess }: ClientFormPro
       // appears without a manual page refresh.
       queryClient.invalidateQueries({ queryKey: ['portalUsers'] });
       if (id) queryClient.invalidateQueries({ queryKey: ['portalUser', id] });
+      // #277: the Clients roster (and each client's 360, ['clients', uid]) was
+      // cached for 30s and never told, so a client just added was missing from
+      // it until the cache ran out. A rename also changes the name on the
+      // client's matters (server-side), so every view of matters is refreshed.
+      queryClient.invalidateQueries({ queryKey: CLIENTS_QUERY_KEY });
+      if (id) {
+        for (const key of [['tasks'], ['task'], ['matters-board'], ['my-steps']]) {
+          queryClient.invalidateQueries({ queryKey: key });
+        }
+      }
       onSuccess();
     },
     onError: (err: Error) => setError(err.message),
@@ -508,6 +521,25 @@ export default function ClientForm({ client, onClose, onSuccess }: ClientFormPro
                     className="input-field pl-10 font-mono uppercase"
                   />
                 </div>
+              </div>
+              {/* #219: a matter and an email for each period, automatically. */}
+              <div>
+                <label htmlFor="client-gstReturnFrequency" className="input-label">GST return filing</label>
+                <select
+                  id="client-gstReturnFrequency"
+                  name="gstReturnFrequency"
+                  value={formData.gstReturnFrequency ?? ''}
+                  onChange={handleChange}
+                  className="input-field"
+                >
+                  <option value="">Not filed by us</option>
+                  <option value="monthly">Monthly</option>
+                  <option value="quarterly">Quarterly</option>
+                </select>
+                <p className="text-xs text-gray-400 mt-1">
+                  Monthly: a GST return matter is opened on the 1st of every month and the client is emailed for the data.
+                  Quarterly: on 1 July, 1 October, 1 January and 1 April. Starts from the next 1st.
+                </p>
               </div>
               <div>
                 <label className="input-label">PAN Number</label>

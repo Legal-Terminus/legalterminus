@@ -14,4 +14,12 @@ export const updatePricingSchema = z.object({
     name: z.string().trim().min(1).max(80).optional(),
     active: z.boolean().optional(),
   }).strict()).max(20).optional(),
+  // #221: the surcharge each answer to the product's question adds (₹0 allowed:
+  // "Proposed to be Used" adds nothing). The question and its answers are the website's.
+  choice: z.object({
+    options: z.array(z.object({
+      id: z.string().trim().min(1).max(60),
+      surcharge: z.number().int().min(0).max(10_000_000),
+    }).strict()).min(1).max(10),
+  }).strict().optional(),
 }).strict();

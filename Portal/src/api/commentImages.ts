@@ -1,6 +1,7 @@
 import { apiFetch } from './client';
 import { auth } from '../lib/firebase';
 import { getIdToken } from 'firebase/auth';
+import { commentImageDimensionProblem } from '@shared/richText/limits.js';
 
 /**
  * #122 follow-up — images in step comments and Discussion messages.
@@ -23,6 +24,34 @@ export function commentImageProblem(file: File): string | null {
     return 'That image is larger than 5 MB. Please use a smaller image or a screenshot of the part you need.';
   }
   return null;
+}
+
+/**
+ * #319: the image's pixel size, decoded by the browser. null if the browser
+ * cannot read it (a corrupt file, or bytes that are not really an image).
+ */
+export function readImageFileDimensions(file: Blob): Promise<{ width: number; height: number } | null> {
+  return new Promise((resolve) => {
+    let url: string;
+    try { url = URL.createObjectURL(file); } catch { resolve(null); return; }
+    const img = new Image();
+    const done = (v: { width: number; height: number } | null) => { URL.revokeObjectURL(url); resolve(v); };
+    img.onload = () => done(img.naturalWidth && img.naturalHeight ? { width: img.naturalWidth, height: img.naturalHeight } : null);
+    img.onerror = () => done(null);
+    img.src = url;
+  });
+}
+
+/**
+ * Every check that can be made before uploading: type and size first (instant),
+ * then #319's pixel dimensions. A person-readable reason, or null if the image
+ * may be added. The upload endpoint applies the same rules regardless.
+ */
+export async function checkCommentImage(file: File): Promise<string | null> {
+  const problem = commentImageProblem(file);
+  if (problem) return problem;
+  const dims = await readImageFileDimensions(file);
+  return commentImageDimensionProblem(dims?.width ?? 0, dims?.height ?? 0);
 }
 
 export async function uploadCommentImage(taskId: string, file: File): Promise<{ imageId: string }> {
