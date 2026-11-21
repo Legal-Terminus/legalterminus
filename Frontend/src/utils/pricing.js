@@ -135,3 +135,37 @@ export function useChoice(productKey, defaultChoice) {
 
 /** #221: what an answer adds to a plan's price, before GST; 0 when there is none. */
 export const surchargeOf = (choice, optionId) => choice?.options?.find((o) => o.id === optionId)?.surcharge ?? 0;
+
+/**
+ * #241: the "starting from" figure on a page's hero — the cheapest plan on sale,
+ * plus the cheapest answer's surcharge when the product asks a question. Pure.
+ * `fallback` when the catalogue has no plans for it (not loaded, or unreachable).
+ * The heroes used to carry this figure typed in, and one had drifted below the
+ * cheapest card (₹4,999 against ₹5,999).
+ */
+export function startingPrice(product, fallback) {
+  const prices = (product?.plans ?? []).map((p) => p.price).filter(Number.isFinite);
+  if (!prices.length) return fallback;
+  const extras = (product.choice?.options ?? []).map((o) => o.surcharge).filter(Number.isFinite);
+  return Math.min(...prices) + (extras.length ? Math.min(...extras) : 0);
+}
+
+/** `const from = useStartingPrice("private-limited-odisha", 5999);` */
+export function useStartingPrice(productKey, fallback) {
+  const catalog = useCatalog();
+  return startingPrice(catalog?.[productKey], fallback);
+}
+
+/**
+ * #241: each plan's live price by id — for text that quotes a plan's price (a
+ * page's terms), so it says what the card says. `fallbacks` is `{ planId: price }`;
+ * a plan the catalogue does not list (off sale) keeps its fallback.
+ */
+export function usePlanPrices(productKey, fallbacks) {
+  const catalog = useCatalog();
+  return useMemo(() => {
+    const out = { ...fallbacks };
+    for (const p of catalog?.[productKey]?.plans ?? []) if (Number.isFinite(p.price)) out[p.id] = p.price;
+    return out;
+  }, [catalog, productKey, fallbacks]);
+}

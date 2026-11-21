@@ -398,7 +398,7 @@
     },
     "company-registration": {
       "code": "SVC-012",
-      "label": "Company Registration in Odisha",
+      "label": "Company Registration in Odisha — /companyregistration-in-odisha",
       "serviceKey": null,
       "plans": [
         {
@@ -428,6 +428,50 @@
       ],
       "components": [
         "Frontend/src/Components/CompanyRegPlans/CompanyRegPlans.jsx"
+      ]
+    },
+    "private-limited-odisha": {
+      "code": "SVC-063",
+      "label": "Company Registration in Odisha — landing pages",
+      "serviceKey": "private-limited",
+      "plans": [
+        {
+          "id": "elemental",
+          "name": "Elemental",
+          "price": 5999,
+          "oldPrice": 7999
+        },
+        {
+          "id": "enriched",
+          "name": "Enriched",
+          "price": 9499,
+          "oldPrice": 13999
+        },
+        {
+          "id": "supreme",
+          "name": "Supreme",
+          "price": 14999,
+          "oldPrice": 20999
+        },
+        {
+          "id": "supreme-plus",
+          "name": "Supreme Plus",
+          "price": 24999,
+          "oldPrice": 37499
+        }
+      ],
+      "pages": [
+        {
+          "path": "/company-registration-odisha",
+          "title": "Company Registration in Odisha"
+        },
+        {
+          "path": "/company-registration-consultancy-in-odisha",
+          "title": "Company Registration in Odisha"
+        }
+      ],
+      "components": [
+        "Frontend/src/Components/CroPlans/CroPlans.jsx"
       ]
     },
     "dissolve-llp": {
@@ -1632,20 +1676,11 @@
       ],
       "pages": [
         {
-          "path": "/company-registration-odisha",
-          "title": "Company Registration in Odisha"
-        },
-        {
-          "path": "/company-registration-consultancy-in-odisha",
-          "title": "Company Registration in Odisha"
-        },
-        {
           "path": "/setting-up-a-business/profit-making-structures/private-limited-company-registration-in-india",
           "title": "Private Limited Company Registration in India"
         }
       ],
       "components": [
-        "Frontend/src/Components/CroPlans/CroPlans.jsx",
         "Frontend/src/Components/PvtltdPlanandPricing/PvtltdPlanandPricing.jsx"
       ]
     },
@@ -1859,15 +1894,10 @@
         {
           "path": "/trademark/registration-and-compliance-services/trademark-registration-in-india",
           "title": "Trademark Registration in India"
-        },
-        {
-          "path": "/trademark-registration-in-odisha",
-          "title": "Trademark Registration in Odisha"
         }
       ],
       "components": [
-        "Frontend/src/Components/TmarkPlans/TmarkPlans.jsx",
-        "Frontend/src/Components/TrademarkPlans/TrademarkPlans.jsx"
+        "Frontend/src/Components/TmarkPlans/TmarkPlans.jsx"
       ],
       "choice": {
         "label": "User type",
@@ -2054,6 +2084,61 @@
       "components": [
         "Frontend/src/Components/TradeLicensePlans/TradeLicensePlans.jsx"
       ]
+    },
+    "trademark-application-odisha": {
+      "code": "SVC-064",
+      "label": "Trademark Registration in Odisha — landing page",
+      "serviceKey": "trademark-application",
+      "plans": [
+        {
+          "id": "elemental",
+          "name": "Elemental",
+          "price": 1499,
+          "oldPrice": 2249
+        },
+        {
+          "id": "enriched",
+          "name": "Enriched",
+          "price": 4499,
+          "oldPrice": 9999
+        },
+        {
+          "id": "supreme",
+          "name": "Supreme",
+          "price": 11999,
+          "oldPrice": 22499
+        },
+        {
+          "id": "supreme-plus",
+          "name": "Supreme Plus",
+          "price": 21999,
+          "oldPrice": 32499
+        }
+      ],
+      "pages": [
+        {
+          "path": "/trademark-registration-in-odisha",
+          "title": "Trademark Registration in Odisha"
+        }
+      ],
+      "components": [
+        "Frontend/src/Components/TrademarkPlans/TrademarkPlans.jsx"
+      ],
+      "choice": {
+        "label": "User type",
+        "options": [
+          {
+            "id": "proposed",
+            "name": "Proposed to be Used",
+            "surcharge": 0
+          },
+          {
+            "id": "prior-user",
+            "name": "Prior User",
+            "surcharge": 2500
+          }
+        ]
+      }
     },
     "trust-registration": {
       "code": "SVC-059",

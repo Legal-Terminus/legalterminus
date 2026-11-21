@@ -1,9 +1,16 @@
 import React from "react";
 import "../GSTRegTerms/GSTRegTerms.css";
+import { usePlanPrices, inr } from "../../utils/pricing";
+
+// #241: the plan prices quoted in the terms are the live ones, so the terms say
+// what the cards charge. They had been typed in and three of four had drifted
+// (Enriched ₹2,499, Supreme ₹6,499, Supreme Plus ₹14,999 against the cards'
+// ₹4,499, ₹11,999, ₹21,999). The fallbacks are the cards' own defaults.
+const FALLBACK_PRICES = { elemental: 1499, enriched: 4499, supreme: 11999, "supreme-plus": 21999 };
 
 const TERMS = [
   "Per-Application Engagement Model: Our Trademark Application Filing plans are per-application engagements (one engagement, one TM-A filing). The plan covers our work from name search through registration (subject to per-plan tier limits on departmental query / hearing / opposition coverage). Monthly status updates are included until registration certificate issuance OR application abandonment / refusal.",
-  "Plan Eligibility (4 Tiers — per Trademark Scenario): (a) ELEMENTAL (₹1,499) — For PROPOSED-TO-BE-USED marks (where commercial use hasn't begun). (b) ENRICHED (₹2,499) — For PRIOR-USE marks (where commercial use has begun); adds User Affidavit + evidence coordination. (c) SUPREME (₹6,499) — Adds UDYAM update + departmental query handling (max 2 times). (d) SUPREME PLUS (₹14,999) — Adds Trademark Hearing (max 2 times) + Opposition handling (1 time). All plans include monthly status updates till registration. All plans cover up to 1 class application in one Brand name.",
+  (p) => `Plan Eligibility (4 Tiers — per Trademark Scenario): (a) ELEMENTAL (${inr(p.elemental)}) — For PROPOSED-TO-BE-USED marks (where commercial use hasn't begun). (b) ENRICHED (${inr(p.enriched)}) — For PRIOR-USE marks (where commercial use has begun); adds User Affidavit + evidence coordination. (c) SUPREME (${inr(p.supreme)}) — Adds UDYAM update + departmental query handling (max 2 times). (d) SUPREME PLUS (${inr(p["supreme-plus"])}) — Adds Trademark Hearing (max 2 times) + Opposition handling (1 time). All plans include monthly status updates till registration. All plans cover up to 1 class application in one Brand name.`,
   "Statutory Anchor: Trademark Applications are governed by the TRADE MARKS ACT, 1999 + TRADE MARKS RULES, 2017 + the Nice Classification of Goods and Services (10th–11th edition). Filed on the IP India online portal (https://ipindiaonline.gov.in) operated by the Trade Marks Registry under the Controller General of Patents, Designs and Trade Marks (CGPDTM), Ministry of Commerce & Industry.",
   "Government Fees (Per Class — Pass-Through at Actuals): TM-A filing fee per class (e-filing): ₹4,500 for Individual / DPIIT Startup / Udyam MSME applicants; ₹9,000 for Companies / LLPs / Partnerships (non-MSME). Per First Schedule of the Trade Marks Rules, 2017. NOTE: Physical filing rates exist in the Rules (₹500 higher) but PHYSICAL FILING IS ESSENTIALLY OBSOLETE in 2026 practice — we file ONLY via the IP India online portal (https://ipindiaonline.gov.in) which is the standard + faster + entitled to the 10% lower fee. MULTI-CLASS FILINGS ARE MULTIPLICATIVE — each additional class is a separate filing fee. Opposition: ₹2,700 per class. Renewal: ₹9,000 per class (₹4,500 with rebate). All government fees are NON-REFUNDABLE.",
   "GST on Our Fee: All quoted prices are exclusive of GST @ 18%, charged at checkout.",
@@ -17,6 +24,7 @@ const TERMS = [
 ];
 
 const TrademarkTerms = () => {
+  const prices = usePlanPrices("trademark-application-odisha", FALLBACK_PRICES);
   return (
     <section className="pvtltd-tc-section">
       <div className="pvtltd-tc-container">
@@ -30,7 +38,7 @@ const TrademarkTerms = () => {
           </p>
 
           <ol className="pvtltd-tc-list">
-            {TERMS.map((t, i) => (
+            {TERMS.map((t) => (typeof t === "function" ? t(prices) : t)).map((t, i) => (
               <li className="pvtltd-tc-item" key={i}>
                 {t}
               </li>

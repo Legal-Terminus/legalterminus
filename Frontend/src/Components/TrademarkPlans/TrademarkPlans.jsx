@@ -63,11 +63,14 @@ const DEFAULT_PLANS = [
 
 const TrademarkPlans = () => {
   // E24-S01: prices come from the server catalogue; DEFAULT_* is the fallback.
-  const LIVE_PLANS = usePlans("trademark-application", DEFAULT_PLANS);
+  // #241 (the firm, 21 Nov): this is the Odisha landing page's own product, priced
+  // apart from the India trademark page (TmarkPlans, `trademark-application`).
+  // Same plans and the same question; the firm sets the prices separately.
+  const LIVE_PLANS = usePlans("trademark-application-odisha", DEFAULT_PLANS);
   // #221: "Proposed to be Used" / "Prior User", asked above the cards. The cards
   // show the plan price plus the answer's surcharge; the server charges it.
   const choiceRef = useRef(null);
-  const pc = usePlanChoice("trademark-application", TRADEMARK_CHOICE, choiceRef, TRADEMARK_DEFAULT_OPTION);
+  const pc = usePlanChoice("trademark-application-odisha", TRADEMARK_CHOICE, choiceRef, TRADEMARK_DEFAULT_OPTION);
   const PLANS = pc.priced(LIVE_PLANS);
   const [activePlan, setActivePlan] = useState(null);
   // Payment (Register Now → CheckoutModal) is paused; the shared "Book Free
@@ -166,7 +169,7 @@ const TrademarkPlans = () => {
           plan={activePlan.plan}
           option={activePlan.option}
           onClose={() => setActivePlan(null)}
-          source="trademark-application"
+          source="trademark-application-odisha"
         />
       )}
 

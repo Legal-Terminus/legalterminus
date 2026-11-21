@@ -36,6 +36,19 @@ SERVICE_ALIASES = {
     'gst-return-filing': 'gst-returns',
     'trademark-exam-reply': 'trademark-examination-reply',
     'proprietorship-to-private': 'proprietorship-to-company',
+    # #241: the Odisha landing pages are priced apart from the India pages, but
+    # a paid order opens the same portal service.
+    'private-limited-odisha': 'private-limited',
+    'trademark-application-odisha': 'trademark-application',
+}
+
+# #241: a product's name under Website Prices, where its page title alone would
+# not tell it apart. Three products sell on pages titled "Company Registration in
+# Odisha"; a price edited on the wrong one changes the wrong page.
+LABELS = {
+    'private-limited-odisha': 'Company Registration in Odisha — landing pages',
+    'trademark-application-odisha': 'Trademark Registration in Odisha — landing page',
+    'company-registration': 'Company Registration in Odisha — /companyregistration-in-odisha',
 }
 
 # Website keys that LOOK like a portal service key but name a different thing.
@@ -49,11 +62,14 @@ NOT_THE_SAME = {'bc-registration', 'cic-registration', 'cio-registration', 'cir-
 # rupees, before GST) to every plan. The question and its answers belong to the
 # website and live here; the surcharge below is only the starting figure — the
 # firm changes it under Website Prices, and the seed never overwrites it.
+TRADEMARK_USER_TYPE = {'label': 'User type', 'options': [
+    {'id': 'proposed', 'name': 'Proposed to be Used', 'surcharge': 0},
+    {'id': 'prior-user', 'name': 'Prior User', 'surcharge': 2500},
+]}
 CHOICES = {
-    'trademark-application': {'label': 'User type', 'options': [
-        {'id': 'proposed', 'name': 'Proposed to be Used', 'surcharge': 0},
-        {'id': 'prior-user', 'name': 'Prior User', 'surcharge': 2500},
-    ]},
+    'trademark-application': TRADEMARK_USER_TYPE,
+    # #241: the Odisha landing page asks the same question; its surcharge is priced apart.
+    'trademark-application-odisha': TRADEMARK_USER_TYPE,
 }
 
 def existing_codes():
@@ -187,7 +203,7 @@ def build():
             continue
         service = None if key in NOT_THE_SAME else (key if key in services else SERVICE_ALIASES.get(key))
         named = next((pg['title'] for pg in pages if pg['title']), '')
-        products[key] = {'label': named or title(key), 'serviceKey': service if service in services else None,
+        products[key] = {'label': LABELS.get(key) or named or title(key), 'serviceKey': service if service in services else None,
                          'plans': plans, 'pages': pages, 'components': [rel]}
     # Product codes: SVC-001, SVC-002, … Existing codes are kept; a new product
     # takes the next free number. The code is what staff and customers can quote
@@ -199,6 +215,8 @@ def build():
     for key in sorted(products):
         if key not in codes:
             codes[key] = f'SVC-{nxt:03d}'; nxt += 1
+    for key in LABELS:
+        if key not in products: problems.append(f'LABELS names "{key}", which no live page sells')
     for key, choice in CHOICES.items():
         if key not in products: problems.append(f'CHOICES names "{key}", which no live page sells')
         else: products[key]['choice'] = choice

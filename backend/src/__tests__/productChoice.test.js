@@ -194,7 +194,10 @@ test('the seed file asks the trademark question, ₹2,500 for Prior User', () =>
   const p = normaliseProduct('trademark-application', products['trademark-application']);
   assert.deepEqual(p.choice, CHOICE);
   assert.equal(p.plans.length, 4, 'Prior User applies to all four plans');
+  // #241: the Odisha trademark landing page is its own product and asks the same question.
+  const ASKS = new Set(['trademark-application', 'trademark-application-odisha']);
+  assert.deepEqual(normaliseProduct('trademark-application-odisha', products['trademark-application-odisha']).choice, CHOICE);
   for (const [key, raw] of Object.entries(products)) {
-    if (key !== 'trademark-application') assert.equal(raw.choice, undefined, `${key} asks no question`);
+    if (!ASKS.has(key)) assert.equal(raw.choice, undefined, `${key} asks no question`);
   }
 });
