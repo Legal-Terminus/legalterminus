@@ -1,4 +1,5 @@
 import express from 'express';
+import compression from 'compression';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 
@@ -6,6 +7,13 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const app = express();
 const PORT = process.env.PORT || 8080;
+
+// Compress responses (gzip). The Portal is one large JavaScript bundle (~2.4 MB),
+// and Firebase Hosting does not compress what a Cloud Run rewrite returns, so the
+// apps and browsers were downloading it raw on every start (2026-11-21). Hashed
+// /portal/assets/** files are cached for a year by the Hosting header rule in
+// firebase.json; index.html stays no-store so a deploy is picked up at once.
+app.use(compression());
 
 // Serve static files from dist
 // Firebase Hosting forwards /portal/** to this service, preserving the full path

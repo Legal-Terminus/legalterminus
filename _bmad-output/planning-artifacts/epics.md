@@ -8302,3 +8302,21 @@ BeatMyEMI: the Android build number is worked out from the Releases (never below
 ID is filled in, build 8 on both platforms. Both apps build from `main`. Details in E29-S14.
 User-visible: the apps reload onto a new website version after a minute in the background; nothing
 on the website.
+
+### The Portal starts faster: its files are compressed and cached (2026-11-21, #268) 🔄 In review
+
+Found while testing the apps on production: both apps sat on the splash for a long time, and so
+did the Portal in a browser. Measured on `legalterminus.com/portal/`: the whole Portal is one
+2.46 MB JavaScript file, sent **uncompressed** and with `no-cache, no-store`, so it was downloaded
+in full on every start. The website's own files were fine (brotli, cached a year): Hosting serves
+those itself, while the Portal's come from its Cloud Run service through a rewrite, which Hosting
+does not compress, and the "never cache" rule for pages (`**`) also matched `/portal/assets/**`.
+- `Portal/server.js` compresses responses (`compression`, gzip): 2.46 MB → 699 KB.
+- `firebase.json` and `firebase.qa.json`: `/portal/assets/**` cached for a year (`immutable`), like
+  `/assets/**`. The file names carry a content hash, so a deploy is still picked up at once;
+  `index.html` stays `no-store`.
+- Not done yet: splitting the bundle per screen (routes loaded on demand), which would cut the
+  first start further. A larger change; proposed separately.
+- Checked locally: the real `server.js` on the real build sends `Content-Encoding: gzip`,
+  `Vary: Accept-Encoding`, 698,606 bytes for the main file; `index.html` 200.
+  User-visible: the Portal and both apps open faster; nothing else changes.
