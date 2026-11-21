@@ -1,5 +1,8 @@
 # How the mobile apps are built and released
 
+> **Doing a release?** Follow the steps in `docs/mobile-release-runbook.md`. The store text is in
+> `docs/store-listing.md`. This page explains the design behind them.
+
 Adopted 2026-11-10 (E-29). The model is the BeatMyEMI apps: **Android is built and signed
 by the GitHub pipeline on a release; iOS is archived and uploaded from Xcode on the Mac.**
 There is no fastlane, by the owner's decision. The web release process is unchanged and is
