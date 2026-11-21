@@ -44,6 +44,12 @@ we are keeping and why.
 5. ❓ **Account deletion in the app:** Play expects an in-app route too for apps with sign-up. Today only an Admin can
    delete an account; a "Request deletion" button that emails the firm would close this gap. Not built.
 
+## Status
+
+Implemented on the branch `chore/privacy-policy-app-deletion` (NOT merged to `main`): sections 7 and 8 added, "Policy Updates" is now
+section 9, and `Frontend/tests/e2e/privacy-policy.spec.js` guards it (verified: fails on the current page, passes with the change).
+Still needs the firm's wording review (the ❓ points above) before it is merged.
+
 ## To publish (needs a release tag, so only on the user's say)
 
 Add the two sections as `policy-section` blocks in `Frontend/src/Pages/Policies/PrivacyPolicy.jsx`, renumber "Policy

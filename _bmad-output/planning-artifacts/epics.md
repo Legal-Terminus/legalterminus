@@ -8320,3 +8320,20 @@ does not compress, and the "never cache" rule for pages (`**`) also matched `/po
 - Checked locally: the real `server.js` on the real build sends `Content-Encoding: gzip`,
   `Vary: Accept-Encoding`, 698,606 bytes for the main file; `index.html` 200.
   User-visible: the Portal and both apps open faster; nothing else changes.
+
+### Clients have no Reports; staff reports fit a phone (2026-11-21, #268, iPhone app test) 🔄 In review
+
+Found by the owner testing the iPhone app on production.
+- **Clients have no Reports (owner decision, 21 Nov).** The client's "Reports" menu entry was
+  `/reports/my-services` (#84 reports 12–16). It is removed with its page; its "← Reports" link
+  also led a client to `/reports`, which is staff-only, so "Access denied" and then the sign-in
+  page. The client dashboard's **Amount due** tile now opens My Services (`/tasks`), which shows
+  each matter's payment status and filters by it. The API `GET /api/reports/my-services` is left
+  as it was (client-scoped, server-enforced), with nothing in the Portal calling it.
+- **Staff reports on a phone.** The eight reports built on `DataGrid` had no phone layout, so each
+  was a wide table scrolling sideways. Where a page gives no `renderMobileCard`, `DataGrid` now
+  shows every row as a card below `md`: the first column as the title, the other columns as
+  label/value lines. The desktop table is unchanged.
+- Tests: `auth-rbac.spec.ts` (a client is refused `/reports/my-services`); `reports-84.spec.ts`
+  (at 390px a report shows cards and nothing is wider than the screen). Portal build clean.
+  User-visible: yes.
