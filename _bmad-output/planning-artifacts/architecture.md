@@ -2967,6 +2967,15 @@ of what was built 2026-11-02 to 2026-11-18).
 - **Release.** Android signed by the pipeline from a tag, iOS from Xcode
   (`docs/mobile-release.md`). Switching from QA to production is a new store build with
   `LT_APP_ENV=production`.
+- **A new website version reaches an open app** (E29-S14, 2026-11-21). The app stays open for
+  days on the Portal version it loaded. When it comes back from at least a minute in the
+  background it fetches `/portal/` (served `no-store`) and reloads only if the hashed entry script
+  changed and nobody is typing or uploading (`updateGuard.ts`; `uploadDocument` counts as busy).
+  The sign-in survives the reload (same origin, IndexedDB).
+- **BeatMyEMI is the model** (`docs/mobile-release.md`, last section): one app id, one config with
+  `server.url`, native sign-in handed to the web SDK, Android from the pipeline with the build
+  number taken from the Releases, iOS from Xcode. The UI tests in `MobileApp/ios/App/AppUITests/`
+  run against a QA-pointed build only.
 
 ## Android app: Capacitor wrapper (E-26, 2026-11-02)
 

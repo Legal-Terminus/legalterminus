@@ -4422,6 +4422,51 @@ new Client, as decided). Shown always on iOS, never on Android (D6), on the web 
   handled; a person who cancels on the first sign-in and retries loses the name (Apple's rule).
 - Open: checklist 5, 6, 7; the TestFlight test with a dedicated Apple ID.
 
+### E29-S14 — Main made ready to test; Akash only tests (owner decision 2026-11-21) 🔄 In review
+
+**Why.** On 21 Nov Akash was still on `feat/ios-android-app-split` (three app folders, a separate
+`.qa` iPhone app, the Portal bundled into the iPhone apps). The owner: "I can't expect him to do
+it properly. We will just ask him to test both the apps", with **BeatMyEMI as the model code**.
+So S13's steps 1–4 and 8 (his porting work) are done on `main` instead; he does step 5 (testing),
+from `docs/mobile-testing.md`.
+
+**Compared with BeatMyEMI** (`docs/mobile-release.md`, last section): main already matched it on
+one app id, one `capacitor.config.ts` with `server.url` = the hosted site for both platforms
+(checked by syncing both, QA and production), native Google/Apple sign-in handed to
+`signInWithCredential`, ignored Firebase files and base64 secrets, Android by the pipeline into a
+Release "X (Build N)", iOS from Xcode, and one version/build number for both. Three gaps, closed
+here or found not to be gaps:
+- **Build number** — BeatMyEMI's pipeline takes the last Release's "Build N" + 1; LT's had to be
+  typed (and version code 3 had been reused once). Now worked out by the job, never below 8, a
+  typed one refused unless higher.
+- **Team ID** — filled in: `LMD2KSCQZX` (it signed the TestFlight builds of 16–20 Nov).
+- **`FirebaseApp.configure()` in `AppDelegate`** (BeatMyEMI) — not needed: the sign-in plugin
+  configures Firebase when it loads, and skips it safely when the plist is missing.
+
+**Taken from Akash's branch**
+- The iPhone UI tests (`MobileApp/ios/App/AppUITests/`, target `AppUITests`, shared scheme), with
+  the D-5 upload test turned from "expected to fail" into "must reach storage", and the test target
+  iPhone only (D4).
+- The reload after a website deploy (`native.ts` `watchForNewWebsiteVersion`, `nativeRules.ts`
+  `entryScriptOf` / `shouldReloadForUpdate`, `updateGuard.ts`, `uploadDocument` held as busy),
+  without its bundled-app branches. Unit tests in `Portal/tests/nativeRules.test.ts`.
+- His QA reports, in `docs/mobile-qa/` (without the screenshots).
+
+**Not taken:** the three folders, the `.qa` app, the bundled Portal (`build:mobile`, `dist-mobile`,
+the mobile Vite mode, a `siteOrigin` that switches), the workflows pointed at `AndroidApp/`, and
+iPad.
+
+**Also:** build 8 on both platforms; `environments.json` → `appLinks.appleTeamId`, so the QA site
+publishes its `apple-app-site-association` and emailed QA links open the iPhone app.
+
+**Verified:** both apps build from `main` on the Mac (Android `assembleDebug`; iOS simulator build
+and `build-for-testing` with the UI-test target); synced for QA and for production, the Android and
+iOS configs open the same Portal URL. Portal `npm test` and `npm run build`; MobileApp `npm test`.
+
+**Still the owner's:** the Firebase iOS app `com.legalterminus.app` and its plist (Google sign-in on
+iPhone); the App Store Connect record; retiring the `.qa` app; never publishing Android version
+code 3.
+
 **Rules that apply to every story**
 - Native code stays in `Portal/src/lib/native.ts` (plus the sign-in branch in `googleSignIn.ts`
   and persistence in `firebase.ts`), guarded by `Capacitor.isNativePlatform()`, plugins loaded by
@@ -8247,3 +8292,13 @@ catalogue".
   `Frontend/tests/e2e/odisha-own-prices.spec.js` (5: each Odisha page shows its own prices on
   the cards, hero and terms; the India pages keep theirs).
   User-visible: yes.
+
+### The apps: main made ready to test, the BeatMyEMI model (2026-11-21, #268) — E29-S14 🔄 In review
+
+Akash only tests from now on (`docs/mobile-testing.md`); the porting of his branch is done on
+`main`. Taken: the iPhone UI tests (D-5 now must pass), the reload after a website deploy, his QA
+reports. Not taken: the three app folders, the `.qa` app, the bundled Portal, iPad. Aligned with
+BeatMyEMI: the Android build number is worked out from the Releases (never below 8), the Apple Team
+ID is filled in, build 8 on both platforms. Both apps build from `main`. Details in E29-S14.
+User-visible: the apps reload onto a new website version after a minute in the background; nothing
+on the website.

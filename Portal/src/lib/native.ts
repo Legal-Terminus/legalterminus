@@ -1,5 +1,6 @@
 import { Capacitor } from '@capacitor/core';
-import { accountLinkPath } from './nativeRules';
+import { accountLinkPath, entryScriptOf, shouldReloadForUpdate } from './nativeRules';
+import { isBusy } from './updateGuard';
 
 /** True inside the iPhone app. */
 export const isIosApp = (): boolean => Capacitor.getPlatform() === 'ios';
@@ -9,6 +10,52 @@ export const isIosApp = (): boolean => Capacitor.getPlatform() === 'ios';
  * alike that is this page's own origin.
  */
 export const siteOrigin = (): string => window.location.origin;
+
+/** Back in the foreground after at least this long: check whether the website was redeployed. */
+const UPDATE_CHECK_AFTER_MS = 60_000;
+
+/** The entry script this page was loaded from (e.g. /portal/assets/index-AbC123.js). */
+const currentEntryScript = (): string | null => {
+  const el = document.querySelector<HTMLScriptElement>('script[type="module"][src*="/assets/index-"]');
+  return el ? new URL(el.src, window.location.href).pathname : null;
+};
+
+/** True while the person is typing in a field: a reload would lose what they entered. */
+const isEditing = (): boolean => {
+  const el = document.activeElement as HTMLElement | null;
+  return !!el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.tagName === 'SELECT' || el.isContentEditable);
+};
+
+/**
+ * The apps open the hosted Portal and stay open for days, so without this an installed app
+ * runs the website version it was opened on until it is closed (and a lazily-loaded screen
+ * from that old version can 404 after a deploy). When the app returns from the background,
+ * fetch the Portal's index.html (served no-store, so always current) and reload ONLY if the
+ * deployed entry script changed, nobody is typing and no upload is running. The sign-in lives
+ * in this origin's storage, which a reload keeps. Any error (offline, hosting restarting) is
+ * ignored and the current page keeps working.
+ *
+ * From Akash's work on feat/ios-android-app-split (#268), without its bundled-app branches.
+ */
+function watchForNewWebsiteVersion(App: typeof import('@capacitor/app').App): void {
+  let hiddenAt: number | null = null;
+  void App.addListener('appStateChange', async ({ isActive }) => {
+    if (!isActive) { hiddenAt = Date.now(); return; }
+    if (hiddenAt === null) return;
+    const hiddenMs = Date.now() - hiddenAt;
+    hiddenAt = null;
+    if (hiddenMs < UPDATE_CHECK_AFTER_MS) return;
+    try {
+      const res = await fetch(`${window.location.origin}/portal/`, { cache: 'no-store', credentials: 'omit' });
+      if (!res.ok) return;
+      const latest = entryScriptOf(await res.text());
+      if (shouldReloadForUpdate({
+        hiddenMs, minHiddenMs: UPDATE_CHECK_AFTER_MS, current: currentEntryScript(), latest,
+        busy: isBusy(), editing: isEditing(),
+      })) window.location.reload();
+    } catch { /* offline or hosting restarting: keep the page we have */ }
+  });
+}
 
 /**
  * Behaviour that only exists inside the Android and iPhone apps. A no-op in the browser,
@@ -32,6 +79,7 @@ export async function initNative(): Promise<void> {
     await StatusBar.setStyle({ style: Style.Light }).catch(() => undefined);
   }
   const { App } = await import('@capacitor/app');
+  watchForNewWebsiteVersion(App);
   // Android's back button: go back through the app's history, and leave the app
   // only from the first screen. (iOS has none; every screen has its own Back control.)
   await App.addListener('backButton', ({ canGoBack }) => {

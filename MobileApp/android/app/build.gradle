@@ -34,7 +34,7 @@ android {
         applicationId "com.legalterminus.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 3
+        versionCode 8
         versionName "1.0.0"
         // One app for both environments (owner decision 2026-11-19): no QA id suffix.
         resValue "string", "app_name", environments.appName
