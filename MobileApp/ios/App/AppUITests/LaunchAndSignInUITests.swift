@@ -464,6 +464,27 @@ final class SignedInUITests: XCTestCase {
         // ... and not under the bottom navigation bar either (nav is hidden by the keyboard, so check the closed state):
     }
 
+    /// Store screenshots (2026-11-21): the client's own screens, on the QA demo client
+    /// (Odisha Fresh Foods, TEST_RUNNER_LT_QA_DEMO_EMAIL / _PASSWORD). Skipped without them.
+    /// Run on the iPhone 17 Pro Max simulator (6.9", 1320×2868) with a 9:41 status bar.
+    func testStoreScreens() throws {
+        try freshSignIn("DEMO")
+        sleep(4)
+        attach("store-1-dashboard")
+        tap("My Services")
+        let card = web.descendants(matching: .any).matching(NSPredicate(format: "label CONTAINS 'Private Limited Company Registration'")).firstMatch
+        XCTAssertTrue(card.waitForExistence(timeout: 30), "The demo company registration is missing")
+        sleep(3)
+        attach("store-2-services")
+        card.tap()
+        sleep(3)
+        for (i, tab) in ["Steps", "Documents", "Chat", "Payments"].enumerated() {
+            tap(tab)
+            sleep(3)
+            attach("store-\(i + 3)-\(tab.lowercased())")
+        }
+    }
+
     func testNotificationsAndProfileOpen() throws {
         try freshSignIn("MANAGER")
         tap("Notifications")
