@@ -2972,6 +2972,11 @@ of what was built 2026-11-02 to 2026-11-18).
   background it fetches `/portal/` (served `no-store`) and reloads only if the hashed entry script
   changed and nobody is typing or uploading (`updateGuard.ts`; `uploadDocument` counts as busy).
   The sign-in survives the reload (same origin, IndexedDB).
+- **The Portal's files are compressed and cached** (2026-11-21). The Portal comes from Cloud
+  Run through a Hosting rewrite, which Hosting neither compresses nor caches by itself:
+  `Portal/server.js` gzips, and `firebase*.json` give `/portal/assets/**` (content-hashed names) a
+  one-year `immutable` cache while `index.html` stays `no-store`. Without this the apps
+  downloaded the 2.46 MB bundle raw on every start.
 - **BeatMyEMI is the model** (`docs/mobile-release.md`, last section): one app id, one config with
   `server.url`, native sign-in handed to the web SDK, Android from the pipeline with the build
   number taken from the Releases, iOS from Xcode. The UI tests in `MobileApp/ios/App/AppUITests/`

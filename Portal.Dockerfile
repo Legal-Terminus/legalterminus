@@ -67,7 +67,8 @@ RUN cat > package.json << 'EOF'
 {
   "type": "module",
   "dependencies": {
-    "express": "^4.19.2"
+    "express": "^4.19.2",
+    "compression": "^1.8.1"
   }
 }
 EOF
