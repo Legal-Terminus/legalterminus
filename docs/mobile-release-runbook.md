@@ -1,7 +1,9 @@
 # Release runbook: Legal Terminus app 1.0 (iPhone) and 1.0.2 (Android)
 
-For Akash, from 2026-11-21. Do the steps in order and tick them off in GitHub issue #268. If a step
-does not match what you see, **stop and ask**; do not change app code to get past it. The design
+For whoever does an app release, on the release Mac. Do the steps in order and record them in GitHub
+issue #268. If a step does not match what you see, **stop and ask**; do not change app code to get
+past it. **No iPhone is needed**: App Store builds are signed with the firm's distribution
+certificate and App Store profile (2026-11-21). The design
 and the reasons are in `docs/mobile-release.md`; this page is only the steps.
 
 **The rules**
@@ -12,6 +14,8 @@ and the reasons are in `docs/mobile-release.md`; this page is only the steps.
 - Never paste a password, key or keystore into chat, email, GitHub or a commit.
 
 **What is already done (21 Nov)**
+- iPhone **1.0 (build 8)** was uploaded to App Store Connect from the release Mac on 21 Nov
+  (archive and `.ipa` in `~/lt-android-release/out/`).
 - Android **1.0.2 (build 8)** is built and signed by the pipeline. It is on the GitHub Release
   "1.0.2 (Build 8)" (tag `v1.6.0-lt.26`), signed with the **new** upload key.
 - Play has accepted the **upload key reset**. The new key can be used from **23 Nov 2026, 08:58 UTC**.
@@ -23,7 +27,7 @@ and the reasons are in `docs/mobile-release.md`; this page is only the steps.
 
 ---
 
-## Part A: before you start (once)
+## Part A: before you start (once per Mac and person)
 
 1. **Access.** Ask Payal (the Apple account holder) to invite you:
    - **App Store Connect → Users and Access** → your Apple ID with the **App Manager** role, with
@@ -42,7 +46,10 @@ and the reasons are in `docs/mobile-release.md`; this page is only the steps.
    cd MobileApp && npm ci
    ```
 
-## Part B: iPhone, test on your own phone (QA)
+## Part B (optional): iPhone, test on a real phone (QA)
+
+Only if someone has an iPhone. The simulator covers everything except finishing **Sign in with
+Apple**, which Apple's reviewers test anyway.
 
 1. `LT_APP_ENV=qa npm run sync:ios`, then check it opens QA:
    ```bash
@@ -63,16 +70,34 @@ and the reasons are in `docs/mobile-release.md`; this page is only the steps.
 
 ## Part C: iPhone, build and upload to TestFlight (production)
 
-1. `LT_APP_ENV=production npm run sync:ios`. The check must print
+**The Mac needs, once:**
+- the certificate **"Apple Distribution: LEGAL TERMINUS PRIVATE LIMITED"** (Xcode → Settings →
+  Accounts → the team → Manage Certificates → + → Apple Distribution);
+- the profile **"Legal Terminus App Store"** (developer.apple.com → Profiles; valid to Nov 2027;
+  download it and double-click).
+
+The App target's Release configuration signs with exactly these (PR #349), so no registered
+iPhone is needed. The first build asks for keychain access to the new key: type the Mac password
+and choose **Always Allow**, or the build fails while the prompt waits.
+
+1. Raise `CURRENT_PROJECT_VERSION` (and `MARKETING_VERSION` for a new version) in
+   `ios/App/Config/Shared.xcconfig`. Build 8 is used; the next is **9**.
+2. `LT_APP_ENV=production npm run sync:ios`. The check must print
    `https://legalterminus.com/portal/`.
-2. In Xcode, **App** target → **General**: **Version 1.0**, **Build 8**. Do not type over them;
-   they come from `ios/App/Config/Shared.xcconfig`.
-3. Device at the top: **Any iOS Device (arm64)** → **Product → Archive**.
-4. Organizer → **Distribute App** → **App Store Connect** → **Upload**, keeping the defaults
-   (automatic signing). Wait for "Uploaded".
-5. Save a copy: Organizer → right-click the archive → **Show in Finder**, and copy the `.xcarchive`
-   to `~/lt-android-release/out/`.
-6. App Store Connect → **TestFlight**. After 10–30 minutes build **1.0 (8)** appears.
+3. Archive and upload. In Xcode: **Any iOS Device (arm64)** → **Product → Archive** → Organizer →
+   **Distribute App** → **App Store Connect** → **Upload**. Or from Terminal:
+   ```bash
+   cd MobileApp/ios/App
+   xcodebuild -workspace App.xcworkspace -scheme App -configuration Release \
+     -destination 'generic/platform=iOS' -archivePath ~/lt-android-release/out/LegalTerminus-<ver>-<build>.xcarchive archive
+   # ExportOptions.plist plus <key>destination</key><string>upload</string>
+   xcodebuild -exportArchive -archivePath ~/lt-android-release/out/LegalTerminus-<ver>-<build>.xcarchive \
+     -exportOptionsPlist <that plist> -exportPath /tmp/lt-upload
+   ```
+   Keep the `.xcarchive` in `~/lt-android-release/out/`.
+4. **From April 2027** Apple accepts only builds made with Xcode 27 (iOS 27 SDK) or later; update
+   Xcode on the release Mac before then.
+5. App Store Connect → **TestFlight**. After 10–30 minutes build **1.0 (8)** appears.
    - Add yourself and Ankit under **Internal Testing**.
    - Install it from the **TestFlight** app on your iPhone.
    - Repeat the Part B test **against production**, using the reviewer login from `PLAY_REVIEWER.txt`
