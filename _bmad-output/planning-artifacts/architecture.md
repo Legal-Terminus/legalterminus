@@ -1948,6 +1948,23 @@ a product is keyed by the `source` its component passes to the checkout, and
   The portal screen is Settings → Website Prices (`/settings/pricing`).
 - At least one plan per product must stay on sale: a product with none drops out
   of the public catalogue and the website falls back to `DEFAULT_PLANS`.
+- **A landing page priced on its own is its own product (#241, 2026-11-21).** The
+  key comes from the component's checkout `source`, so two pages share prices exactly
+  when their cards pass the same `source`. The Odisha landing pages used to pass the
+  India products' keys and so could not be priced apart; their cards (`CroPlans`,
+  `TrademarkPlans`) now sell `private-limited-odisha` and `trademark-application-odisha`.
+  The same portal service is reached through `SERVICE_ALIASES`, the trademark question
+  is shared through `CHOICES`, and `LABELS` names a product under Website Prices
+  where its page title alone would not tell it apart.
+- **Text that quotes a price reads it live.** A hero's "starting from" uses
+  `useStartingPrice(productKey, fallback)` (cheapest plan on sale + cheapest answer's
+  surcharge); terms that name plan prices use `usePlanPrices(productKey, fallbacks)`
+  (`Frontend/src/utils/pricing.js`). A typed figure drifts from the cards the first time
+  the firm changes a price.
+- **A new product reaches Firestore only by the seed.** No deploy runs it. Until
+  `npm run db:seed:pricing` is run on an environment (`FIRESTORE_DATABASE_ID=qa-data`
+  for QA, unset for live), the new product is missing there: its page shows
+  `DEFAULT_PLANS`, it has no entry under Website Prices, and Buy Now for it fails.
 
 ### A required question that changes the price (E24-S07, #221, 2026-11-06)
 

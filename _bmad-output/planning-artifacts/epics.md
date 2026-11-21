@@ -8210,3 +8210,40 @@ reminders (#219)".
   non-GST matter has no GST subject). Email delivery is off in E2E, so the subject is checked
   through the matter's `gstEmailSubject`, the same function the email service calls.
   User-visible: yes.
+
+### The Odisha landing pages have prices of their own (2026-11-21, #241 follow-up of 19 Nov) — E-24 🔄 In review
+
+The firm asked for the prices of two landing pages to be added to Website Prices:
+Company Registration in Odisha (`/company-registration-consultancy-in-odisha`) and Trademark
+Registration in Odisha (`/trademark-registration-in-odisha`). Decision (21 Nov): **the Odisha
+pages are priced separately from the India pages.** Design in architecture.md, "The price
+catalogue".
+- **Root cause:** the pages already took live prices, but from the INDIA products: their cards
+  checked out as `private-limited` and `trademark-application`. Website Prices had no entry
+  for them (they hid under "…in India"), and a price changed for the India page changed the
+  Odisha page too. A third product, "Company Registration in Odisha" (`company-registration`,
+  `/companyregistration-in-odisha`), has the same page title, so it looked like the right
+  entry and is not.
+- **Fix:** the Odisha cards sell their own products — `private-limited-odisha` (SVC-063, both
+  `/company-registration-consultancy-in-odisha` and `/company-registration-odisha`, which share
+  one set of cards) and `trademark-application-odisha` (SVC-064, with the same Proposed to be
+  Used / Prior User question). Same plans and the same portal service as the India products.
+  They start at the live prices of 21 Nov (Private Limited Enriched ₹9,499, Supreme ₹14,999 —
+  the figures the firm had set; trademark as India), so nothing on the site moves on the day.
+  Under Website Prices they are "Company Registration in Odisha — landing pages" and
+  "Trademark Registration in Odisha — landing page"; the third product is renamed
+  "Company Registration in Odisha — /companyregistration-in-odisha".
+- **Also fixed, typed prices that had drifted:** the company hero said "starting from ₹4,999"
+  (cheapest card ₹5,999) and the trademark terms quoted Enriched ₹2,499, Supreme ₹6,499,
+  Supreme Plus ₹14,999 (cards ₹4,499, ₹11,999, ₹21,999). Both heroes and the terms now read
+  the live prices. Visible change: the hero reads ₹5,999 and the terms match the cards.
+- **To do on each environment: `npm run db:seed:pricing`** (QA with
+  `FIRESTORE_DATABASE_ID=qa-data`; live at the release). Until then the two products are not
+  stored there. The seed only adds them and refreshes the India products' page lists; it never
+  overwrites a price.
+- Not changed: the India pages and their prices; the trademark terms' tier descriptions
+  (only the figures); government fees and other fixed charges in the page text.
+- Tests: `backend/src/__tests__/odishaOwnPrices.test.js` (9), `productChoice.test.js` updated;
+  `Frontend/tests/e2e/odisha-own-prices.spec.js` (5: each Odisha page shows its own prices on
+  the cards, hero and terms; the India pages keep theirs).
+  User-visible: yes.

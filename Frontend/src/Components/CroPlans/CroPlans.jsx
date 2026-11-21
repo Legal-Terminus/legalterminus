@@ -5,10 +5,13 @@ import ConsultationModal from "../ConsultationModal/ConsultationModal";
 import CutPrice from "../CutPrice/CutPrice";
 import { usePlans, PAYMENTS_ENABLED } from "../../utils/pricing";
 
-// The Odisha company pages sell the same product as the Private Limited page,
-// so they show its four plans and take its prices (as the Odisha trademark page
-// does for trademark-application). Keep this list in step with
-// PvtltdPlanandPricing — the catalogue build refuses two differing lists.
+// #241 (the firm, 21 Nov): the Odisha company pages are priced on their own.
+// They sell `private-limited-odisha` — its own entry under Website Prices — so a
+// price changed for the India-wide Private Limited page (PvtltdPlanandPricing,
+// `private-limited`) no longer changes these pages, nor the other way round.
+// The prices below are only the fallback and what the prerendered page shows;
+// they start as the live Private Limited prices of 21 Nov, so nothing moved on
+// the day the pages were split.
 const DEFAULT_PLANS = [
   {
     id: "elemental",
@@ -32,7 +35,7 @@ const DEFAULT_PLANS = [
     name: "Enriched",
     badge: "★ MOST POPULAR",
     popular: true,
-    price: 8999, oldPrice: 13999,
+    price: 9499, oldPrice: 13999,
     services: [
       "Everything in Elemental",
       "Bank Account Opening Documents",
@@ -45,7 +48,7 @@ const DEFAULT_PLANS = [
   {
     id: "supreme",
     name: "Supreme",
-    price: 13999, oldPrice: 20999,
+    price: 14999, oldPrice: 20999,
     services: [
       "Everything in Enriched",
       "The 1st Board Resolution documentation",
@@ -74,7 +77,7 @@ const DEFAULT_PLANS = [
 
 const CroPlans = () => {
   // E24-S01: prices come from the server catalogue; DEFAULT_* is the fallback.
-  const PLANS = usePlans("private-limited", DEFAULT_PLANS);
+  const PLANS = usePlans("private-limited-odisha", DEFAULT_PLANS);
   const [activePlan, setActivePlan] = useState(null);
   // #133: payment (Buy Now → CheckoutModal) is paused; the shared "Book Free
   // Consultation" button below opens the consultation popup instead.
@@ -143,7 +146,7 @@ const CroPlans = () => {
       </section>
 
       {activePlan && (
-        <CheckoutModal plan={activePlan} onClose={() => setActivePlan(null)} source="private-limited" />
+        <CheckoutModal plan={activePlan} onClose={() => setActivePlan(null)} source="private-limited-odisha" />
       )}
 
       <ConsultationModal

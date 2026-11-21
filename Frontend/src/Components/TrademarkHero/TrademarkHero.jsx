@@ -2,6 +2,7 @@ import React from "react";
 import "../CompanyRegHero/CompanyRegHero.css";
 import ConsultationForm from "../ConsultationForm/ConsultationForm";
 import LOGO_ASSET from "../../assets/Legal-Terminus-LOGO-GIF_300-x-150.gif";
+import { useStartingPrice, inr } from "../../utils/pricing";
 
 const FEATURES = [
   {
@@ -19,6 +20,8 @@ const FEATURES = [
 ];
 
 const TrademarkHero = () => {
+  // #241: the cheapest trademark plan on sale on this page, not a typed figure.
+  const from = useStartingPrice("trademark-application-odisha", 1499);
   return (
     <section className="crh-hero">
       <div className="crh-blob crh-blob-1" aria-hidden="true" />
@@ -52,7 +55,7 @@ const TrademarkHero = () => {
           <div className="crh-price">
             <div className="crh-price-icon">™</div>
             <div className="crh-price-text">
-              <strong>Trademark filing starting from ₹1,499</strong>
+              <strong>Trademark filing starting from {inr(from)}</strong>
               <span>excluding government fees</span>
             </div>
           </div>
