@@ -72,7 +72,7 @@ export default function PrivacyPolicy() {
           <div className="policy-section">
             <h3>7. The Legal Terminus App</h3>
             <p>
-              The Legal Terminus Android app lets you sign in to your account and use the same services as the web portal:
+              The Legal Terminus app for Android and iPhone lets you sign in to your account and use the same services as the web portal:
               following the progress of your services, uploading and viewing documents, messaging our team, and seeing
               amounts billed and due. It handles the same information described in this policy, such as your name, email
               address, phone number, address, documents you upload, identification numbers you provide for a service (for
@@ -84,8 +84,13 @@ export default function PrivacyPolicy() {
           <div className="policy-section" id="delete-my-data">
             <h3>8. Access, Correction and Deletion</h3>
             <p>
-              You can ask us to show you the information we hold about you, to correct it, or to delete your account and the
-              personal information linked to it. Write to{' '}
+              <strong>Deleting your account.</strong> You can ask for your account to be deleted from inside the app or the web
+              portal: open your account menu or My Profile and choose <em>Delete my account</em>. Your sign-in is switched
+              off straight away, and we then delete your account and the personal information linked to it.
+            </p>
+            <p>
+              You can also ask us to show you the information we hold about you, to correct it, or to delete your account and
+              the personal information linked to it. Write to{' '}
               <a href="mailto:sales21@legalterminus.com?subject=Data%20request">sales21@legalterminus.com</a> from the email
               address on your account, or call us on the numbers below, and tell us what you want done. We will confirm your
               identity before acting. We may need to keep some records where the law requires us to, for example for
