@@ -5,9 +5,11 @@ talk about Legal Terminus offerings"). Paste from here; change it here first. Re
 text in `docs/play-store-listing.md`, whose declarations (data safety, content rating, app access)
 still apply.
 
-**Claims.** Every figure is one the website already makes: 7+ years, 5,000+ happy clients, 1,000+
-businesses across Odisha, 100% online with a Bhubaneswar office, free expert consultation. **The
-firm must confirm them before submission**, because both stores reject claims that are not true or
+**Claims.** Every figure is word for word what the live website says (checked 2026-11-21 on
+`/company-registration-consultancy-in-odisha` and `/trademark-registration-in-odisha`): "7+ Years of
+Legal / Compliance Expertise", "5000+ Happy Clients", "1000+ Companies Registered", "1000+
+Trademarks Registered", "100% Online Filing + Bhubaneswar Office", "Free Expert Consultation". If the
+website's figures change, change them here too, because both stores reject claims that are not true or
 cannot be backed up. The website's "4.9/5" Google rating and "top-rated" are left out on purpose: Google
 Play forbids ratings and ranking claims in a listing, and Apple rejects references to another platform.
 
@@ -17,7 +19,7 @@ Play forbids ratings and ranking claims in a listing, and Apple rejects referenc
 | App Store subtitle | 30 | 29 |
 | Play short description | 80 | 78 |
 | App Store promotional text | 170 | 140 |
-| Description (both) | 4000 | 2004 |
+| Description (both) | 4000 | 2018 |
 | App Store keywords | 100 | 96 |
 | What's new / release notes (both) | 500 (Play), 4000 (Apple) | 149 |
 
@@ -69,7 +71,7 @@ WHAT YOU CAN DO IN THE APP
 
 WHY BUSINESSES CHOOSE LEGAL TERMINUS
 • 7+ years of legal and compliance expertise
-• Trusted by 5,000+ clients, including 1,000+ businesses across Odisha
+• 5,000+ happy clients, 1,000+ companies registered and 1,000+ trademarks registered
 • 100% online, anywhere in India, with an office in Bhubaneswar for face-to-face help
 • A free first consultation with an expert
 • Clear plans and prices, shown before you start
