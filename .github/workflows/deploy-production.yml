@@ -56,7 +56,7 @@ on:
         required: false
         type: string
       build_number:
-        description: 'App build number. Leave empty: the last "(Build N)" GitHub Release + 1, as BeatMyEMI does'
+        description: 'App build number = last GitHub Release build + 1 (never reused)'
         required: false
         type: string
 
@@ -416,29 +416,10 @@ jobs:
       - name: Checkout the tag
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      # The build number only goes up and is never reused (one number for both platforms,
-      # docs/mobile-release.md). As in BeatMyEMI's pipeline, it is worked out from the GitHub
-      # Releases: the highest "(Build N)" + 1. MIN_BUILD covers numbers used before any Release
-      # carried one — Play version code 3 (in review, never to be published) and the iPhone QA
-      # TestFlight builds up to 7. A typed build_number is accepted only if it is higher.
-      - name: Version and build number
-        id: num
-        env:
-          GH_TOKEN: ${{ github.token }}
-          MIN_BUILD: '8'
+      - name: Check the inputs
         run: |
           [[ "${{ inputs.version_name }}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "version_name must look like 1.6.0"; exit 1; }
-          LAST=$(gh release list --repo "$GITHUB_REPOSITORY" --limit 200 --json name -q '.[].name' \
-            | sed -n 's/.*(Build \([0-9][0-9]*\)).*/\1/p' | sort -n | tail -1)
-          NEXT=$(( ${LAST:-0} + 1 )); [ "$NEXT" -lt "$MIN_BUILD" ] && NEXT=$MIN_BUILD
-          WANT="${{ inputs.build_number }}"
-          if [ -n "$WANT" ]; then
-            [[ "$WANT" =~ ^[1-9][0-9]*$ ]] || { echo "build_number must be a positive whole number"; exit 1; }
-            [ "$WANT" -ge "$NEXT" ] || { echo "build_number $WANT is used or lower than used; the next free is $NEXT"; exit 1; }
-            NEXT=$WANT
-          fi
-          echo "Last released build: ${LAST:-none}. This build: $NEXT"
-          echo "build=$NEXT" >> "$GITHUB_OUTPUT"
+          [[ "${{ inputs.build_number }}" =~ ^[1-9][0-9]*$ ]] || { echo "build_number must be a positive whole number"; exit 1; }
 
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
@@ -471,7 +452,7 @@ jobs:
 
       - name: Version
         run: |
-          sed -i "s|versionCode [0-9]*|versionCode ${{ steps.num.outputs.build }}|; s|versionName \"[^\"]*\"|versionName \"${{ inputs.version_name }}\"|" MobileApp/android/app/build.gradle
+          sed -i "s|versionCode [0-9]*|versionCode ${{ inputs.build_number }}|; s|versionName \"[^\"]*\"|versionName \"${{ inputs.version_name }}\"|" MobileApp/android/app/build.gradle
           grep -E "versionCode|versionName" MobileApp/android/app/build.gradle
 
       - name: Build
@@ -503,7 +484,7 @@ jobs:
 
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: legalterminus-android-${{ inputs.version_name }}-${{ steps.num.outputs.build }}
+          name: legalterminus-android-${{ inputs.version_name }}-${{ inputs.build_number }}
           retention-days: 7
           path: |
             MobileApp/android/app/build/outputs/bundle/release/*.aab
@@ -513,7 +494,7 @@ jobs:
       - uses: softprops/action-gh-release@8a0cd651e5b2365bd640854a3fa5dfc70e4875f3 # v3.0.4
         with:
           tag_name: ${{ github.ref_name }}
-          name: ${{ inputs.version_name }} (Build ${{ steps.num.outputs.build }})
+          name: ${{ inputs.version_name }} (Build ${{ inputs.build_number }})
           files: |
             MobileApp/android/app/build/outputs/bundle/release/*.aab
             MobileApp/android/app/build/outputs/apk/release/*.apk
