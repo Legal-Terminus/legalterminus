@@ -16,7 +16,7 @@
   "appLinks": {
     "$comment": "Universal Links / App Links. Filled by the owner once the Apple team and the signing keys exist (docs/mobile-release.md, owner checklist). Empty = scripts/app-links.mjs writes nothing, so no host claims the app by accident.",
     "path": "/portal/account/action",
-    "appleTeamId": "",
+    "appleTeamId": "LMD2KSCQZX",
     "androidSha256": []
   }
 }

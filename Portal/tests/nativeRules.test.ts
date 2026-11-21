@@ -2,7 +2,8 @@
 // (type stripping), so `npm test` needs no test framework: node --test tests/.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { accountLinkPath, appleFullName, appleSignInMessage, showAppleSignIn } from '../src/lib/nativeRules.ts';
+import { accountLinkPath, appleFullName, appleSignInMessage, entryScriptOf, shouldReloadForUpdate, showAppleSignIn } from '../src/lib/nativeRules.ts';
+import { isBusy, whileBusy } from '../src/lib/updateGuard.ts';
 
 test('E29-S07: an emailed account link lands on the action page with its query intact', () => {
   assert.equal(
@@ -51,4 +52,29 @@ test('E29-S11: the first-sign-in name from Apple, else the fallback, else nothin
   assert.equal(appleFullName(null, ' Asha Rao '), 'Asha Rao');
   assert.equal(appleFullName({}, null), null);
   assert.equal(appleFullName(undefined, ''), null);
+});
+
+test('E29: the entry script is read from the Portal index.html', () => {
+  assert.equal(entryScriptOf('<script type="module" crossorigin src="/portal/assets/index-Qjdh60Tg.js"></script>'), '/portal/assets/index-Qjdh60Tg.js');
+  assert.equal(entryScriptOf('<script src="/gtm.js"></script>'), null);
+  assert.equal(entryScriptOf(''), null);
+});
+
+test('E29: the app reloads for a new website version only when it is safe', () => {
+  const base = { hiddenMs: 120_000, minHiddenMs: 60_000, current: '/portal/assets/index-a.js', latest: '/portal/assets/index-b.js', busy: false, editing: false };
+  assert.equal(shouldReloadForUpdate(base), true);
+  assert.equal(shouldReloadForUpdate({ ...base, latest: base.current }), false, 'same version');
+  assert.equal(shouldReloadForUpdate({ ...base, hiddenMs: 5_000 }), false, 'a quick app switch');
+  assert.equal(shouldReloadForUpdate({ ...base, busy: true }), false, 'an upload is running');
+  assert.equal(shouldReloadForUpdate({ ...base, editing: true }), false, 'someone is typing');
+  assert.equal(shouldReloadForUpdate({ ...base, latest: null }), false, 'could not read the new version');
+});
+
+test('E29: an upload counts as busy until it settles, even when it fails', async () => {
+  let seen = false;
+  await whileBusy(async () => { seen = isBusy(); });
+  assert.equal(seen, true);
+  assert.equal(isBusy(), false);
+  await assert.rejects(whileBusy(async () => { throw new Error('x'); }));
+  assert.equal(isBusy(), false);
 });

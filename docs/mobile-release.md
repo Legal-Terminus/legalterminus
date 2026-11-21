@@ -84,6 +84,10 @@ builds; the first production-pointed build is the one that goes to review.
   (`MobileApp/ios/App/Config/Shared.xcconfig`, or Xcode → General).
 - `build_number` = the last build of either platform + 1. It never goes down and is never reused,
   and a QA-pointed build takes a number too: Play and TestFlight count per app, not per track.
+  **The pipeline works it out** (as BeatMyEMI's does): leave `build_number` empty and the Android
+  job takes the highest "(Build N)" among the GitHub Releases + 1, never below 8; a typed number is
+  refused unless it is higher. An iOS build from Xcode then uses the same number
+  (`CURRENT_PROJECT_VERSION` in `Shared.xcconfig`), and the next release starts above it.
 - `version_name` is the app shell's own version (1.0.0 for the first store release). It does not
   follow the website's release tag: the Portal inside the app is always the hosted one.
 - **Used so far.** Android: 1 and 2 (QA, bundled), 3 (production 1.0.0, bundled, in Play review
@@ -119,7 +123,8 @@ Firebase files and every generated file of the switch.
 Only when the native shell changed (above).
 
 1. GitHub → Actions → "Deploy to Production" → Run workflow: **Use workflow from = a release
-   tag**, `build_android` = true, `android_format` = `both`, `version_name`, `build_number`.
+   tag**, `build_android` = true, `android_format` = `both`, `version_name`; leave `build_number`
+   empty unless an iOS build already took the next number.
    The run waits for the `production` environment reviewer like any production deploy. With
    `build_android` on, the web deploy job is skipped.
 2. The job (`build-android`) runs `LT_APP_ENV=production npm run sync:android`, **checks the
@@ -166,6 +171,12 @@ testing** track in Play Console with the next build number.
    **phased release on**, **manual release** after approval.
 6. Roll back: as Android — a Portal problem is fixed on the website, a shell problem by a higher build.
 
+**UI tests** (`MobileApp/ios/App/AppUITests/`, from Akash's iPhone QA rounds): launch, the sign-in
+screen, every role signing in, every screen per role, a matter's tabs, creating a matter and
+uploading a photo, relaunch and sign-out. Run them against a **QA-pointed** build only; the signed-in
+tests take the QA accounts from `TEST_RUNNER_LT_QA_<ROLE>_EMAIL` / `_PASSWORD` and skip a role
+without them. How to run them: `docs/mobile-testing.md`.
+
 A simulator build needs none of the Apple items:
 `xcodebuild -workspace App.xcworkspace -scheme App -sdk iphonesimulator -configuration Debug CODE_SIGNING_ALLOWED=NO build`
 (from `MobileApp/ios/App`, after `npm run sync:ios`).
@@ -190,11 +201,10 @@ Until the owner fills in the Apple team id and the signing fingerprints, nothing
 ## Owner checklist — what only the firm's accounts can do
 
 **Apple Developer account (E29-S01)**
-1. Enrol LEGAL TERMINUS PRIVATE LIMITED (organisation; D-U-N-S number). Note the **Team ID**
-   (`LMD2KSCQZX` per Akash's notes — confirm).
-2. Put the Team ID in `MobileApp/ios/App/Config/Shared.xcconfig` (`DEVELOPMENT_TEAM = …`),
-   `MobileApp/ios/ExportOptions.plist` (`TEAMID`) and `MobileApp/environments.json` →
-   `appLinks.appleTeamId`.
+1. ~~Enrol the firm and note the Team ID.~~ Done: the Team ID is **`LMD2KSCQZX`** (it signed the
+   TestFlight builds of 16–20 Nov 2026).
+2. ~~Put the Team ID in the project.~~ Done 2026-11-21: `Shared.xcconfig` (`DEVELOPMENT_TEAM`),
+   `ExportOptions.plist` (`teamID`) and `environments.json` → `appLinks.appleTeamId`.
 3. Identifiers → **one** App ID: `com.legalterminus.app`, with **Sign in with Apple** and
    **Associated Domains**.
 4. App Store Connect → **one** app: "Legal Terminus" (`com.legalterminus.app`, SKU
@@ -240,3 +250,23 @@ Until the owner fills in the Apple team id and the signing fingerprints, nothing
 
 **App Store Connect listing (E29-S10)** — privacy labels, age rating, reviewer account,
 screenshots, review notes: see the epic.
+
+## Compared with BeatMyEMI (the model, 2026-11-21)
+
+| | BeatMyEMI | Legal Terminus |
+|---|---|---|
+| Apps | one id, `com.beatmyemi.app` | one id, `com.legalterminus.app` |
+| What the app opens | `server.url` = the hosted app | `server.url` = the hosted Portal (QA or production) |
+| Config | one `capacitor.config.ts` for `android/` and `ios/` | the same, in `MobileApp/` |
+| Switch | `switch-config.sh dev\|prod` (dev = localhost) | `LT_APP_ENV=qa\|production` (no localhost anywhere) |
+| Google / Apple sign-in | native sheet → `signInWithCredential` in the web app | the same |
+| Firebase on iOS | `FirebaseApp.configure()` in `AppDelegate` | done by the sign-in plugin when it loads (skipped safely with no plist) |
+| Secrets | base64 GitHub Secrets; Firebase files and keystores ignored | the same |
+| Android release | pipeline, signed, attached to Release "X (Build N)" | the same, from an approved release tag only |
+| Build number | last Release's "Build N" + 1 | the same (never below 8) |
+| iOS release | Xcode Archive → App Store Connect | the same |
+
+Deliberate differences: the QA target (LT has a QA site; BeatMyEMI's second target was localhost),
+the `MobileApp/` folder (LT keeps the Portal, backend and website side by side), production Android
+builds only from an approved tag, and no web build copied into the Android app (BeatMyEMI's
+pipeline still copies one although its app opens the hosted URL).

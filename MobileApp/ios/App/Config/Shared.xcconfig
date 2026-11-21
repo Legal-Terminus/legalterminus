@@ -2,10 +2,10 @@
 // Version name and build number: one pair for both platforms per release (docs/mobile-release.md);
 // set them here (or in Xcode → General) before Archive.
 MARKETING_VERSION = 1.0.0
-CURRENT_PROJECT_VERSION = 1
+CURRENT_PROJECT_VERSION = 8
 // iPhone only for the first release (D4).
 TARGETED_DEVICE_FAMILY = 1
 CODE_SIGN_ENTITLEMENTS = App/App.entitlements
-// The firm's Apple team. OWNER: set it here once the Apple Developer account exists
-// (Membership → Team ID, 10 characters), or pick the team in Xcode → Signing & Capabilities.
-// DEVELOPMENT_TEAM = XXXXXXXXXX
+// The firm's Apple team (Membership → Team ID). LMD2KSCQZX signed the TestFlight builds of
+// 16–20 Nov 2026, so it is the firm's team.
+DEVELOPMENT_TEAM = LMD2KSCQZX
