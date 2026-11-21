@@ -95,6 +95,12 @@ builds; the first production-pointed build is the one that goes to review.
   `com.legalterminus.app.qa` (bundled; that app is retired). **Build 8** (Android 1.0.0,
   production-pointed) was built by the pipeline on 2026-11-21 from `v1.6.0-lt.26` and is attached
   to that tag's Release "1.0.0 (Build 8)". **The next build of either platform is 9.**
+- **Build 4 (1.0.1) is in Production on Play** (found 2026-11-21 in Play Console: Active, staged,
+  about 15 installs). It was built and uploaded from Akash's branch (`versionCode 4`,
+  `versionName "1.0.1"` in `AndroidApp/android/app/build.gradle`) outside this process, most likely
+  with the bundled Portal, which production refuses since 2026-11-19. Its pending "Start full
+  rollout" was discarded on 2026-11-21; its users keep it until build 8 replaces it. Play keeps every
+  upload, so version codes 1–4 can never be used again.
 - **The upload key was replaced on 2026-11-21.** The key that signed version code 3 (SHA-1
   `003b92…`) could not be found, so a new one was made (SHA-1 `b2:64:14:3f:…:0a:49`, RSA 4096, alias
   `upload`, valid to 2054) and a Play **upload key reset** was requested with its certificate. Play
