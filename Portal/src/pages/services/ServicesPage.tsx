@@ -1,7 +1,7 @@
 import { useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Layers, Pencil, Loader2, Workflow, Search, Plus, CircleSlash } from 'lucide-react';
+import { Layers, Pencil, Loader2, Workflow, Search, Plus, CircleSlash, ChevronDown, ChevronRight } from 'lucide-react';
 import PageShell from '../../components/common/PageShell';
 import { useToast } from '../../components/common/toastContext';
 import { useAuthStore } from '../../store/authStore';
@@ -18,6 +18,20 @@ interface ConfiguredWorkflow {
   stepCount: number;
 }
 
+/** #356: which categories the user opened, kept for the browser session. */
+const OPEN_KEY = 'servicesPage:openCategories';
+function readOpen(): Set<string> {
+  try {
+    const raw = sessionStorage.getItem(OPEN_KEY);
+    return new Set(raw ? (JSON.parse(raw) as string[]) : []);
+  } catch {
+    return new Set();
+  }
+}
+function writeOpen(open: Set<string>) {
+  try { sessionStorage.setItem(OPEN_KEY, JSON.stringify([...open])); } catch { /* ignore */ }
+}
+
 /**
  * Service catalog — lists every service Legal Terminus offers, grouped by
  * category. Sourced from the `serviceCategories` Firestore collection via
@@ -27,12 +41,17 @@ interface ConfiguredWorkflow {
  * place: click a card to edit, Enter/blur to save, Escape to cancel. Each card
  * also shows whether a workflow is configured for it (#155) — a service with no
  * definition cannot start a matter, and that was previously invisible here.
+ *
+ * #356: categories start collapsed — rendering every card at once made this the
+ * heaviest screen in the app (~2,800 elements). A category's cards mount only
+ * when it is open. A search or a workflow filter opens every matching category.
  */
 export default function ServicesPage() {
   const [search, setSearch] = useState('');
   // #155: 'unconfigured' surfaces exactly the services still missing a workflow.
   const [filter, setFilter] = useState<'all' | 'configured' | 'unconfigured'>('all');
   const [showAddService, setShowAddService] = useState(false); // #173
+  const [openIds, setOpenIds] = useState<Set<string>>(readOpen); // #356
   const navigate = useNavigate();
   const role = useAuthStore((s) => s.role);
 
@@ -86,6 +105,18 @@ export default function ServicesPage() {
     [data],
   );
 
+  // #356: narrowing the list (search or a workflow filter) shows every match;
+  // otherwise only the categories the user opened.
+  const narrowed = search.trim() !== '' || filter !== 'all';
+  const isOpen = (id: string) => narrowed || categories.length === 1 || openIds.has(id);
+  const allOpen = categories.length > 0 && categories.every((c) => openIds.has(c.id));
+  const setOpen = (next: Set<string>) => { setOpenIds(next); writeOpen(next); };
+  const toggleCategory = (id: string) => {
+    const next = new Set(openIds);
+    if (next.has(id)) next.delete(id); else next.add(id);
+    setOpen(next);
+  };
+
   // Counts drive the filter chips (and tell an admin at a glance how much of the
   // catalog is still unconfigured).
   const counts = useMemo(() => {
@@ -97,7 +128,7 @@ export default function ServicesPage() {
   return (
     <PageShell
       title="Service Catalog"
-      subtitle="Every service Legal Terminus offers, grouped by category. Click a card to rename it."
+      subtitle="Every service Legal Terminus offers, grouped by category. Open a category to see its services; click a card to rename it."
       /* #156: the button IS attached to a service — the editor makes you pick one
          before saving. It just never said so, which read as "unattached". The
          label and tooltip now state it; per-tile "Create workflow" is the shorter
@@ -141,7 +172,7 @@ export default function ServicesPage() {
 
       {/* #155: workflow-state filter — jump straight to the services that still
           need a workflow configured. */}
-      <div className="flex items-center gap-2 mb-5">
+      <div className="flex flex-wrap items-center gap-2 mb-5">
         {([
           { id: 'all', label: 'All services', count: counts.all },
           { id: 'configured', label: 'Workflow set', count: counts.configured },
@@ -160,6 +191,16 @@ export default function ServicesPage() {
             {chip.label} · {chip.count}
           </button>
         ))}
+        {/* #356: one tap to open or close every category. Hidden while a
+            search or filter already shows every match. */}
+        {!narrowed && categories.length > 1 && (
+          <button
+            onClick={() => setOpen(allOpen ? new Set() : new Set(categories.map((c) => c.id)))}
+            className="ml-auto text-xs font-medium text-ink-muted hover:text-ink min-h-[44px] px-2"
+          >
+            {allOpen ? 'Collapse all' : 'Expand all'}
+          </button>
+        )}
       </div>
 
       {isLoading && (
@@ -189,22 +230,42 @@ export default function ServicesPage() {
       )}
 
       {data && categories.length > 0 && (
-        <div className="flex flex-col gap-8">
-          {categories.map((cat) => (
-            <section key={cat.id}>
-              <h2 className="text-sm font-semibold text-ink mb-3">{cat.name}</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                {cat.services.map((svc) => (
-                  <ServiceCard
-                    key={svc.key}
-                    service={svc}
-                    workflow={workflowByServiceKey.get(svc.key)}
-                    canCreate={role === 'admin'}
-                  />
-                ))}
-              </div>
-            </section>
-          ))}
+        <div className="flex flex-col gap-2">
+          {categories.map((cat) => {
+            const open = isOpen(cat.id);
+            const panelId = `services-cat-${cat.id}`;
+            return (
+              <section key={cat.id}>
+                <h2 className="text-sm font-semibold text-ink">
+                  <button
+                    onClick={() => toggleCategory(cat.id)}
+                    disabled={narrowed || categories.length === 1}
+                    aria-expanded={open}
+                    aria-controls={panelId}
+                    className="flex w-full items-center gap-2 min-h-[44px] py-2 text-left hover:text-ink-soft disabled:cursor-default"
+                  >
+                    {open
+                      ? <ChevronDown className="w-4 h-4 shrink-0" aria-hidden />
+                      : <ChevronRight className="w-4 h-4 shrink-0" aria-hidden />}
+                    <span>{cat.name}</span>
+                    <span className="badge bg-surface-card text-ink-muted font-medium">{cat.services.length}</span>
+                  </button>
+                </h2>
+                {open && (
+                  <div id={panelId} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mt-1 mb-4">
+                    {cat.services.map((svc) => (
+                      <ServiceCard
+                        key={svc.key}
+                        service={svc}
+                        workflow={workflowByServiceKey.get(svc.key)}
+                        canCreate={role === 'admin'}
+                      />
+                    ))}
+                  </div>
+                )}
+              </section>
+            );
+          })}
         </div>
       )}
     </PageShell>
