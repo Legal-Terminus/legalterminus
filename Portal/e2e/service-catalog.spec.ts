@@ -17,6 +17,7 @@ test('staff see the service catalog grouped by category', async ({ adminPage }) 
 
 test('clicking a service name reveals the inline rename editor (no persist)', async ({ adminPage }) => {
   await adminPage.goto('services');
+  await adminPage.getByRole('button', { name: 'Expand all' }).click();
   // Click the first service name button → an input appears. Press Escape (no save).
   const firstName = adminPage.locator('button.w-full.text-left.text-sm.font-semibold').first();
   await firstName.click();
@@ -47,6 +48,7 @@ test('#155 a service with a workflow shows the "Workflow set" badge', async ({ a
   const key = await resolveServiceKey();
   await adminPage.goto('services');
   await expect(adminPage.getByRole('heading', { name: 'Service Catalog' })).toBeVisible();
+  await adminPage.getByRole('button', { name: 'Expand all' }).click();
 
   // At least one tile advertises a configured workflow. The badge is a span, so
   // `exact` keeps it distinct from the "Workflow set · N" filter chip.
@@ -86,4 +88,41 @@ test('#155 the filter chips split the catalog by workflow state', async ({ admin
   // …and the converse for "No workflow".
   await noneChip.click();
   await expect(adminPage.getByText('Workflow set', { exact: true })).toHaveCount(0);
+});
+
+/* ── #356: categories start collapsed so the page stays light on phones ─────── */
+
+test('#356 categories start collapsed and open on tap', async ({ adminPage }) => {
+  await adminPage.goto('services');
+  await adminPage.evaluate(() => sessionStorage.removeItem('servicesPage:openCategories'));
+  await adminPage.reload();
+
+  const headers = adminPage.getByRole('heading', { level: 2 }).getByRole('button');
+  await expect(headers.first()).toBeVisible();
+  await expect(headers.first()).toHaveAttribute('aria-expanded', 'false');
+  // No service card is rendered while every category is closed.
+  await expect(adminPage.getByRole('switch')).toHaveCount(0);
+
+  // Opening one category shows its cards; the choice survives a reload.
+  await headers.first().click();
+  await expect(headers.first()).toHaveAttribute('aria-expanded', 'true');
+  await expect(adminPage.getByRole('switch').first()).toBeVisible();
+  await adminPage.reload();
+  await expect(headers.first()).toHaveAttribute('aria-expanded', 'true');
+
+  // Collapse all closes it again.
+  await adminPage.getByRole('button', { name: 'Expand all' }).click();
+  await adminPage.getByRole('button', { name: 'Collapse all' }).click();
+  await expect(adminPage.getByRole('switch')).toHaveCount(0);
+});
+
+test('#356 a search opens the categories that match', async ({ adminPage }) => {
+  await adminPage.goto('services');
+  await adminPage.evaluate(() => sessionStorage.removeItem('servicesPage:openCategories'));
+  await adminPage.reload();
+  await expect(adminPage.getByRole('switch')).toHaveCount(0);
+
+  await adminPage.getByPlaceholder('Search services by name or category…').fill('registration');
+  await expect(adminPage.getByRole('switch').first()).toBeVisible();
+  await expect(adminPage.getByRole('button', { name: 'Expand all' })).toHaveCount(0);
 });

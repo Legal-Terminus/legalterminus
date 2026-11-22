@@ -8337,3 +8337,19 @@ Found by the owner testing the iPhone app on production.
 - Tests: `auth-rbac.spec.ts` (a client is refused `/reports/my-services`); `reports-84.spec.ts`
   (at 390px a report shows cards and nothing is wider than the screen). Portal build clean.
   User-visible: yes.
+
+### The Services page opens with its categories collapsed (2026-11-22, #356) 🔄 In review
+
+Found in the iPhone app's every-screen timing test (#268): the Service Catalog rendered every card
+of every category at once, about 2,800 page elements against 200–500 on other screens, and grows
+with each service added.
+- `ServicesPage.tsx`: each category is a header (name, chevron, number of services, 44 px tap
+  target); its cards mount only when it is open. Categories start closed; the ones a user opens are
+  kept for the browser session (`sessionStorage`). **Expand all / Collapse all** beside the filter
+  chips.
+- A search or a workflow filter (Workflow set / No workflow) shows every matching category open,
+  so a search still lands on the service. A catalog with a single category is always open.
+- Tests: `service-catalog.spec.ts` — categories start closed with no cards, open on tap, stay open
+  after a reload, Collapse all; a search opens the matches; the rename and badge tests open the
+  categories first. Portal build clean.
+  User-visible: yes (staff Services page).
