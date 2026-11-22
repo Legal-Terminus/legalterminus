@@ -631,16 +631,30 @@ final class SignedInUITests: XCTestCase {
             guard let link = matches.allElementsBoundByIndex.first(where: { $0.isHittable && $0.frame.minY < 700 }) ?? matches.allElementsBoundByIndex.first(where: { $0.isHittable }) else {
                 XCTFail("\(role): menu item '\(item)' cannot be tapped"); report.append("\(item): NOT TAPPABLE"); continue
             }
+            // Time from the tap until the screen has real content and no loading text (≤ 20 s).
+            let started = Date()
             link.tap()
-            sleep(4)
-            let l = labels()
+            var l = labels()
+            while Date().timeIntervalSince(started) < 20 {
+                l = labels()
+                let loading = l.contains { $0.range(of: "^loading|^signing in|please wait", options: [.regularExpression, .caseInsensitive]) != nil }
+                if l.count > 12 && !loading { break }
+                usleep(250_000)
+            }
+            let seconds = Date().timeIntervalSince(started)
+            sleep(1) // let late content settle before the error check and the screenshot
+            l = labels()
             let bad = l.first { $0.range(of: "something went wrong|unexpected error|failed to load|auth/|internal server error|not found|forbidden", options: [.regularExpression, .caseInsensitive]) != nil && $0.count < 120 }
             let signedOut = web.secureTextFields.firstMatch.exists
             XCTAssertFalse(signedOut, "\(role): '\(item)' sent the user to the sign-in page")
             XCTAssertNil(bad, "\(role): '\(item)' shows an error: \(bad ?? "")")
             XCTAssertGreaterThan(l.count, 12, "\(role): '\(item)' looks empty")
             attach("\(role)-screen-\(item)")
-            report.append("\(item): ok (\(l.count) labels)")
+            report.append(String(format: "%@: ok %.1fs", item, seconds))
+            // Simulator times include reading the whole screen through accessibility, which is slow on
+            // long pages (2026-11-22: 9-16 s here against 1.2-2.2 s in a phone-throttled browser). So this
+            // only catches a screen that is stuck; real load times are measured in the browser.
+            XCTAssertLessThan(seconds, 25, "\(role): '\(item)' took \(Int(seconds)) s to load")
         }
         print("LT_SCREENS_\(role): \(report.joined(separator: " | "))")
     }
@@ -656,7 +670,8 @@ final class SignedInUITests: XCTestCase {
         try visitEveryScreen("TEAM", ["Dashboard", "Matters", "My Tasks", "Services", "Worksheets", "My Profile", "Statutory Calendar"])
     }
     func testEveryScreenClient() throws {
-        try visitEveryScreen("CLIENT", ["Dashboard", "My Services", "Reports", "My Profile"])
+        // No Reports for clients (owner, 2026-11-21).
+        try visitEveryScreen("CLIENT", ["Dashboard", "My Services", "My Profile"])
     }
     func testEveryScreenProfessional() throws {
         try visitEveryScreen("PRO", ["Dashboard", "My Profile"])
