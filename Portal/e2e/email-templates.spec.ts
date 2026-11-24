@@ -27,7 +27,7 @@ test('email templates: admin can read the templates + defs; a client cannot', as
   // The four expected templates are present with defs (labels + placeholders).
   // #198/#200 added the internal step reminder and the @mention email;
   // #297 the two "message edited" emails.
-  for (const key of ['client_welcome', 'matter_created', 'approval_needed', 'step_assigned', 'internal_step_reminder', 'matter_mention', 'matter_message_team', 'matter_message_edited', 'matter_message_team_edited']) {
+  for (const key of ['client_welcome', 'matter_created', 'approval_needed', 'step_assigned', 'internal_step_reminder', 'matter_mention', 'matter_message_team', 'matter_message_edited', 'matter_message_team_edited', 'documents_submitted_team']) {
     expect(body.templates[key]?.subject, `${key} subject`).toBeTruthy();
     expect(Array.isArray(body.defs[key]?.placeholders)).toBeTruthy();
   }

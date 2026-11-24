@@ -180,6 +180,17 @@ export const TEMPLATE_DEFS = {
       '{{message}}\n\n' +
       'Open the matter in the portal to reply.',
   },
+  documents_submitted_team: {
+    label: 'Internal — A client uploaded documents',
+    audience: 'internal',
+    description: 'Sent when a client submits documents: to the matter\'s owner and the people assigned to the step the documents are for (or the admins, if there are none) — one email per person per submit (#358).',
+    placeholders: ['recipientName', 'clientName', 'organisation', 'serviceName', 'documentCount', 'documents'],
+    subject: '{{clientName}} uploaded documents · {{serviceName}}',
+    body: 'Hi {{recipientName}},\n\n' +
+      '{{clientName}} uploaded {{documentCount}} document(s) on {{serviceName}}:\n\n' +
+      '{{documents}}\n\n' +
+      'Open the matter in the portal to review them.',
+  },
   // #219: sent with the matter opened automatically for each period. The period,
   // the due dates and the company name are filled in at send time, so they stay
   // automatic however the wording is edited. The subject is sent exactly as

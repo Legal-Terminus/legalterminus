@@ -38,16 +38,22 @@ const toRecipient = (uid, u) => ({
 
 /**
  * Resolve the people to notify for a client's message on `task`.
- * Returns `{ recipients: [{ uid, name, email }], fallback }` — `fallback` is
- * true when nobody owns the matter or its current step and the admins were
- * told instead. Never throws: a lookup that fails yields fewer recipients.
+ * Returns `{ recipients: [{ uid, name, email }], fallback, step }` — `fallback`
+ * is true when nobody owns the matter or its step and the admins were told
+ * instead; `step` is the step document read (or null). Never throws: a lookup
+ * that fails yields fewer recipients.
+ *
+ * `opts.stepNumber` names the step whose assignees are told (#358: a client's
+ * document upload goes to the people on the step it was uploaded for). Without
+ * it, the matter's CURRENT step is used (a chat message, #200).
  */
-export async function resolveClientMessageRecipients(db, task, authorUid) {
+export async function resolveClientMessageRecipients(db, task, authorUid, opts = {}) {
   let step = null;
-  if (typeof task.currentStepNumber === 'number') {
+  const stepNumber = typeof opts.stepNumber === 'number' ? opts.stepNumber : task.currentStepNumber;
+  if (typeof stepNumber === 'number') {
     try {
       const snap = await db.collection('tasks').doc(task.id)
-        .collection('steps').doc(String(task.currentStepNumber)).get();
+        .collection('steps').doc(String(stepNumber)).get();
       step = snap.exists ? snap.data() : null;
     } catch (err) {
       logger.warn({ err, taskId: task.id }, 'discussion recipients: current step lookup failed');
@@ -63,7 +69,7 @@ export async function resolveClientMessageRecipients(db, task, authorUid) {
     }
   }));
   const recipients = docs.filter(Boolean).filter(([, u]) => isActiveStaff(u)).map(([uid, u]) => toRecipient(uid, u));
-  if (recipients.length) return { recipients, fallback: false };
+  if (recipients.length) return { recipients, fallback: false, step };
 
   // Nobody owns this matter or its step: a client's message must still land
   // somewhere, so the admins get it.
@@ -72,9 +78,9 @@ export async function resolveClientMessageRecipients(db, task, authorUid) {
     const admins = snap.docs
       .filter((d) => d.id !== authorUid && isActiveStaff(d.data()))
       .map((d) => toRecipient(d.id, d.data()));
-    return { recipients: admins, fallback: true };
+    return { recipients: admins, fallback: true, step };
   } catch (err) {
     logger.warn({ err, taskId: task.id }, 'discussion recipients: admin fallback lookup failed');
-    return { recipients: [], fallback: true };
+    return { recipients: [], fallback: true, step };
   }
 }
