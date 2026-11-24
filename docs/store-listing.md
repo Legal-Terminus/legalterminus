@@ -106,4 +106,54 @@ The new Legal Terminus app: follow each of your services step by step, share doc
 | Copyright (App Store) | `2026 LEGAL TERMINUS PRIVATE LIMITED` |
 | Age rating | 4+ (App Store), the IARC answers in `docs/play-store-listing.md` (Play) |
 | Availability | India (leave out China mainland on the App Store) |
-| Reviewer sign-in (both) | `play.reviewer@legalterminus.com`, password in `~/lt-android-release/keys/PLAY_REVIEWER.txt`; note: "A client account with no matters. Sign in with email and password." |
+| Reviewer sign-in (both) | `play.reviewer@legalterminus.com`, password in `~/lt-android-release/keys/PLAY_REVIEWER.txt`; two sample matters (organisation "Apple Review Demo", added 2026-11-24 for App Review): Trademark Registration (₹4,499 paid, a shared sample PDF, a chat message) and Udyam (₹999 due). Do not delete them while a review may still use the account. |
+
+## App Review notes (App Store)
+
+The first submission of 1.0 (8) came back on 2026-11-24 under **Guideline 2.1 — Information Needed**:
+Apple asked for a screen recording on a physical iPhone and the answers below. No code change was
+needed. The resubmission attaches the recording (launch → sign up → Delete my account → demo sign-in →
+a matter's Steps, Documents, Chat, Payments → sign out), the Certificate of Incorporation, the GST
+registration certificate and any professional registration, and pastes this into
+**App Review Information → Notes**:
+
+```
+1. SCREEN RECORDING
+Attached: recorded on an iPhone running the latest iOS. It shows launch, sign-up, account deletion (My Profile > Delete my account), sign-in with the demo account, and the main features.
+
+2. PURPOSE AND AUDIENCE
+Legal Terminus Private Limited is an Indian business-compliance firm. Founders, small businesses and professionals buy our services (company registration, GST registration and returns, trademark registration, MSME/Udyam and similar filings), and our in-house experts carry them out. The app is the client side of that work: a client sees every step of each service as it progresses, shares documents securely, chats with the expert handling the service, and sees what is billed, paid and due.
+
+3. HOW TO ACCESS
+Sign in with the demo account given in Sign-In Information (email and password). It is a client account with sample services.
+- Dashboard: summary of the client's services.
+- My Services: tap a service to see its Steps, Documents, Chat and Payments.
+- My Profile: edit details, sign out, Delete my account.
+New users can create an account with Sign up (email), Sign in with Google, or Sign in with Apple.
+
+4. EXTERNAL SERVICES
+- Firebase Authentication (Google): sign-in with email/password, Google and Apple.
+- Google Cloud (Firestore, Cloud Storage, Cloud Run): data, documents and our server.
+- Razorpay (an Indian payment gateway): clients may pay fees for our professional services, performed by people outside the app (guideline 3.1.3(e)). No digital content or features are sold.
+- Email (SMTP): notifications about service progress.
+No AI services are used.
+
+5. REGIONAL DIFFERENCES
+None. The app works the same in every region. The services concern Indian law, so our clients are businesses in India.
+
+6. REGULATED INDUSTRY
+The services are compliance and registration filings with Indian government portals (MCA, GST, Trademark Registry), carried out for clients by our qualified staff. Attached: <list the documents attached>.
+
+CONTENT MODERATION
+Chat and documents are private between one client and our staff on that client's own service. There is no public or user-to-user content.
+
+RESPONSES TO REVIEW GUIDANCE
+- Bugs and crashes (2.1): Build 1.0 (8) was tested through TestFlight on a physical iPhone running the latest iOS (see recording). The app is iPhone only.
+- Demo account (2.1): The account in Sign-In Information is a client account with two sample services. Clients are the only public account type. Staff accounts belong to our employees and are not offered to the public.
+- Screenshots (2.3.3): Each screenshot shows a real screen of the app in use, framed with a caption.
+- In-App Purchase (3.1.1): The app sells no digital content, subscriptions or features; fees are for professional services performed outside the app (3.1.3(e)), paid through Razorpay.
+- Distribution (3.2): The app is for the general public: anyone in India who buys our compliance services. It is not limited to one organisation's employees.
+```
+
+Staff-uploaded documents are **Internal only** until someone clicks **Share** on the Documents tab;
+approving a document does not share it (the sample PDF needed this).
