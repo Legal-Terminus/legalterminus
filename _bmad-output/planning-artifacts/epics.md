@@ -8353,3 +8353,20 @@ with each service added.
   after a reload, Collapse all; a search opens the matches; the rename and badge tests open the
   categories first. Portal build clean.
   User-visible: yes (staff Services page).
+
+### A client's document upload emails the people on that step (2026-11-24, #358) 🔄 In review
+
+Asked by the firm: when a client uploads, the person assigned to that step should get an email,
+as with Chat. Before, a client's **Submit** sent one notice (mirrored as a generic email) to the
+matter's owner only; the step's assignee was told only on a matter with no owner, and only the
+first assignee. Fixed in Ambyflow first (Story 42.39, `3fb7a39`), ported by content.
+- **Who is told:** the matter's owner + everyone assigned to the step the documents were
+  uploaded for (the current step for a document not tied to a step); if nobody, the admins.
+  Active staff only — the rule of a client's Chat message (#200), with the document's step.
+- **One notification and one email per person per Submit**, listing every file with its step,
+  even when a batch spans steps. New editable internal template **"Internal — A client uploaded
+  documents"** (`documents_submitted_team`) in Settings → Email Templates. No CC.
+- A staff Submit is unchanged. Uploading without Submit still tells nobody (#113).
+- Tests: `documentSubmitNotify.test.js` (5); `email-templates.spec.ts` lists the new template.
+  Backend 616/616.
+  User-visible: yes (staff emails; new template in Settings).

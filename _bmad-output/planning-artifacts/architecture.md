@@ -1797,6 +1797,15 @@ the client notifies the client only (`matter_message`); internal staff messages
 notify only @mentioned colleagues (`matter_mention`), and the mention picker
 (`listMentionableStaff`) lists the whole team minus seeded test accounts.
 
+**A client's document submit (#358)** uses the same rule, with the step the
+documents were uploaded for instead of the current step
+(`resolveClientMessageRecipients(db, task, authorUid, { stepNumber })`; a document
+with no step falls back to the current step). `documentSubmitNotify.service.js`
+groups a batch by step and then by person, so each person gets ONE in-app
+notification (`email: false`) and ONE email from the internal template
+`documents_submitted_team` per Submit; no CC. A staff submit keeps the single
+in-app notice to the matter's owner (else the step's assignee).
+
 ## Rich text limits, one email per event, report filters and Back (#194, #207, #208)
 
 **One gate for user-authored rich text.** `prepareRichText(raw, { what })` in

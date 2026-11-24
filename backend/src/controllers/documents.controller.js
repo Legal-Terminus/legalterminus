@@ -4,6 +4,10 @@ import { logger } from '../config/logger.js';
 import { emitWebhook } from '../services/webhookEmit.service.js';
 import { createNotification } from './notifications.controller.js';
 import { clientCanSeeMatter } from './tasks.controller.js';
+import { notifyClientDocumentsSubmitted } from '../services/documentSubmitNotify.service.js';
+import { resolveClientMessageRecipients } from '../services/discussionRecipients.service.js';
+import { renderTemplate } from '../services/emailTemplates.service.js';
+import { sendTemplatedEmail } from '../services/emailService.js';
 
 /**
  * Document Cycle (E-05) — signed-URL upload, review, and re-upload.
@@ -278,11 +282,39 @@ export async function confirmUpload(req, res) {
 }
 
 /**
+ * A STAFF submit: one in-app notice (mirrored to email) to the reviewer — the
+ * matter's owner, else the step's assignee. Clients' submits go through
+ * notifyClientDocumentsSubmitted instead (#358). Never throws.
+ */
+async function notifyReviewerOfStaffSubmit(req, task, taskId, submitted) {
+  try {
+    let reviewer = task.assignedTo ?? null;
+    const firstStep = submitted.find((d) => d.stepNumber != null)?.stepNumber ?? null;
+    if (!reviewer && firstStep != null) {
+      const stepSnap = await db.collection('tasks').doc(taskId).collection('steps').doc(String(firstStep)).get();
+      reviewer = stepSnap.exists ? stepSnap.data().assignedTo : null;
+    }
+    if (reviewer && reviewer !== req.user.uid) {
+      const names = submitted.map((d) => d.fileName).join(', ');
+      await createNotification({
+        recipientUid: reviewer,
+        type: 'info',
+        title: submitted.length === 1 ? 'Document awaiting review' : `${submitted.length} documents awaiting review`,
+        message: `${task.clientName ?? ''} · ${task.serviceName ?? ''}: ${names}`.slice(0, 500),
+        taskId,
+      });
+    }
+  } catch (e) {
+    logger.warn({ err: e?.message }, 'submitDocuments: reviewer notification failed');
+  }
+}
+
+/**
  * #113 — POST /api/tasks/:taskId/documents/submit
  * Flips the caller's DRAFT documents to `pending_review` so the internal team can
  * review them. Optionally scoped to a step via body `{ stepNumber }`. Clients may
  * only submit their own drafts; staff may submit any on the matter. Notifies the
- * reviewer once for the whole batch (rather than per file).
+ * team once for the whole batch (rather than per file).
  */
 export async function submitDocuments(req, res) {
   try {
@@ -312,26 +344,15 @@ export async function submitDocuments(req, res) {
 
     await batch.commit();
 
-    // Notify the reviewer once for the batch (matter owner, else step assignee).
-    try {
-      let reviewer = task.assignedTo ?? null;
-      const firstStep = submitted.find((d) => d.stepNumber != null)?.stepNumber ?? null;
-      if (!reviewer && firstStep != null) {
-        const stepSnap = await db.collection('tasks').doc(taskId).collection('steps').doc(String(firstStep)).get();
-        reviewer = stepSnap.exists ? stepSnap.data().assignedTo : null;
-      }
-      if (reviewer && reviewer !== req.user.uid) {
-        const names = submitted.map((d) => d.fileName).join(', ');
-        await createNotification({
-          recipientUid: reviewer,
-          type: 'info',
-          title: submitted.length === 1 ? 'Document awaiting review' : `${submitted.length} documents awaiting review`,
-          message: `${task.clientName ?? ''} · ${task.serviceName ?? ''}: ${names}`.slice(0, 500),
-          taskId,
-        });
-      }
-    } catch (e) {
-      logger.warn({ err: e?.message }, 'submitDocuments: reviewer notification failed');
+    // #358: a CLIENT's submit tells the owner + everyone on the documents'
+    // step (else the admins), one templated email each — like a client's chat
+    // message. A staff submit keeps the single in-app notice to the reviewer.
+    if (req.user.role === 'client') {
+      await notifyClientDocumentsSubmitted({
+        db, task, taskId, author: { uid: req.user.uid, role: req.user.role }, submitted,
+      }, { createNotification, renderTemplate, sendTemplatedEmail, resolveClientMessageRecipients, logger });
+    } else {
+      await notifyReviewerOfStaffSubmit(req, task, taskId, submitted);
     }
 
     res.json({ success: true, submitted: submitted.length, documents: submitted });
