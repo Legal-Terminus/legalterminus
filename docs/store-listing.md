@@ -107,3 +107,41 @@ The new Legal Terminus app: follow each of your services step by step, share doc
 | Age rating | 4+ (App Store), the IARC answers in `docs/play-store-listing.md` (Play) |
 | Availability | India (leave out China mainland on the App Store) |
 | Reviewer sign-in (both) | `play.reviewer@legalterminus.com`, password in `~/lt-android-release/keys/PLAY_REVIEWER.txt`; note: "A client account with no matters. Sign in with email and password." |
+
+## What is entered in each store (2026-11-22)
+
+**App Store (iOS 1.0, build 8)**: submitted for review with **automatic release** on approval.
+- Screenshots: the "iPhone with Dynamic Island (medium display)" slot, **1206×2622**. Apple changed the
+  required size in Nov 2026: 6.9" files (1320×2868) were refused.
+- App Information: subtitle as above; Business / Productivity; Content Rights **No**; Age Rating with
+  **Messaging and Chat: Yes** (private client–firm chat), User-Generated Content **No**.
+- Pricing: Free. Availability: all countries except China mainland, which needs the security and AIGC
+  declarations. No In-App Purchases: Pay Now pays for real-world services (guideline 3.1.3(e)), and the
+  review notes say so.
+- App Privacy: Name, Email, Phone, **Physical Address**, Other User Content, User ID, **Purchase History**;
+  all App Functionality, linked to the user, no tracking. Encryption: exempt (`ITSAppUsesNonExemptEncryption`
+  NO), so no documents are needed.
+- TestFlight: internal group "LT team".
+
+**Google Play (Android 1.0.2, build 8)**: listing changes entered, waiting on the upload key (valid from
+2026-11-23 08:58 UTC).
+- Short and full description as above. Feature graphic `play-feature-graphic-1024x500.jpg`; phone
+  screenshots `play-phone-1..5.png` (1080×1920) in an **Android-style** frame. Google wants Android devices
+  in Play images, so the iPhone status bar and Dynamic Island are replaced.
+- App access: the reviewer login (password changed 2026-11-21). Financial features: none. Data safety: as in
+  `docs/play-store-listing.md`, now with **deletion: Yes**, in app via "Delete my account", URL
+  `https://legalterminus.com/privacy-policy#delete-my-data`.
+- Build 8 permissions: INTERNET, ACCESS_NETWORK_STATE and Google sign-in's READ_GSERVICES only.
+
+## Making the images again
+
+The images are made from the app itself, never drawn by hand:
+1. QA demo client "Odisha Fresh Foods Pvt Ltd" (`demo-client@legalterminus.test`, password in
+   `~/lt-android-release/keys/QA_DEMO_CLIENT.txt`). QA only; never real client data.
+2. `testStoreScreens` (iOS UI test) on the **iPhone 17 Pro Max** simulator, with the status bar set to 9:41,
+   saves the raw screens. Export them with `xcrun xcresulttool export attachments`.
+3. `node MobileApp/store-assets/render.mjs <raw-dir> <out-dir>` (from `Frontend/`, which has Playwright)
+   makes every size: iOS 6.3/6.1/6.7/6.5/5.5/6.9 and the Play phone set. `feature-graphic.mjs` makes the
+   Play feature graphic. They read the logo from `Portal/public/lt-logo.png` and the raw screens from
+   `~/lt-android-release/store-assets/raw-screens/` (they contain absolute paths to this Mac; change them
+   if the release Mac changes).
