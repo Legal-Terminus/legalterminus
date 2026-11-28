@@ -4,7 +4,7 @@
 # digest so a re-tagged upstream image cannot change what ships. Keep in step
 # with `node-version` in .github/workflows and the repo-root .nvmrc — CI and
 # local development must build and test on the version the containers run.
-FROM node:26-alpine@sha256:c6ad9e9c1d80f6eb607c26b4b0a132ff7a2344fad1c78ea3baa2a7d4c8de6d94 AS builder
+FROM node:26-alpine@sha256:6bd9ab43c0ec0190ca7b2d193906cb8b7edf6e7f4afa43ddeccd6452710bffb5 AS builder
 
 # Build under /app/Portal (NOT /app) and place the repo-root `shared/` dir as a
 # sibling at /app/shared. The Portal imports the framework-agnostic workflow
@@ -58,7 +58,7 @@ ENV NODE_ENV=production
 RUN echo "Building Portal with Vite..." && echo "VITE_PORTAL_STANDALONE=$VITE_PORTAL_STANDALONE" && npm run build && echo "✅ Build completed" && ls -la dist/
 
 # Runtime stage
-FROM node:26-alpine@sha256:c6ad9e9c1d80f6eb607c26b4b0a132ff7a2344fad1c78ea3baa2a7d4c8de6d94
+FROM node:26-alpine@sha256:6bd9ab43c0ec0190ca7b2d193906cb8b7edf6e7f4afa43ddeccd6452710bffb5
 
 WORKDIR /app
 
