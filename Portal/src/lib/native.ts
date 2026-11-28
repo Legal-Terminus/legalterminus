@@ -115,6 +115,7 @@ const EXTENSIONS: Record<string, string> = {
   'image/jpeg': 'jpg',
   'image/png': 'png',
   'application/zip': 'zip',
+  'application/vnd.rar': 'rar', // #373
   'text/csv': 'csv',
   'application/json': 'json', // #219
   'text/plain': 'txt',        // #219

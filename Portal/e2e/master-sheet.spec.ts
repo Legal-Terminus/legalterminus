@@ -35,18 +35,18 @@ test('#84: master-sheet CSV export includes the new headers', async () => {
   await api.dispose();
 });
 
-test('the CSV button downloads the file with the signed-in user\'s token', async ({ adminPage }) => {
-  // The button used window.open(), which cannot send the Authorization header, so the
-  // download came back 401. It now fetches with the token and downloads the result.
+test('the CSV button downloads the rows on screen, with the on-screen columns', async ({ adminPage }) => {
+  // LT #369: the CSV is built from the rows the filters and search left on screen
+  // (it used to be the server's file, which ignored the search and column filters).
   await adminPage.goto('reports/master-sheet');
-  const [download] = await Promise.all([
-    adminPage.waitForEvent('download'),
-    adminPage.getByRole('button', { name: 'CSV' }).click(),
-  ]);
+  const csv = adminPage.getByRole('button', { name: 'CSV' }).filter({ visible: true });
+  await expect(csv).toBeEnabled({ timeout: 30_000 });
+  const [download] = await Promise.all([adminPage.waitForEvent('download'), csv.click()]);
   expect(download.suggestedFilename()).toMatch(/^master-sheet-\d{4}-\d{2}-\d{2}\.csv$/);
   const path = await download.path();
-  const text = (await import('node:fs')).readFileSync(path!, 'utf8');
-  expect(text.split(/\r?\n/)[0]).toContain('Task ID');
+  const header = (await import('node:fs')).readFileSync(path!, 'utf8').replace(/^\uFEFF/, '').split(/\r?\n/)[0];
+  expect(header).toContain('"Client"');
+  expect(header).toContain('"Audit Status","Admin Remarks"');
 });
 
 test('#84: clients cannot access the master sheet', async () => {

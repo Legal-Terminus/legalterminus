@@ -72,6 +72,7 @@ export default function PendingTasksReport() {
             </h2>
             <DataGrid<PendingTask>
           tableId="rpt-pending"
+          exportFileName="pending-matters" // LT #369: Excel of the rows on screen
               data={tasks}
               columns={columns}
               getRowId={(t) => t.id}

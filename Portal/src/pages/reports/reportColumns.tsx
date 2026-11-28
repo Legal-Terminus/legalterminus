@@ -1,6 +1,7 @@
 import { createColumnHelper } from '@tanstack/react-table';
 import type { Task } from '../../types/task';
 import UrgentBadge from '../../components/tasks/UrgentBadge';
+import { AuditBadge, auditLabel } from '../../components/reports/MatterReviewCells';
 
 /**
  * Shared TanStack column definitions for the task-based reports (All / Completed /
@@ -13,6 +14,8 @@ const PAYMENT_CLS: Record<string, string> = {
   part_paid: 'bg-yellow-100 text-yellow-700',
   not_paid: 'bg-red-100 text-red-700',
 };
+
+const PAYMENT_LABEL: Record<string, string> = { fully_paid: 'Fully paid', part_paid: 'Part paid', not_paid: 'Not paid' };
 
 export function taskReportColumns() {
   return [
@@ -57,14 +60,22 @@ export function taskReportColumns() {
         return <span className="text-sm text-ink-muted">{label}</span>;
       },
     }),
-    col.accessor((t) => t.paymentStatus ?? 'not_paid', {
+    // The label is the value, so the column filter and the Excel export read "Part paid", not a code.
+    col.accessor((t) => PAYMENT_LABEL[t.paymentStatus ?? 'not_paid'] ?? t.paymentStatus, {
       id: 'payment',
       header: 'Payment',
       size: 120,
       cell: (ctx) => {
-        const v = ctx.getValue() as string;
-        return <span className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${PAYMENT_CLS[v] ?? PAYMENT_CLS.not_paid}`}>{v}</span>;
+        const v = ctx.row.original.paymentStatus ?? 'not_paid';
+        return <span className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${PAYMENT_CLS[v] ?? PAYMENT_CLS.not_paid}`}>{ctx.getValue() as string}</span>;
       },
+    }),
+    // LT #368: the admin's audit mark.
+    col.accessor((t) => auditLabel(t.auditStatus), {
+      id: 'auditStatus',
+      header: 'Audit Status',
+      size: 110,
+      cell: (ctx) => <AuditBadge status={ctx.row.original.auditStatus} />,
     }),
     col.accessor('status', {
       header: 'Status',

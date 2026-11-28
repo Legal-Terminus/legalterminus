@@ -29,7 +29,7 @@ test('#77: upload allow-list accepts Excel content types; rejects unknown', asyn
   }
   // #219: data files for GST and accounts work.
   for (const [fileName, contentType] of [
-    ['sales.csv', 'text/csv'], ['gstr.json', 'application/json'], ['notes.txt', 'text/plain'], ['statements.zip', 'application/zip'],
+    ['sales.csv', 'text/csv'], ['gstr.json', 'application/json'], ['notes.txt', 'text/plain'], ['statements.zip', 'application/zip'], ['archive.rar', 'application/vnd.rar'],
   ]) {
     const res = await api.post(`/api/tasks/${taskId}/documents/signed-upload-url`, { data: { fileName, contentType } });
     expect(res.ok(), `${contentType} should be allowed`).toBeTruthy();
@@ -155,5 +155,27 @@ test('#145: create-matter accepts the dropdown payment modes', async () => {
   } finally {
     await api.dispose();
     await deleteMatter(newId);
+  }
+});
+
+test('LT #367: "Part Payment" chosen with the whole amount received is Fully Paid — in the matter and the Master Sheet', async () => {
+  const api = await apiAs('admin');
+  const serviceKey = await resolveServiceKey();
+  const res = await api.post('/api/tasks', { data: {
+    clientUid: env('E2E_CLIENT_UID'), serviceKey, paymentStatus: 'part_paid', totalCost: 1000, amountReceived: 1000, paymentMode: 'E2E',
+  } });
+  expect(res.ok(), await res.text()).toBeTruthy();
+  const newId = (await res.json()).id as string;
+  try {
+    const m = await getMatter(newId);
+    expect([m.paymentStatus, m.amountPaid, m.amountDue]).toEqual(['fully_paid', 1000, 0]);
+    const sheet = await (await api.get('/api/reports/master-sheet?paymentStatus=fully_paid')).json();
+    expect(sheet.find((r: { taskId: string }) => r.taskId === newId)?.paymentStatus).toBe('fully_paid');
+    // #366: the Payment filter applies on the Master Sheet.
+    const part = await (await api.get('/api/reports/master-sheet?paymentStatus=part_paid')).json();
+    expect(part.find((r: { taskId: string }) => r.taskId === newId)).toBeUndefined();
+  } finally {
+    await deleteMatter(newId);
+    await api.dispose();
   }
 });

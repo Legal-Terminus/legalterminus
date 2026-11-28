@@ -10,7 +10,8 @@ export interface ReportFilters {
   status?: string;
   serviceType?: string;
   teamMember?: string;
-  paymentStatus?: PaymentStatus;
+  /** A payment status, or LT #370 'due' (has an amount due) / LT #365 'received' (any payment received). */
+  paymentStatus?: PaymentStatus | 'due' | 'received';
   startDate?: string;
   endDate?: string;
 }
@@ -167,6 +168,10 @@ export interface MasterSheetRow {
   pendingFrom: string;
   approvalPendingFrom: string;
   referralSource: string;
+  /** LT #368 */
+  auditStatus: 'audited' | 'unaudited';
+  /** LT #369 */
+  adminRemarks: string;
 }
 
 export const getMasterSheet = (filters: ReportFilters = {}) =>

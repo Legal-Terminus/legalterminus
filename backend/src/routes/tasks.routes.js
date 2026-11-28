@@ -2,7 +2,7 @@ import { Router } from 'express';
 import rateLimit from 'express-rate-limit';
 import { verifyToken, requireRole, denyReadOnlyRoles } from '../middleware/auth.middleware.js';
 import { validate } from '../middleware/validate.middleware.js';
-import { taskCreateSchema, taskUpdateSchema, taskPaymentUpdateSchema, paymentCreateSchema, paymentUpdateSchema, taskListQuerySchema, taskTransitionSchema, taskRejectSchema, taskStopSchema, signedUploadUrlSchema, confirmUploadSchema, reviewDocumentSchema, documentVisibilitySchema, stepNoteSchema, stepPatchSchema, filedOnCorrectionSchema, internalReminderSchema, messageCreateSchema, messageUpdateSchema } from '../schemas/task.schema.js';
+import { taskCreateSchema, taskUpdateSchema, taskPaymentUpdateSchema, paymentCreateSchema, paymentUpdateSchema, taskListQuerySchema, taskTransitionSchema, taskRejectSchema, taskStopSchema, signedUploadUrlSchema, confirmUploadSchema, reviewDocumentSchema, documentVisibilitySchema, stepNoteSchema, stepPatchSchema, filedOnCorrectionSchema, adminRemarksSchema, auditSchema, internalReminderSchema, messageCreateSchema, messageUpdateSchema } from '../schemas/task.schema.js';
 import { listTasks, getTask, createTask, patchTask, updatePayment, listPayments, createPayment, patchPayment, deletePayment, patchStep, transitionTask, deleteTask, listMySteps, listTaskEvents, approveTask, rejectTask, stopTask, restartTask, archiveTask, reopenStep, postStepNote, listRecurringDue, duplicateTask } from '../controllers/tasks.controller.js';
 import { listDocuments, createSignedUploadUrl, confirmUpload, downloadDocument, reviewDocument, submitDocuments, deleteDocument, setDocumentVisibility } from '../controllers/documents.controller.js';
 import { listMessages, createMessage, updateMessage, deleteMessage, listMentionable } from '../controllers/messages.controller.js';
@@ -15,6 +15,7 @@ import { paymentRequestCreateSchema, paymentRequestCancelSchema, paymentRequestR
 import { getPaymentRequests, postPaymentRequest, postCancelPaymentRequest, postRecordPaymentRequest, postPayPaymentRequest } from '../controllers/paymentRequests.controller.js';
 import { getFormStep, saveFormStep } from '../controllers/forms.controller.js';
 import { saveFilingDate } from '../controllers/gstFiling.controller.js';
+import { setAdminRemarks, setAudit } from '../controllers/matterReview.controller.js';
 import { uploadCommentImage, getCommentImage } from '../controllers/commentImages.controller.js';
 import { commentImageUpload } from '../middleware/commentImageUpload.middleware.js';
 import { listInvoices, createInvoiceUploadUrl, confirmInvoiceUpload, downloadInvoice, deleteInvoice } from '../controllers/invoices.controller.js';
@@ -127,6 +128,10 @@ router.post('/:taskId/steps/:stepNumber/reopen', requireRole('admin'), reopenSte
 // #105: staff post a client-visible note onto a step without advancing it.
 router.post('/:taskId/steps/:stepNumber/note', requireRole('admin', 'manager', 'team_member'), validate(stepNoteSchema), postStepNote);
 // #294: staff save (or change, or remove) a GSTR-1 / GSTR-3B filing date (never clients or professionals).
+// LT #369: the admin's remarks on a matter — admin only. LT #368: the audit mark —
+// admin and manager (owner, 28 Nov). Both are staff-only fields.
+router.put('/:taskId/admin-remarks', requireRole('admin'), validate(adminRemarksSchema), setAdminRemarks);
+router.put('/:taskId/audit',         requireRole('admin', 'manager'), validate(auditSchema), setAudit);
 router.put('/:taskId/steps/:stepNumber/filed-on', requireRole('admin', 'manager', 'team_member'), validate(filedOnCorrectionSchema), saveFilingDate);
 // Archive a matter (non-destructive) — admin-only (#70); the alternative to admin-only delete.
 router.post('/:taskId/archive',              requireRole('admin'), archiveTask);

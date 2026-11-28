@@ -16,8 +16,9 @@ import {
   type Row,
   type Table,
 } from '@tanstack/react-table';
-import { Search, ArrowUpDown, ArrowUp, ArrowDown, ChevronLeft, ChevronRight, ListFilter, X } from 'lucide-react';
+import { Search, ArrowUpDown, ArrowUp, ArrowDown, ChevronLeft, ChevronRight, ListFilter, X, Download } from 'lucide-react';
 import ErrorBoundary from './ErrorBoundary';
+import { exportToCsv, exportToXlsx, type ExportColumn } from '../../lib/exportXlsx';
 
 /**
  * #91 (app-wide): an Excel-style per-column filter. A funnel icon in each
@@ -88,6 +89,27 @@ export interface DataGridProps<T> {
    * free-form or action column where a value picker makes no sense).
    */
   columnFilters?: boolean;
+  /**
+   * LT #369: show "Download Excel" (and "CSV" with `exportCsv`) that export exactly
+   * the rows on screen — after the page's filters, the search box and the column
+   * filters, in the current sort, all pages. File name without date/extension.
+   */
+  exportFileName?: string;
+  exportSheetName?: string;
+  exportCsv?: boolean;
+  /** The export's columns. Default: the visible columns with a text header, by their values. */
+  exportColumns?: ExportColumn<T>[];
+  /** Told the rows on screen (filtered + sorted, all pages) whenever they change — for totals. */
+  onFilteredRowsChange?: (rows: T[]) => void;
+}
+
+/** One exported cell from a column's raw value. */
+function exportCell(v: unknown): string | number {
+  if (v == null) return '';
+  if (typeof v === 'number' || typeof v === 'string') return v;
+  if (typeof v === 'boolean') return v ? 'Yes' : 'No';
+  if (Array.isArray(v)) return v.join(', ');
+  return String(v);
 }
 
 /** Every empty grid shares this array, so an empty list has a stable identity. */
@@ -111,6 +133,11 @@ export default function DataGrid<T>({
   onRowClick,
   tableId,
   columnFilters: enableColumnFilters = true,
+  exportFileName,
+  exportSheetName,
+  exportCsv = false,
+  exportColumns,
+  onFilteredRowsChange,
 }: DataGridProps<T>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [search, setSearch] = useState('');
@@ -172,6 +199,20 @@ export default function DataGrid<T>({
   });
 
   const rows = table.getRowModel().rows;
+  // Everything the filters and search let through, sorted, across all pages.
+  const shownRows = table.getPrePaginationRowModel().rows;
+  useEffect(() => { onFilteredRowsChange?.(shownRows.map((r) => r.original)); }, [shownRows, onFilteredRowsChange]);
+
+  const runExport = async (kind: 'xlsx' | 'csv') => {
+    if (!exportFileName) return;
+    const cols: ExportColumn<Row<T>>[] = exportColumns
+      ? exportColumns.map((c) => ({ header: c.header, value: (r: Row<T>) => c.value(r.original) }))
+      : table.getVisibleLeafColumns()
+        .filter((c) => typeof c.columnDef.header === 'string' && c.columnDef.header.trim())
+        .map((c) => ({ header: c.columnDef.header as string, value: (r: Row<T>) => exportCell(r.getValue(c.id)) }));
+    if (kind === 'csv') await exportToCsv(shownRows, cols, exportFileName);
+    else await exportToXlsx(shownRows, cols, exportFileName, exportSheetName ?? 'Report');
+  };
   const totalWidth = table.getTotalSize();
   const filteredCount = table.getFilteredRowModel().rows.length;
   const paginated = pageSize > 0;
@@ -180,16 +221,34 @@ export default function DataGrid<T>({
 
   return (
     <div>
-      {searchable && (
-        <div className="relative mb-4">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-faint" />
-          <input
-            type="text"
-            placeholder={searchPlaceholder}
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="input-field pl-10"
-          />
+      {(searchable || exportFileName) && (
+        <div className="flex flex-wrap items-center gap-2 mb-4">
+          {searchable && (
+            <div className="relative flex-1 min-w-[12rem]">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-faint" />
+              <input
+                type="text"
+                placeholder={searchPlaceholder}
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="input-field pl-10"
+              />
+            </div>
+          )}
+          {exportFileName && (
+            <>
+              <button type="button" onClick={() => { void runExport('xlsx'); }} disabled={isLoading || shownRows.length === 0}
+                className="btn-secondary min-h-[44px] inline-flex items-center gap-2 disabled:opacity-50">
+                <Download className="w-4 h-4" /> Download Excel
+              </button>
+              {exportCsv && (
+                <button type="button" onClick={() => { void runExport('csv'); }} disabled={isLoading || shownRows.length === 0}
+                  className="btn-secondary min-h-[44px] inline-flex items-center gap-2 disabled:opacity-50">
+                  <Download className="w-4 h-4" /> CSV
+                </button>
+              )}
+            </>
+          )}
         </div>
       )}
 

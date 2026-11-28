@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
-import { Download } from 'lucide-react';
+import { ChevronRight, Download } from 'lucide-react';
 import { getRevenueReport } from '../../api/reports';
 import { exportToXlsx, type ExportColumn } from '../../lib/exportXlsx';
 
@@ -45,11 +45,12 @@ export default function RevenueReportPage() {
       {error && <p className="text-sm text-red-600">{(error as Error).message}</p>}
       {data && (
         <>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-            <Stat label="Collected" value={inr(data.collected)} tone="emerald" />
-            <Stat label="Outstanding" value={inr(data.outstanding)} tone="amber" />
-            <Stat label="Total Fees" value={inr(data.totalFees)} />
-            <Stat label="Pending" value={inr(data.pending)} tone="red" />
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
+            {/* LT #365: each card opens the matters behind it in the Master Sheet (search, filters,
+                Excel). "Pending" was the same figure as Outstanding and is gone. */}
+            <Stat label="Collected" value={inr(data.collected)} tone="emerald" to="/reports/master-sheet?paymentStatus=received" />
+            <Stat label="Outstanding" value={inr(data.outstanding)} tone="amber" to="/reports/master-sheet?paymentStatus=due" />
+            <Stat label="Total Fees" value={inr(data.totalFees)} to="/reports/master-sheet" />
           </div>
 
           <div className="grid md:grid-cols-2 gap-6">
@@ -70,13 +71,13 @@ export default function RevenueReportPage() {
   );
 }
 
-function Stat({ label, value, tone }: { label: string; value: string; tone?: 'emerald' | 'amber' | 'red' }) {
+function Stat({ label, value, tone, to }: { label: string; value: string; tone?: 'emerald' | 'amber' | 'red'; to: string }) {
   const cls = tone === 'emerald' ? 'text-emerald-700' : tone === 'amber' ? 'text-amber-700' : tone === 'red' ? 'text-red-600' : 'text-ink';
   return (
-    <div className="card p-4">
-      <p className="text-xs text-ink-muted">{label}</p>
+    <Link to={to} className="card p-4 block min-h-[44px] hover:border-ink-faint hover:shadow-sm transition" aria-label={`${label}: ${value} — see the matters`}>
+      <p className="text-xs text-ink-muted flex items-center justify-between">{label} <ChevronRight className="w-3.5 h-3.5" /></p>
       <p className={`text-lg font-semibold mt-1 ${cls}`}>{value}</p>
-    </div>
+    </Link>
   );
 }
 

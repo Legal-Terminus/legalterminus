@@ -28,7 +28,7 @@ import { isPaymentLedgerEvent } from '../../../shared/payments/ledgerEvents.js';
 // #148: the roles that may see a matter's payment figures.
 const PAYMENT_VIEW_ROLES = ['admin', 'manager'];
 import { annotateGstMatter, attachGstFilingPeriods, gstFirstEmailFor, gstFrequencyOf, gstReturnServiceKeys } from '../services/gstMatterTags.service.js';
-import { isGstReturnMatter, frequencyOf } from '../services/gstReturnSheet.service.js';
+import { isGstReturnMatter, frequencyOf, filingDateMissingFor, withAuthoredOrder } from '../services/gstReturnSheet.service.js';
 import { emailVars as gstEmailVars } from '../services/gstReturns.service.js';
 
 // ─── ETA / due-date helpers (E13-S02) ──────────────────────────────────────
@@ -435,7 +435,9 @@ function projectTaskForClient(task, view = null) {
   // internal fields.
   // #201: client contact details are a staff aid — stripped here too, so a
   // professional (an outside party) never receives them even if a row has them.
-  const { assignedTo, createdBy, isUrgent, adminOverride, ccEmails, clientEmail, clientPhone, ...safe } = task;
+  // LT #369 / #368: the admin's remarks and the audit mark are internal review notes.
+  const { assignedTo, createdBy, isUrgent, adminOverride, ccEmails, clientEmail, clientPhone,
+    adminRemarks, adminRemarksAt, adminRemarksBy, auditStatus, auditedAt, auditedBy, auditedByName, ...safe } = task;
   if (Array.isArray(safe.steps)) {
     safe.steps = safe.steps
       .filter((s) => !visibleStepNumbers || visibleStepNumbers.has(s.stepNumber))
@@ -592,8 +594,19 @@ export async function createTask(req, res) {
 
     // Body validated by taskCreateSchema (incl. #51 payment fields).
     const { clientUid, serviceKey, serviceName, organisation, ccEmails,
-            paymentStatus = 'not_paid', totalCost, amountReceived, paymentMode, paymentDescription,
+            paymentStatus: chosenPaymentStatus = 'not_paid', totalCost, amountReceived, paymentMode, paymentDescription,
             professionalUid, additionalProfessionalEmails, recurrence, anchorDate } = req.body;
+    // #51 payment capture: mirror the chosen amounts into the matter's payment
+    // fields (which the Payment module reads). amountDue = totalCost − received.
+    const received = typeof amountReceived === 'number' ? amountReceived : 0;
+    const cost = typeof totalCost === 'number' ? totalCost : received;
+    const amountDue = Math.max(0, cost - received);
+    // LT #367: the status follows from the figures, by the ledger's own rule —
+    // "Part Payment" chosen with the whole amount received is fully paid. Only
+    // a matter created with no total cost keeps the status as chosen.
+    const paymentStatus = typeof totalCost === 'number'
+      ? deriveRollup(cost, received).paymentStatus
+      : chosenPaymentStatus;
     // #219: the GST period a matter opened by the GST sweep is for. Set ONLY by
     // that sweep on the request object it builds — never read from the body, so
     // no caller can stamp one.
@@ -696,12 +709,6 @@ export async function createTask(req, res) {
     const noPaymentNeedsApproval = paymentStatus === 'not_paid';
     const needsApproval = noPaymentNeedsApproval;
     const initialStatus = needsApproval ? 'pending_admin_approval' : 'pending';
-
-    // #51 payment capture: mirror the chosen amounts into the matter's payment
-    // fields (which the Payment module reads). amountDue = totalCost − received.
-    const received = typeof amountReceived === 'number' ? amountReceived : 0;
-    const cost = typeof totalCost === 'number' ? totalCost : received;
-    const amountDue = Math.max(0, cost - received);
 
     // #94: if the FIRST step is a payment gate and the matter is created already
     // (part- or fully-)paid, the gate's `always` transition should pass on creation
@@ -2660,6 +2667,23 @@ async function ledgerPaymentStatus(taskRef, task) {
   return deriveRollup(task?.totalCost ?? 0, paid).paymentStatus;
 }
 
+/** #294: the events that move a matter forward off its current task. */
+const FILING_DATE_GATED_EVENTS = new Set(['COMPLETE_STEP', 'BRANCH_DECISION', 'GOVT_APPROVE', 'CLIENT_APPROVE']);
+
+/**
+ * #294: 'GSTR-1' | 'GSTR-3B' when `stepNumber` is that filing task of a GST
+ * return matter and no filing date is saved on it, else null. Steps are read
+ * only for a GST return matter, and matched in the service's authored order —
+ * exactly as the tags and the sheet match them.
+ */
+async function gstFilingDateMissing(taskRef, task, compiled, stepNumber) {
+  const linkedServices = await gstReturnServiceKeys();
+  if (!isGstReturnMatter(task, linkedServices)) return null;
+  const stepDocs = (await taskRef.collection('steps').get()).docs.map((d) => d.data());
+  const steps = withAuthoredOrder(stepDocs, compiled?.definition?.steps);
+  return filingDateMissingFor({ task, steps, stepNumber, linkedServices });
+}
+
 export async function transitionTask(req, res) {
   try {
     const { role, uid } = req.user;
@@ -2758,6 +2782,19 @@ export async function transitionTask(req, res) {
         message: 'This step requires admin approval. Only an admin can approve or complete it.',
         code: 'ADMIN_APPROVAL_REQUIRED',
       });
+    }
+
+    // ── #294 (firm, 28 Nov): no GSTR-1 / GSTR-3B filing task is completed ────
+    // without its filing date. Staff save it with "Add Filing Date" (PUT
+    // …/filed-on) first; completing the task is refused until then.
+    if (FILING_DATE_GATED_EVENTS.has(event?.type) && activeStepData) {
+      const form = await gstFilingDateMissing(taskRef, task, compiled, activeStepData.stepNumber);
+      if (form) {
+        return res.status(409).json({
+          message: `Add the ${form} filing date before completing this task.`,
+          code: 'FILING_DATE_REQUIRED',
+        });
+      }
     }
 
     // Override-on-behalf-of-client: admin/manager may advance a CLIENT-owned step

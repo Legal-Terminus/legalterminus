@@ -147,12 +147,26 @@ test('a GST return matter appears as a row and follows its workflow; a typed cel
     expect(rec.values.current_status).toBe('GSTR-1 filed'); // the workflow changed it: latest wins
   }).toPass({ timeout: 45_000, intervals: [2_000, 5_000, 8_000] });
 
-  // #294: completing the GSTR-1 filing task without saving a date sets NO date.
+  // #294 (28 Nov): the GSTR-1 filing task cannot be completed without its date…
+  const admin = await apiAs('admin');
+  const before = await (await admin.get(`/api/tasks/${matterId}`)).json();
+  const gstr1 = (before.gstFilings as { stepNumber: number; form: string }[]).find((f) => f.form === 'GSTR-1')!;
+  const refused = await admin.post(`/api/tasks/${matterId}/transition`, { data: { event: { type: 'COMPLETE_STEP' } } });
+  expect(refused.status()).toBe(409);
+  expect((await refused.json()).message).toBe('Add the GSTR-1 filing date before completing this task.');
+  // …and the matter page says so, with Complete Step switched off.
+  await adminPage.goto(`tasks/${matterId}`);
+  await expect(adminPage.getByTestId('complete-blocked').filter({ visible: true })).toHaveText('Add the GSTR-1 filing date before completing this task.', { timeout: 20_000 });
+  await expect(adminPage.getByRole('button', { name: 'Complete Step' }).filter({ visible: true })).toBeDisabled();
+  // Once the date is saved, it completes; the sheet takes the date.
+  const gstr1Day = (before.gstFilingDateBounds as { max: string }).max;
+  expect((await admin.put(`/api/tasks/${matterId}/steps/${gstr1.stepNumber}/filed-on`, { data: { date: gstr1Day } })).ok()).toBeTruthy();
+  await admin.dispose();
   await transition('admin', matterId, { type: 'COMPLETE_STEP' });
   await expect(async () => {
     const [rec] = (await listWorksheet('admin', matterSheet)).filter((x) => x.values.matter === matterId);
     expect(rec.values.current_status).toBe('Proceed Towards GSTR-3B Filing');
-    expect(rec.values.gstr1_date ?? null).toBeNull();
+    expect(rec.values.gstr1_date).toBe(gstr1Day);
   }).toPass({ timeout: 45_000, intervals: [2_000, 5_000, 8_000] });
 
   await openView(adminPage, matterSheetLabel);
@@ -179,17 +193,16 @@ async function matterRecord() {
   return rec;
 }
 
-test('#292 / #294 "Add Filing Date" beside the current filing task: the saved date shows, completing sets none — staff and client', async ({ adminPage, clientPage }) => {
+test('#292 / #294 "Add Filing Date" beside the current filing task: the saved date shows, then the task completes — staff and client', async ({ adminPage, clientPage }) => {
   const frequency = matterSheet === 'gst_return_quarterly' ? 'quarterly' : 'monthly';
   const period = expectedPeriod(frequency);
   const admin = await apiAs('admin');
   const today = ((await (await admin.get(`/api/tasks/${matterId}`)).json()).gstFilingDateBounds as { max: string }).max;
   await admin.dispose();
-  // The previous test completed "GSTR-1 filed" without a date; GSTR-3B is the current task.
+  // The previous test completed "GSTR-1 filed" with its date; GSTR-3B is the current task.
   await adminPage.goto(`tasks/${matterId}`);
   await expect(adminPage.getByTestId('gst-filing-period')).toContainText(period, { timeout: 20_000 });
-  await expect(adminPage.getByText(/GSTR-1 filed on/)).toHaveCount(0); // completion set no date
-  await expect(adminPage.getByRole('button', { name: 'Add GSTR-1 filing date' }).first()).toBeVisible();
+  await expect(adminPage.getByText(`GSTR-1 filed on: ${longOf(today)}`).first()).toBeVisible();
 
   // Beside the current task: Add Filing Date, pick the date, save — then complete the task.
   const slot = adminPage.getByTestId('gst-filing-slot').filter({ visible: true });
@@ -206,14 +219,14 @@ test('#292 / #294 "Add Filing Date" beside the current filing task: the saved da
   const showCompleted = adminPage.getByRole('button', { name: /Show completed/ });
   if (await showCompleted.isVisible().catch(() => false)) await showCompleted.click();
   await expect(visibleRow(adminPage, '#step-row-3')).toContainText(`Filed on: ${longOf(today)}`);
-  await expect(visibleRow(adminPage, '#step-row-2').getByText(/Filed on/)).toHaveCount(0);
+  await expect(visibleRow(adminPage, '#step-row-2')).toContainText(`Filed on: ${longOf(today)}`); // GSTR-1, saved before it was completed
   await expect(visibleRow(adminPage, '#step-row-1').getByText(/Filed on/)).toHaveCount(0);
 
-  // The sheet follows the matter: GSTR-3B's saved date, no GSTR-1 date (none saved).
+  // The sheet follows the matter: each return's saved date in its own column.
   await expect(async () => {
     const rec = await matterRecord();
     expect(rec.values.gstr3b_date).toBe(today);
-    expect(rec.values.gstr1_date ?? null).toBeNull();
+    expect(rec.values.gstr1_date).toBe(today);
   }).toPass({ timeout: 45_000, intervals: [2_000, 5_000, 8_000] });
 
   // The All Matters list carries the month.
@@ -225,11 +238,10 @@ test('#292 / #294 "Add Filing Date" beside the current filing task: the saved da
   await clientPage.goto(`tasks/${matterId}`);
   await expect(clientPage.getByTestId('gst-filing-period')).toContainText(period, { timeout: 20_000 });
   await expect(clientPage.getByText(`GSTR-3B filed on: ${longOf(today)}`).first()).toBeVisible();
-  await expect(clientPage.getByText(/GSTR-1 filed on/)).toHaveCount(0);
-  await expect(clientPage.getByRole('button', { name: /Add GSTR-1 filing date|Change GSTR-3B filing date/ })).toHaveCount(0);
+  await expect(clientPage.getByRole('button', { name: /Change GSTR-1 filing date|Change GSTR-3B filing date/ })).toHaveCount(0);
 });
 
-test('#294 staff add the GSTR-1 date afterwards and change it; the history and the sheet follow — the sheet cannot change it, clients cannot', async ({ adminPage, clientPage }) => {
+test('#294 staff change the GSTR-1 date afterwards, never remove it; the history and the sheet follow — the sheet cannot change it, clients cannot', async ({ adminPage, clientPage }) => {
   const admin = await apiAs('admin');
   const task = await (await admin.get(`/api/tasks/${matterId}`)).json();
   const bounds = task.gstFilingDateBounds as { min: string; max: string };
@@ -248,15 +260,22 @@ test('#294 staff add the GSTR-1 date afterwards and change it; the history and t
   expect((await admin.put(url, { data: { date: '2999-01-01' } })).status()).toBe(400);
   expect((await admin.put(url, { data: { date: '2000-01-01' } })).status()).toBe(400);
   expect((await admin.put(url, { data: { date: '2026-02-30' } })).status()).toBe(400);
+  // #294 (28 Nov): the task is completed, so its date can be changed but not removed.
+  const removal = await admin.put(url, { data: { date: null } });
+  expect(removal.status()).toBe(409);
+  expect((await removal.json()).message).toBe('The GSTR-1 task is completed, so its filing date can be changed but not removed.');
   await admin.dispose();
 
-  // Added from the header (the task is completed, so it is folded away in the list).
+  // Saved before completion (previous tests); its history line is there.
   await adminPage.goto(`tasks/${matterId}`);
-  await adminPage.getByRole('button', { name: 'Add GSTR-1 filing date' }).first().click();
-  await adminPage.getByLabel('GSTR-1 filed on').filter({ visible: true }).fill(bounds.max);
-  await adminPage.getByRole('button', { name: 'Save', exact: true }).filter({ visible: true }).click();
   await expect(adminPage.getByText(`GSTR-1 filed on: ${longOf(bounds.max)}`).first()).toBeVisible({ timeout: 20_000 });
-  await expect(adminPage.getByText(`GSTR-1 filing date set to ${longOf(bounds.max)}.`).first()).toBeVisible();
+  {
+    const a = await apiAs('admin');
+    const events = await (await a.get(`/api/tasks/${matterId}/events`)).json();
+    const list = (Array.isArray(events) ? events : events.data ?? events.events ?? []) as { comment?: string }[];
+    expect(list.some((e) => e.comment === `GSTR-1 filing date set to ${longOf(bounds.max)}.`)).toBeTruthy();
+    await a.dispose();
+  }
   let finalDate = bounds.max;
 
   // Changed: the history says from what to what. (Not possible on the first day a return can be filed.)
