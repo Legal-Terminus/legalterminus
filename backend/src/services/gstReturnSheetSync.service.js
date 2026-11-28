@@ -124,6 +124,27 @@ export async function syncSheetFromMatters({ bookKey, config = {}, force = false
   }
 }
 
+/**
+ * #219 (found 28 Nov): opening the sheet sends two list requests at once (the
+ * Monthly/Quarterly choice, then the period). The first runs the sync; the
+ * second found it locked, skipped it, and returned the rows as they were before
+ * it — without the new matter's row — and the page kept that answer. A request
+ * that finds a run in progress now waits for it (polling the lock, at most
+ * `timeoutMs`) before reading, so it sees what the run wrote. Returns true when
+ * no run is in progress any more.
+ */
+export async function waitForSheetSync(bookKey, { timeoutMs = 20_000, everyMs = 300 } = {}) {
+  const ref = getDb().collection('system').doc(`worksheetSync_${bookKey}`);
+  const until = Date.now() + timeoutMs;
+  for (;;) {
+    const d = (await ref.get()).data() ?? {};
+    // A lock older than LOCK_MS is a run that died: nothing to wait for.
+    if (!d.lockedAtMs || Date.now() - d.lockedAtMs >= LOCK_MS) return true;
+    if (Date.now() >= until) return false;
+    await new Promise((r) => setTimeout(r, everyMs));
+  }
+}
+
 async function readUsers(db, uids) {
   const out = new Map();
   for (const part of chunks([...new Set(uids.filter(Boolean))], 100)) {

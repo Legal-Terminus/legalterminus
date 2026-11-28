@@ -51,6 +51,7 @@ const ALLOWED_CONTENT_TYPES = new Set([
   'application/json',  // .json
   'text/plain',        // .txt
   'application/zip',   // .zip
+  'application/vnd.rar', // .rar (LT #373) — the Portal types it by extension
 ]);
 
 const toISO = (ts) => {
@@ -174,7 +175,7 @@ export async function createSignedUploadUrl(req, res) {
     if (!task) return;
 
     if (!ALLOWED_CONTENT_TYPES.has(contentType)) {
-      return res.status(400).json({ message: 'Unsupported file type. Allowed: PDF, JPG, PNG, DOCX, XLSX, XLS, CSV, JSON, TXT, ZIP.' });
+      return res.status(400).json({ message: 'Unsupported file type. Allowed: PDF, JPG, PNG, DOCX, XLSX, XLS, CSV, JSON, TXT, ZIP, RAR.' });
     }
 
     const docId = randomUUID();

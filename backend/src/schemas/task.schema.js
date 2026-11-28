@@ -242,6 +242,14 @@ export const messageUpdateSchema = z.object({
 // date a GSTR-1 / GSTR-3B return was filed. A real calendar date, or null to
 // remove the saved date. The matter decides the allowed range
 // (not before its period ended, not in the future) — checked in the handler.
+// LT #369: the admin's remark on a matter (Master Sheet). Blank clears it.
+export const adminRemarksSchema = z.object({
+  adminRemarks: z.string().trim().max(2000, 'Keep the remarks under 2,000 characters.'),
+}).strict();
+
+// LT #368: mark a matter Audited (true) or Un-audited (false).
+export const auditSchema = z.object({ audited: z.boolean() }).strict();
+
 export const filedOnCorrectionSchema = z.object({
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Enter the date as YYYY-MM-DD.")
     .refine((v) => {

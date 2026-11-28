@@ -1,14 +1,15 @@
-import { useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useCallback, useMemo, useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useAuthStore } from '../../store/authStore';
+import { AdminRemarksCell, AuditBadge, auditLabel } from '../../components/reports/MatterReviewCells';
 import { Link, useNavigate } from 'react-router-dom';
 import { createColumnHelper } from '@tanstack/react-table';
 import { Download } from 'lucide-react';
-import { getMasterSheet, downloadMasterSheetCSV } from '../../api/reports';
+import { getMasterSheet } from '../../api/reports';
 import type { ReportFilters, MasterSheetRow } from '../../api/reports';
 import ReportFiltersBar from '../../components/reports/ReportFiltersBar';
 import DataGrid from '../../components/common/DataGrid';
 import { exportToXlsx, type ExportColumn } from '../../lib/exportXlsx';
-import { useToast } from '../../components/common/toastContext';
 import { useUrlFilters } from '../../hooks/useUrlFilters';
 import { REPORT_FILTER_KEYS } from '../../api/reports';
 
@@ -20,11 +21,14 @@ const PAYMENT_CLS: Record<string, string> = {
   not_paid: 'bg-red-100 text-red-700',
 };
 
+const PAYMENT_LABEL: Record<string, string> = { fully_paid: 'Fully paid', part_paid: 'Part paid', not_paid: 'Not paid' };
+
 // #84: the Master Sheet is the central report — reports 1-11 are reached by
 // filtering these columns. Auto-updates every 30s (real-time-ish).
 export default function MasterSheetReport() {
   const navigate = useNavigate();
-  const toast = useToast();
+  const queryClient = useQueryClient();
+  const isAdmin = useAuthStore((s) => s.role) === 'admin';
   // #208: filters live in the URL so Back from a matter restores them.
   const [filters, setFilters] = useUrlFilters<ReportFilters>(REPORT_FILTER_KEYS);
   const { data = [], isLoading, error } = useQuery({
@@ -48,17 +52,29 @@ export default function MasterSheetReport() {
     col.accessor('pendingReason', { header: 'Pending Reason', size: 170, cell: (c) => <span className="text-xs text-ink-muted truncate">{c.getValue() || '—'}</span> }),
     col.accessor('pendingFrom', { header: 'Pending From', size: 110, cell: (c) => <span className="text-xs text-ink-muted">{c.getValue() || '—'}</span> }),
     col.accessor('approvalPendingFrom', { header: 'Approval From', size: 110, cell: (c) => <span className="text-xs text-ink-muted">{c.getValue() || '—'}</span> }),
-    col.accessor('paymentStatus', { header: 'Payment', size: 100, cell: (c) => <span className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${PAYMENT_CLS[c.getValue()] ?? PAYMENT_CLS.not_paid}`}>{c.getValue()}</span> }),
+    col.accessor('paymentStatus', { header: 'Payment', size: 100, cell: (c) => <span className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${PAYMENT_CLS[c.getValue()] ?? PAYMENT_CLS.not_paid}`}>{PAYMENT_LABEL[c.getValue()] ?? c.getValue()}</span> }),
     col.accessor('totalFees', { header: 'Total Fees (₹)', size: 120, cell: (c) => <span className="text-sm text-ink-muted">₹{(c.getValue() ?? 0).toLocaleString('en-IN')}</span> }),
     col.accessor('amountPaid', { header: 'Paid (₹)', size: 100, cell: (c) => <span className="text-sm text-ink-muted">₹{(c.getValue() ?? 0).toLocaleString('en-IN')}</span> }),
     col.accessor('amountDue', { header: 'Due (₹)', size: 100, cell: (c) => <span className="text-sm text-ink-muted">₹{(c.getValue() ?? 0).toLocaleString('en-IN')}</span> }),
     col.accessor('paymentMode', { header: 'Mode', size: 90, cell: (c) => <span className="text-xs text-ink-muted">{c.getValue() || '—'}</span> }),
     col.accessor('referralSource', { header: 'Referral', size: 120, cell: (c) => <span className="text-xs text-ink-muted truncate">{c.getValue() || '—'}</span> }),
     col.accessor((r) => r.lastUpdated ?? '', { id: 'lastUpdated', header: 'Updated', size: 110, meta: { disableColumnFilter: true }, cell: (c) => <span className="text-xs text-ink-faint">{formatDate(c.getValue() as string)}</span> }),
-  ] as ReturnType<typeof col.accessor>[], []);
+    // LT #368: the admin's audit mark (set on the matter's Payments tab).
+    col.accessor((r) => auditLabel(r.auditStatus), { id: 'auditStatus', header: 'Audit Status', size: 110, cell: (c) => <AuditBadge status={c.row.original.auditStatus} /> }),
+    // LT #369: the admin types remarks straight into the table; everyone else reads them.
+    col.accessor((r) => r.adminRemarks ?? '', {
+      id: 'adminRemarks', header: 'Admin Remarks', size: 220, meta: { disableColumnFilter: true },
+      cell: (c) => (
+        <AdminRemarksCell
+          taskId={c.row.original.taskId} value={c.getValue() as string} canEdit={isAdmin}
+          onSaved={() => queryClient.invalidateQueries({ queryKey: ['report-master-sheet'] })}
+        />
+      ),
+    }),
+  ] as ReturnType<typeof col.accessor>[], [isAdmin, queryClient]);
 
-  const onExportXlsx = async () => {
-    const cols: ExportColumn<MasterSheetRow>[] = [
+  // LT #369: the export is exactly the rows on screen (filters, search, column filters).
+  const exportCols: ExportColumn<MasterSheetRow>[] = [
       { header: 'Client', value: (r) => r.clientName },
       { header: 'Organisation', value: (r) => r.organisation }, // #152
       { header: 'Service', value: (r) => r.serviceType },
@@ -71,16 +87,25 @@ export default function MasterSheetReport() {
       { header: 'Pending Reason', value: (r) => r.pendingReason },
       { header: 'Pending From', value: (r) => r.pendingFrom },
       { header: 'Approval Pending From', value: (r) => r.approvalPendingFrom },
-      { header: 'Payment Status', value: (r) => r.paymentStatus },
+      { header: 'Payment Status', value: (r) => PAYMENT_LABEL[r.paymentStatus] ?? r.paymentStatus },
       { header: 'Total Fees', value: (r) => r.totalFees },
       { header: 'Amount Paid', value: (r) => r.amountPaid },
       { header: 'Amount Due', value: (r) => r.amountDue },
       { header: 'Payment Mode', value: (r) => r.paymentMode },
       { header: 'Referral Source', value: (r) => r.referralSource },
       { header: 'Last Updated', value: (r) => formatDate(r.lastUpdated) },
-    ];
-    await exportToXlsx(data, cols, 'master-sheet', 'Master Sheet');
-  };
+      { header: 'Audit Status', value: (r) => auditLabel(r.auditStatus) }, // LT #368
+      { header: 'Admin Remarks', value: (r) => r.adminRemarks }, // LT #369
+  ];
+
+  // LT #370 / #365: totals of the rows on screen, and — with "Has amount due" — who owes what.
+  const [shown, setShown] = useState<MasterSheetRow[]>([]);
+  const onShown = useCallback((rows: MasterSheetRow[]) => setShown(rows), []);
+  const totals = useMemo(() => shown.reduce(
+    (t, r) => ({ fees: t.fees + (r.totalFees ?? 0), paid: t.paid + (r.amountPaid ?? 0), due: t.due + (r.amountDue ?? 0) }),
+    { fees: 0, paid: 0, due: 0 },
+  ), [shown]);
+  const byClient = useMemo(() => dueByClient(shown), [shown]);
 
   return (
     <div className="p-6">
@@ -89,17 +114,19 @@ export default function MasterSheetReport() {
           <Link to="/reports" className="text-sm text-brand-600 hover:underline">← Reports</Link>
           <h1 className="text-xl font-semibold text-ink">Master Sheet</h1>
         </div>
-        <div className="flex items-center gap-2">
-          <button onClick={onExportXlsx} className="btn-primary inline-flex items-center gap-2">
-            <Download className="w-4 h-4" /> Export Excel
-          </button>
-          <button onClick={() => { downloadMasterSheetCSV(filters).catch((e: Error) => toast.error(e.message || 'Could not download the CSV.')); }} className="btn-secondary inline-flex items-center gap-2">
-            <Download className="w-4 h-4" /> CSV
-          </button>
-        </div>
       </div>
 
       <ReportFiltersBar filters={filters} onChange={setFilters} />
+
+      {!isLoading && !error && (
+        <p className="text-sm text-ink-muted" data-testid="master-sheet-totals">
+          {shown.length} {shown.length === 1 ? 'matter' : 'matters'} · Fees {inr(totals.fees)} · Paid {inr(totals.paid)} · <span className="font-semibold text-ink">Due {inr(totals.due)}</span>
+        </p>
+      )}
+
+      {filters.paymentStatus === 'due' && byClient.length > 0 && (
+        <DueByClient rows={byClient} />
+      )}
 
       <div className="mt-4">
         <DataGrid<MasterSheetRow>
@@ -107,6 +134,11 @@ export default function MasterSheetReport() {
           data={data}
           columns={columns}
           getRowId={(r) => r.taskId}
+          exportFileName="master-sheet"
+          exportSheetName="Master Sheet"
+          exportCsv
+          exportColumns={exportCols}
+          onFilteredRowsChange={onShown}
           onRowClick={(r) => navigate(`/tasks/${r.taskId}`)}
           searchPlaceholder="Search client, organisation, service, professional, assignee, reason…"
           globalFilterFn={(row, _id, q) => {
@@ -129,6 +161,57 @@ export default function MasterSheetReport() {
         />
       </div>
     </div>
+  );
+}
+
+const inr = (n: number) => `₹${(n ?? 0).toLocaleString('en-IN')}`;
+
+interface ClientDue { client: string; matters: number; services: string; fees: number; paid: number; due: number }
+
+/** LT #370: one line per client — matters with an amount due, and the total. Largest first. */
+function dueByClient(rows: MasterSheetRow[]): ClientDue[] {
+  const m = new Map<string, ClientDue & { svc: Set<string> }>();
+  for (const r of rows) {
+    if (!(r.amountDue > 0)) continue;
+    const key = r.clientName || '—';
+    const e = m.get(key) ?? { client: key, matters: 0, services: '', fees: 0, paid: 0, due: 0, svc: new Set<string>() };
+    e.matters += 1; e.fees += r.totalFees ?? 0; e.paid += r.amountPaid ?? 0; e.due += r.amountDue ?? 0;
+    if (r.serviceType) e.svc.add(r.serviceType);
+    m.set(key, e);
+  }
+  return [...m.values()]
+    .map(({ svc, ...e }) => ({ ...e, services: [...svc].join(', ') }))
+    .sort((a, b) => b.due - a.due || a.client.localeCompare(b.client));
+}
+
+function DueByClient({ rows }: { rows: ClientDue[] }) {
+  const cols: ExportColumn<ClientDue>[] = [
+    { header: 'Client', value: (r) => r.client },
+    { header: 'Matters', value: (r) => r.matters },
+    { header: 'Services', value: (r) => r.services },
+    { header: 'Total Fees', value: (r) => r.fees },
+    { header: 'Paid', value: (r) => r.paid },
+    { header: 'Due', value: (r) => r.due },
+  ];
+  return (
+    <section className="card p-4 mt-4" data-testid="due-by-client">
+      <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+        <h2 className="text-sm font-semibold text-ink">Due by client</h2>
+        <button type="button" className="btn-secondary min-h-[44px] inline-flex items-center gap-2"
+          onClick={() => { void exportToXlsx(rows, cols, 'due-by-client', 'Due by client'); }}>
+          <Download className="w-4 h-4" /> Download Excel
+        </button>
+      </div>
+      <ul className="divide-y divide-hairline-soft">
+        {rows.map((r) => (
+          <li key={r.client} className="py-2 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+            <span className="text-sm font-medium text-ink">{r.client}</span>
+            <span className="text-xs text-ink-muted flex-1 min-w-[10rem]">{r.matters} {r.matters === 1 ? 'matter' : 'matters'} · {r.services}</span>
+            <span className="text-sm font-semibold text-ink">{inr(r.due)}</span>
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }
 

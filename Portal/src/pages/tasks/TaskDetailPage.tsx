@@ -22,6 +22,7 @@ import RichText from '../../components/common/RichText';
 import { CommentImageTaskContext } from '../../components/common/commentImageContext';
 import { getDocuments, openDocument, type TaskDocument } from '../../api/documents';
 import { useAuthStore } from '../../store/authStore';
+import { AuditControl } from '../../components/reports/MatterReviewCells';
 import PayNowCard from '../../components/tasks/PayNowCard';
 import RefundHistory from '../../components/payments/RefundHistory';
 import InvoicesCard from '../../components/payments/InvoicesCard';
@@ -1291,6 +1292,8 @@ function StepsTab({
       filingSlot={currentFiling ? (
         <FilingDateControl taskId={task.id} filing={currentFiling} bounds={task.gstFilingDateBounds} canEdit={role.isStaff} />
       ) : undefined}
+      // #294 (firm, 28 Nov): the filing task is completed only once its date is saved (the server refuses too).
+      completeBlockedReason={currentFiling && !currentFiling.date ? `Add the ${currentFiling.form} filing date before completing this task.` : undefined}
     />
   ) : completed ? (
     <div className="card p-5 flex items-center gap-2.5 bg-emerald-50 border-emerald-100">
@@ -1699,6 +1702,7 @@ const EVENT_VERB: Record<string, string> = {
   STEP_NOTE: 'shared a note', // #105
   FILED_ON_CORRECTED: 'corrected the filing date', // #294 (older history)
   FILING_DATE_SET: 'saved the filing date', // #294
+  AUDIT_SET: 'changed the audit status', // LT #368
   CLIENT_REJECT: 'requested changes',
   GOVT_APPROVE: 'marked Govt approved',
   GOVT_REJECT: 'marked Govt rejected',
@@ -1848,8 +1852,10 @@ function initialsOf(name: string) {
 
 /** The HERO panel: action (left) + meta (right) merged into one elevated card. */
 function StepHeroPanel({
-  taskId, step, role, pending, onEvent, assignment, currentAssignee, currentAssigneeName, displayNumber, turn, stepUrgent, onAttach, statusLabel, description, approvalNote, fallbackView = false, clientOwned = false, currentAssignees = [], currentAssigneeNames = [], filingSlot,
+  taskId, step, role, pending, onEvent, assignment, currentAssignee, currentAssigneeName, displayNumber, turn, stepUrgent, onAttach, statusLabel, description, approvalNote, fallbackView = false, clientOwned = false, currentAssignees = [], currentAssigneeNames = [], filingSlot, completeBlockedReason,
 }: {
+  /** #294: why the step may not be completed yet (a GST filing task without its date). Disables Complete. */
+  completeBlockedReason?: string;
   /** #294: the GST filing date and its "Add Filing Date" control, on a filing task. */
   filingSlot?: React.ReactNode;
   taskId: string;
@@ -2125,8 +2131,9 @@ function StepHeroPanel({
       actions = (
         <div className="space-y-2">
           {completeIsOverride && <OverrideNote assignee={assigneeLabel} />}
+          {completeBlockedReason && <p className="text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-md px-3 py-2" data-testid="complete-blocked">{completeBlockedReason}</p>}
           <div className="flex flex-wrap gap-2">
-            <button disabled={pending} onClick={() => fire('COMPLETE_STEP')} className="btn-primary disabled:opacity-50">
+            <button disabled={pending || !!completeBlockedReason} onClick={() => fire('COMPLETE_STEP')} className="btn-primary disabled:opacity-50">
               {pending ? spin : (hasRework ? <ThumbsUp className="w-4 h-4" /> : <PlayCircle className="w-4 h-4" />)} {hasRework ? 'Approve' : 'Complete Step'}
             </button>
             {hasRework && (
@@ -2668,6 +2675,7 @@ const PAYMENT: Record<PaymentStatus, { label: string; cls: string }> = {
 // so the two lists cannot drift. See `lib/paymentModes.ts`.
 
 function PaymentsTab({ task, canEdit, isClient }: { task: Task; canEdit: boolean; isClient: boolean }) {
+  const authRole = useAuthStore((st) => st.role);
   const toast = useToast();
   const queryClient = useQueryClient();
   const p = PAYMENT[task.paymentStatus] ?? PAYMENT.not_paid;
@@ -2802,6 +2810,18 @@ function PaymentsTab({ task, canEdit, isClient }: { task: Task; canEdit: boolean
         </div>
       )}
     </div>
+
+    {/* LT #368: the audit mark — admin and manager set it (once fully paid). */}
+    {!isClient && (
+      <div className="card p-5">
+        <h3 className="text-sm font-semibold text-ink mb-3">Audit</h3>
+        <AuditControl
+          taskId={task.id} status={task.auditStatus} auditedByName={task.auditedByName} auditedAt={task.auditedAt}
+          fullyPaid={task.paymentStatus === 'fully_paid' && (task.amountDue ?? 0) <= 0}
+          canMark={authRole === 'admin' || authRole === 'manager'}
+        />
+      </div>
+    )}
 
     {/* #220: the client's Pay Now button, or the staff switch for it. */}
     <PayNowCard task={task} isClient={isClient} canEdit={canEdit} />

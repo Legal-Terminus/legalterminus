@@ -536,6 +536,10 @@ export function checkFilingDate({ task, steps, stepNumber, date, frequency, link
   if (!hit) return { ok: false, status: 400, message: 'Only the GSTR-1 and GSTR-3B filing tasks have a filing date.' };
   if (!isReached(hit.step)) return { ok: false, status: 409, message: `The matter has not reached the ${hit.form} filing task yet.` };
   const from = filedOnDateOf(hit.step, { manualFrom });
+  // #294 (firm, 28 Nov): a completed filing task keeps a date — it can be changed, not removed.
+  if (date == null && isDone(hit.step)) {
+    return { ok: false, status: 409, message: `The ${hit.form} task is completed, so its filing date can be changed but not removed.` };
+  }
   if (date != null) {
     if (!isCalendarDate(date)) return { ok: false, status: 400, message: 'Enter a valid date.' };
     const { min, max } = filedOnBounds(task, frequency, now);
@@ -543,6 +547,19 @@ export function checkFilingDate({ task, steps, stepNumber, date, frequency, link
     if (min && date < min) return { ok: false, status: 400, message: `The filing date cannot be before ${longDay(min)}, when this return's period ended.` };
   }
   return { ok: true, step: hit.step, form: hit.form, from, to: date ?? null };
+}
+
+/**
+ * #294 (firm, 28 Nov) — a filing task is not completed without its filing date.
+ * Returns the form ('GSTR-1' | 'GSTR-3B') when `stepNumber` is the GSTR-1 or
+ * GSTR-3B filing task of a GST return matter and no date is saved on it; null
+ * otherwise (another task, another kind of matter, or the date is there).
+ */
+export function filingDateMissingFor({ task, steps, stepNumber, linkedServices }) {
+  if (!isGstReturnMatter(task, linkedServices)) return null;
+  const hit = filingSteps(steps).find((x) => x.step.stepNumber === stepNumber);
+  if (!hit) return null;
+  return filedOnDateOf(hit.step) ? null : hit.form;
 }
 
 /** The history line for a saved filing date. */

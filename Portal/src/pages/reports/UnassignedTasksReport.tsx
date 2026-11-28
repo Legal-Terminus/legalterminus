@@ -66,6 +66,7 @@ export default function UnassignedTasksReport() {
       ) : (
         <DataGrid<UnassignedRow>
           tableId="rpt-unassigned"
+          exportFileName="unassigned-tasks" // LT #369: Excel of the rows on screen
           data={data}
           columns={cols}
           getRowId={(r) => `${r.taskId}-${r.stepNumber}`}

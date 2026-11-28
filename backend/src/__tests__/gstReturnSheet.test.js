@@ -12,7 +12,7 @@ import {
 import {
   deriveRow, mergeDerived, frequencyOf, periodOf, stepForRule, STEP_RULES, DERIVED_FIELDS, normalizeTitle,
   gstMatterTags, isGstReturnMatter, filedOnDateOf, filedOnBounds, canCorrectFiledOn, checkFilingDate, filingDateComment,
-  matterOwnedDateFields, isCalendarDate, formsNamed, withAuthoredOrder,
+  matterOwnedDateFields, isCalendarDate, formsNamed, withAuthoredOrder, filingDateMissingFor,
   rowFitsMatter, pickMatterRow, checkMatterLink, matterIdentityOf, namesAgree,
 } from '../services/gstReturnSheet.service.js';
 import fs from 'node:fs';
@@ -354,7 +354,13 @@ test('#294 validation: a real date, not in the future, not before the period end
   const withDate = { ...base, steps: [{ ...filed, filingDate: saved('2026-11-11') }] };
   const change = checkFilingDate({ ...withDate, stepNumber: 6, date: '2026-11-10' });
   assert.deepEqual([change.from, change.to], ['2026-11-11', '2026-11-10']);
-  const removed = checkFilingDate({ ...withDate, stepNumber: 6, date: null });
+  // #294 (28 Nov): a completed filing task keeps a date — changed, never removed.
+  const removedDone = checkFilingDate({ ...withDate, stepNumber: 6, date: null });
+  assert.deepEqual([removedDone.ok, removedDone.status], [false, 409]);
+  assert.match(removedDone.message, /GSTR-1 task is completed/);
+  // Still in progress: removing is allowed.
+  const withDateActive = { ...base, steps: [{ ...filed, status: 'active', completedAt: null, filingDate: saved('2026-11-11') }] };
+  const removed = checkFilingDate({ ...withDateActive, stepNumber: 6, date: null });
   assert.deepEqual([removed.ok, removed.from, removed.to], [true, '2026-11-11', null]);
   // The range.
   assert.equal(checkFilingDate({ ...base, stepNumber: 6, date: '2026-11-15' }).message, 'The filing date cannot be in the future.');
@@ -364,6 +370,27 @@ test('#294 validation: a real date, not in the future, not before the period end
   const ahead = { ...base, steps: [{ ...filed, status: 'pending', completedAt: null }] };
   assert.equal(checkFilingDate({ ...ahead, stepNumber: 6, date: '2026-11-11' }).status, 409);
   assert.equal(checkFilingDate({ ...base, task: { serviceKey: 'trademark-application' }, stepNumber: 6, date: '2026-11-11' }).status, 400);
+});
+
+test('#294 (28 Nov) a filing task cannot be completed without its filing date', () => {
+  const task = { serviceKey: LINKED[0], filingPeriod: { frequency: 'monthly', month: '2026-10' } };
+  const steps = [
+    { stepNumber: 5, title: 'Data received from client', status: 'completed' },
+    { stepNumber: 6, title: 'GSTR-1 filed', status: 'active' },
+    { stepNumber: 13, title: 'Proceed towards GSTR-3B Filing', status: 'pending' },
+  ];
+  const linkedServices = LINKED;
+  assert.equal(filingDateMissingFor({ task, steps, stepNumber: 6, linkedServices }), 'GSTR-1');
+  assert.equal(filingDateMissingFor({ task, steps, stepNumber: 13, linkedServices }), 'GSTR-3B');
+  // Another task, or the date saved: nothing missing.
+  assert.equal(filingDateMissingFor({ task, steps, stepNumber: 5, linkedServices }), null);
+  const dated = steps.map((s) => (s.stepNumber === 6 ? { ...s, filingDate: { date: '2026-11-11' } } : s));
+  assert.equal(filingDateMissingFor({ task, steps: dated, stepNumber: 6, linkedServices }), null);
+  // A removed date (date: null) is missing again.
+  const removed = steps.map((s) => (s.stepNumber === 6 ? { ...s, filingDate: { date: null } } : s));
+  assert.equal(filingDateMissingFor({ task, steps: removed, stepNumber: 6, linkedServices }), 'GSTR-1');
+  // Not a GST return matter: never gated.
+  assert.equal(filingDateMissingFor({ task: { serviceKey: 'trademark-application' }, steps, stepNumber: 6, linkedServices }), null);
 });
 
 test('#294 the history entry: who saved which return\'s date, from what to what — staff only', () => {

@@ -58,7 +58,7 @@ test('#84: my-services is client-scoped and forbidden report data is not exposed
  */
 test('#268: on a phone a report shows cards, not a table that scrolls sideways', async ({ adminPage: page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto('/reports/all-tasks');
+  await page.goto('reports/all-tasks'); // relative: the Portal lives under /portal/
   const cards = page.getByTestId('datagrid-mobile-cards');
   await expect(cards).toBeVisible();
   // The desktop table is hidden on a phone…

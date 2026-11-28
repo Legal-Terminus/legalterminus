@@ -32,6 +32,7 @@ export default function CompletedTasksReport() {
       <div className="mt-4">
         <DataGrid<Task>
           tableId="rpt-completed"
+          exportFileName="completed-matters" // LT #369: Excel of the rows on screen
           data={data}
           columns={columns}
           getRowId={(t) => t.id}

@@ -184,6 +184,7 @@ export default function SlaReport() {
           ) : (
             <DataGrid<SlaBreach>
           tableId="rpt-sla"
+          exportFileName="sla-delays" // LT #369: Excel of the rows on screen
               data={data.breaches}
               columns={columns}
               getRowId={(b) => `${b.taskId}-${b.stepNumber}`}

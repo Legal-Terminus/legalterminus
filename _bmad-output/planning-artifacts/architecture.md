@@ -3471,3 +3471,53 @@ shape, vets a request-supplied object key or prepares a value for a log line. Ru
 - **Log values** go in pino fields through `logValue` (CR/LF collapsed, length capped), never
   interpolated into the message.
 - A new cleaner imports from this module rather than adding its own copy.
+
+## Report filters, exports, payment status at creation, audit and admin remarks (#365–#370, 2026-11-28)
+
+**One filter rule for the task reports (#366).** `reportFilters.service.js`
+(`reportFiltersOf`, `matchesReportFilters`) is the only place the report bar's
+Status / Service / Payment / From / To are applied. The All, Completed, Pending
+and Master Sheet handlers read their matters (Completed and Pending narrowed by
+status in the query) and filter in memory. Firestore queries per filter combination
+needed a composite index each and failed on the uncovered ones; LT's matter count
+makes the in-memory pass cheap. Service matches `serviceKey` (what the dropdown
+sends), with `workflowType` / `workflowDefinitionId` still accepted. Dates are
+compared as India calendar days, inclusive at both ends. Completed applies the
+range to `updatedAt` (completion), the rest to `createdAt`.
+
+The Payment filter takes two derived values besides a status: `due`
+(`hasAmountDue`: `amountDue > 0` on a matter not cancelled / rejected / archived)
+and `received` (`amountPaid > 0`). Revenue Analytics' Outstanding (card and
+service-wise) uses `hasAmountDue` too, so each card is exactly the Master Sheet
+list it links to (#365): Collected → `received`, Outstanding → `due`, Total Fees →
+unfiltered. The duplicate `pending` figure stays in the API response for old
+callers; the page no longer shows it.
+
+**Exports are of what is on screen (#369).** `DataGrid` takes `exportFileName`
+(+ `exportCsv`, `exportColumns`) and exports `getPrePaginationRowModel()` — the
+rows after the page's server filters, the search box and the column filters, in
+the current sort, across all pages — by default from the visible columns' values
+(so a column's accessor should return a readable value, not a code). It also
+reports those rows (`onFilteredRowsChange`), which the Master Sheet uses for its
+totals line and the **Due by client** panel (#370, computed in the browser from
+the rows on screen). `exportToCsv` writes UTF-8 with a BOM for Excel.
+
+**Payment status is derived at creation too (#367).** `createTask` stores
+`deriveRollup(cost, received).paymentStatus` whenever a total cost is given; the
+form's choice is kept only for an unpriced matter. So every writer (creation, the
+ledger, the transition engine) uses the same rule.
+
+**Review marks (#368, #369)** live on the matter document and are staff-only
+(stripped in `projectTaskForClient`): `auditStatus` ('audited' | 'unaudited',
+absent = un-audited) + `auditedAt/By/ByName`, and `adminRemarks` +
+`adminRemarksAt/By`. Written only by `matterReview.controller.js` through
+routes: `PUT /api/tasks/:id/admin-remarks` (admin) and `PUT /api/tasks/:id/audit`
+(admin and manager — owner, 28 Nov).
+Audited requires `paymentStatus === 'fully_paid'` and nothing due; each audit
+change writes an `AUDIT_SET` event (staff history). Neither touches `updatedAt`.
+
+**GST filing date required (#294, 28 Nov).** `transitionTask` refuses a forward
+event (`COMPLETE_STEP`, `BRANCH_DECISION`, `GOVT_APPROVE`, `CLIENT_APPROVE`) on a
+GST return matter's GSTR-1 / GSTR-3B filing task with no saved date
+(`filingDateMissingFor`, matched in authored order like the tags and the sheet);
+`checkFilingDate` refuses removing the date of a completed filing task.

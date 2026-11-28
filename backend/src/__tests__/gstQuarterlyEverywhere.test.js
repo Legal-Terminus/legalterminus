@@ -113,3 +113,13 @@ test('creation freezes the frequency on a GST matter; a copy inherits its source
 test('existing rows re-derive once: the sheet sync rules version moved on', () => {
   assert.match(read('../services/gstReturnSheetSync.service.js'), /const RULES_VERSION = 4;/);
 });
+
+test('#219 (28 Nov): a sheet request that finds a sync running waits for it before reading (source check)', () => {
+  const ctl = read('../controllers/worksheets.controller.js');
+  assert.match(ctl, /run\?\.skipped === 'locked'/);
+  assert.match(ctl, /await waitForSheetSync\(sheet\.book\)/);
+  const svc = read('../services/gstReturnSheetSync.service.js');
+  assert.match(svc, /export async function waitForSheetSync\(/);
+  // A dead run's lock (older than LOCK_MS) is not waited on.
+  assert.match(svc, /Date\.now\(\) - d\.lockedAtMs >= LOCK_MS\) return true/);
+});

@@ -69,6 +69,7 @@ export default function PaymentOverridesReport() {
       ) : (
         <DataGrid<PaymentOverrideRow>
           tableId="rpt-payment-overrides"
+          exportFileName="payment-overrides" // LT #369: Excel of the rows on screen
           data={data}
           columns={cols}
           getRowId={(r) => r.taskId}

@@ -46,3 +46,15 @@ test('a pre-ledger paid figure becomes an opening balance, not a wipe', () => {
   assert.equal(row.source, 'opening_balance');
   assert.equal(openingBalanceRow({ amountPaid: 0 }, 'T'), null);
 });
+
+test('LT #367: matter creation derives the status from the figures, not the form\'s choice', async () => {
+  const { readFileSync } = await import('node:fs');
+  const path = await import('node:path');
+  const { fileURLToPath } = await import('node:url');
+  const here = path.dirname(fileURLToPath(import.meta.url));
+  const src = readFileSync(path.join(here, '../controllers/tasks.controller.js'), 'utf8');
+  assert.match(src, /paymentStatus: chosenPaymentStatus = 'not_paid'/);
+  assert.match(src, /\? deriveRollup\(cost, received\)\.paymentStatus/);
+  // "Part Payment" picked with the whole ₹1,000 received is fully paid.
+  assert.equal(deriveRollup(1000, 1000).paymentStatus, 'fully_paid');
+});

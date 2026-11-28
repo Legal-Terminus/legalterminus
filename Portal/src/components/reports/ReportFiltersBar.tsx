@@ -25,6 +25,10 @@ const STATUS_OPTIONS: { value: string; label: string }[] = [
 ];
 
 const PAYMENT_OPTIONS: { value: string; label: string }[] = [
+  // LT #370: Not paid + Part paid together — anything still to collect (not on a stopped matter).
+  { value: 'due', label: 'Has amount due' },
+  // LT #365: any money received (what Revenue Analytics' Collected adds up).
+  { value: 'received', label: 'Any payment received' },
   { value: 'fully_paid', label: 'Fully paid' },
   { value: 'part_paid', label: 'Part paid' },
   { value: 'not_paid', label: 'Not paid' },

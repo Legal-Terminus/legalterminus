@@ -8370,3 +8370,52 @@ first assignee. Fixed in Ambyflow first (Story 42.39, `3fb7a39`), ported by cont
 - Tests: `documentSubmitNotify.test.js` (5); `email-templates.spec.ts` lists the new template.
   Backend 616/616.
   User-visible: yes (staff emails; new template in Settings).
+
+### Reports, payments and documents fixes (2026-11-28, #294, #365, #366, #367, #368, #369, #370, #373) 🔄 In review
+
+Client tickets of 28 Nov. LT first; Ambyflow port to follow (all but #294, which is LT-only).
+Decisions by the owner on 28 Nov: managers audit too; Master Sheet From/To = Created date; #365,
+#369 (export) and #370 built as recommended — on the Master Sheet, not as new report screens.
+- **#294 (follow-up):** a GSTR-1 / GSTR-3B filing task cannot be completed without its filing
+  date. The server refuses the transition (`409 FILING_DATE_REQUIRED`, "Add the GSTR-1 filing date
+  before completing this task."); the matter page disables **Complete Step** and says why. A
+  completed filing task's date can be changed, not removed.
+- **#366:** the filters above the Master Sheet (Status, Service, Payment, From, To) never applied —
+  only the dates, and those to the last update. All task reports (All, Completed, Pending, Master
+  Sheet) now filter through one rule, `reportFilters.service.js`: every chosen filter must match;
+  Service matches the service key (it used to match the workflow id); dates are whole India days,
+  inclusive — the To day used to be left out. No composite index is needed any more. Master Sheet
+  From/To are its **Created** date.
+- **#367:** matter creation stored the dropdown's "Part Payment" even with the whole amount
+  received. The status is now derived from the figures (`deriveRollup`, the ledger's rule).
+  `backend/scripts/backfill-payment-status.js` (dry run first) corrects existing matters;
+  QA had none (18 matters scanned) — run on live after release.
+- **#368:** **Audit** on the matter's Payments tab — an admin or manager marks a matter Audited
+  (only once fully paid) or Un-audited; recorded in the matter's history. **Audit Status** column in the
+  Master Sheet and the All / Completed / Pending reports.
+- **#369:** **Admin Remarks**, the Master Sheet's last column — the admin types into it; saved on
+  the matter; in the Excel and CSV exports. **Exports are what is on screen:** the shared report
+  grid has **Download Excel** (and CSV on the Master Sheet) exporting the rows left by the page's
+  filters, the search box and the column filters, in the current sort, all pages — on Master Sheet,
+  All, Completed, Pending, Payment Overrides, SLA and Unassigned. Payment shows as "Part paid", not
+  a code. The Master Sheet's old server CSV is no longer used by the page (the API keeps it).
+- **#370:** client-wise pending payments on the Master Sheet. Payment filter **"Has amount due"**
+  (something due, on a matter not stopped / rejected / archived — a completed matter with a balance
+  still owes it) and **"Any payment received"**; a totals line (matters · fees · paid · due) for
+  the rows on screen; with "Has amount due", a **Due by client** panel (one line per client:
+  matters, services, total due; largest first) with its own Excel.
+- **#365:** Revenue Analytics' **Collected / Outstanding / Total Fees** cards open the Master Sheet
+  filtered to the matters behind them ("Any payment received" / "Has amount due" / all).
+  **Pending** was the same figure as Outstanding and is removed. **Outstanding now counts completed
+  matters with a balance** and leaves out stopped / rejected / archived ones (it used to leave out
+  completed matters), so the card equals the list it opens; Service-wise Outstanding follows.
+- **#373:** WinRAR (`.rar`) uploads in Documents (`application/vnd.rar`, typed by extension).
+- **Known, not from this change:** `gst-return-filing.spec.ts` "#219 … quarterly everywhere" fails
+  on unchanged `main` too (no row in the Quarterly sheet for the new matter) — to investigate.
+- **#279 (27 Nov comment):** already as asked — admin, manager and team member all open GST Return
+  Filing (route, API and dashboard tile); no change.
+- Tests: `reportFilters.test.js` (6), `matterReview.test.js` (3), `gstReturnSheet.test.js` (+1, removal
+  rule), `paymentLedger.service.test.js` (+1); e2e `report-review-marks.spec.ts` (new),
+  `gst-return-filing.spec.ts` (date required), `matter-payments-docs.spec.ts` (#367, `.rar`),
+  `master-sheet.spec.ts` (CSV of the rows on screen).
+  User-visible: yes (matter page, Master Sheet and reports, Documents).

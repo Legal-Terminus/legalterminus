@@ -13,6 +13,35 @@ export interface ExportColumn<T> {
   value: (row: T) => string | number | null | undefined;
 }
 
+/**
+ * LT #369: the same rows and columns as a .csv file (UTF-8 with a BOM, so Excel
+ * reads ₹ and names correctly).
+ */
+export async function exportToCsv<T>(rows: T[], columns: ExportColumn<T>[], fileName: string): Promise<void> {
+  // A text cell starting with = + - @ (or a tab / return) would run as a formula
+  // in Excel (CSV injection): it is written with a leading apostrophe. Numbers stay numbers.
+  const cell = (v: string | number | null | undefined) => {
+    let t = String(v ?? '');
+    if (typeof v === 'string' && /^[=+\-@\t\r]/.test(t)) t = `'${t}`;
+    return `"${t.replace(/"/g, '""')}"`;
+  };
+  const lines = [
+    columns.map((c) => cell(c.header)).join(','),
+    ...rows.map((r) => columns.map((c) => cell(c.value(r))).join(',')),
+  ];
+  const blob = new Blob(['\uFEFF' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8' });
+  const file = `${fileName}-${new Date().toISOString().slice(0, 10)}.csv`;
+  if (await shareBlobNative(blob, file)) return;
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = file;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
 export async function exportToXlsx<T>(
   rows: T[],
   columns: ExportColumn<T>[],

@@ -9,7 +9,7 @@ import {
 } from '../services/worksheetEngine.service.js';
 import { loadWorksheetStaff } from '../services/worksheetStaff.service.js';
 import { runWorksheetReminderSweep } from '../services/worksheetReminders.service.js';
-import { syncSheetFromMatters } from '../services/gstReturnSheetSync.service.js';
+import { syncSheetFromMatters, waitForSheetSync } from '../services/gstReturnSheetSync.service.js';
 import { invalidateGstReturnServiceKeys } from '../services/gstMatterTags.service.js';
 import { matterOwnedDateFields, matterIdentityOf, checkMatterLink } from '../services/gstReturnSheet.service.js';
 import {
@@ -214,8 +214,14 @@ export async function listRecords(req, res) {
     // #279: rows that come from matters are brought up to date when the sheet
     // is opened (its first page). A failed sync never hides the sheet.
     if (!cursor && BOOKS[sheet.book]?.sync) {
-      await syncSheetFromMatters({ bookKey: sheet.book, config: ctx.config })
-        .catch((err) => logger.warn({ err, sheet: sheet.key }, '#279 sheet sync failed; showing stored rows'));
+      const run = await syncSheetFromMatters({ bookKey: sheet.book, config: ctx.config })
+        .catch((err) => { logger.warn({ err, sheet: sheet.key }, '#279 sheet sync failed; showing stored rows'); return null; });
+      // #219: another request is syncing right now — wait for it, so this one
+      // reads the rows it writes rather than the rows from before it.
+      if (run?.skipped === 'locked') {
+        const done = await waitForSheetSync(sheet.book).catch(() => false);
+        if (!done) logger.warn({ sheet: sheet.key }, '#279 sheet sync still running; showing stored rows');
+      }
     }
     let q = db.collection(RECORDS).where('sheets', 'array-contains', sheet.key)
       .orderBy('createdAt').orderBy(FieldPath.documentId()).limit(limit);

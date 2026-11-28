@@ -6,6 +6,7 @@ import { getCompiledById } from '../services/workflowDefinitions.service.js';
 import {
   buildClientGroupReport, clientLabel, distinctGroups, financialYearRange, recentFinancialYears,
 } from '../services/clientGroupFees.service.js';
+import { reportFiltersOf, matchesReportFilters, byNewest, hasAmountDue } from '../services/reportFilters.service.js';
 
 // ─── Helper: map Firestore doc → plain object ──────────────────────────────
 function docToTask(doc) {
@@ -15,19 +16,12 @@ function docToTask(doc) {
 // ─── GET /api/reports/all-tasks ────────────────────────────────────────────
 export async function getAllTasks(req, res) {
   try {
-    const { status, serviceType, teamMember, paymentStatus, startDate, endDate } = req.query;
-    let query = db.collection('tasks');
-
-    if (status)        query = query.where('status', '==', status);
-    if (serviceType)   query = query.where('workflowType', '==', serviceType);
-    if (teamMember)    query = query.where('assignedTo', '==', teamMember);
-    if (paymentStatus) query = query.where('paymentStatus', '==', paymentStatus);
-    if (startDate)     query = query.where('createdAt', '>=', startDate);
-    if (endDate)       query = query.where('createdAt', '<=', endDate);
-
-    query = query.orderBy('createdAt', 'desc');
-    const snap = await query.get();
-    res.json(snap.docs.map(docToTask));
+    // #366: every filter applied together, in one place (reportFilters.service.js).
+    const filters = reportFiltersOf(req.query);
+    const snap = await db.collection('tasks').get();
+    res.json(snap.docs.map(docToTask)
+      .filter((t) => matchesReportFilters(t, filters, { dateField: 'createdAt' }))
+      .sort(byNewest('createdAt')));
   } catch (err) {
     logger.error({ err: err }, 'getAllTasks report error:');
     res.status(500).json({ message: 'Failed to fetch all-tasks report' });
@@ -37,18 +31,12 @@ export async function getAllTasks(req, res) {
 // ─── GET /api/reports/completed ────────────────────────────────────────────
 export async function getCompletedTasks(req, res) {
   try {
-    const { serviceType, teamMember, paymentStatus, startDate, endDate } = req.query;
-    let query = db.collection('tasks').where('status', '==', 'completed');
-
-    if (serviceType)   query = query.where('workflowType', '==', serviceType);
-    if (teamMember)    query = query.where('assignedTo', '==', teamMember);
-    if (paymentStatus) query = query.where('paymentStatus', '==', paymentStatus);
-    if (startDate)     query = query.where('updatedAt', '>=', startDate);
-    if (endDate)       query = query.where('updatedAt', '<=', endDate);
-
-    query = query.orderBy('updatedAt', 'desc');
-    const snap = await query.get();
-    res.json(snap.docs.map(docToTask));
+    // #366: the range is the completion day (updatedAt); Status is fixed.
+    const filters = { ...reportFiltersOf(req.query), status: undefined };
+    const snap = await db.collection('tasks').where('status', '==', 'completed').get();
+    res.json(snap.docs.map(docToTask)
+      .filter((t) => matchesReportFilters(t, filters, { dateField: 'updatedAt' }))
+      .sort(byNewest('updatedAt')));
   } catch (err) {
     logger.error({ err: err }, 'getCompletedTasks report error:');
     res.status(500).json({ message: 'Failed to fetch completed-tasks report' });
@@ -59,15 +47,13 @@ export async function getCompletedTasks(req, res) {
 // Returns active tasks tagged with the primary reason they are blocked.
 export async function getPendingTasks(req, res) {
   try {
-    const { startDate, endDate } = req.query;
-    let query = db.collection('tasks')
-      .where('status', 'in', ['pending', 'active', 'on_hold', 'pending_admin_approval']);
-
-    if (startDate) query = query.where('createdAt', '>=', startDate);
-    if (endDate)   query = query.where('createdAt', '<=', endDate);
-
-    const snap = await query.get();
-    const tasks = snap.docs.map((doc) => {
+    // #366: Service, Payment and the dates were ignored here; Status is fixed.
+    const filters = { ...reportFiltersOf(req.query), status: undefined };
+    const snap = await db.collection('tasks')
+      .where('status', 'in', ['pending', 'active', 'on_hold', 'pending_admin_approval']).get();
+    const tasks = snap.docs
+      .filter((doc) => matchesReportFilters(doc.data(), filters, { dateField: 'createdAt' }))
+      .map((doc) => {
       const data = doc.data();
       // Classify pending reason from status, paymentStatus and task state.
       // `pending_admin_approval` (E03-S04) is its own bucket — the matter is held
@@ -348,13 +334,15 @@ export async function getSlaReport(req, res) {
 // ─── GET /api/reports/master-sheet ────────────────────────────────────────
 export async function getMasterSheet(req, res) {
   try {
-    const { format, startDate, endDate } = req.query;
-    let query = db.collection('tasks').orderBy('updatedAt', 'desc');
-
-    if (startDate) query = query.where('updatedAt', '>=', startDate);
-    if (endDate)   query = query.where('updatedAt', '<=', endDate);
-
-    const snap = await query.get();
+    const { format } = req.query;
+    // #366: Status, Service and Payment were never applied here — only the
+    // dates, and those to the last update. All filters now apply together, and
+    // From / To are the matter's Created date (the column the sheet shows).
+    const filters = reportFiltersOf(req.query);
+    const all = await db.collection('tasks').get();
+    const snap = { docs: all.docs
+      .filter((doc) => matchesReportFilters(doc.data(), filters, { dateField: 'createdAt' }))
+      .sort((a, b) => String(b.data().updatedAt ?? '').localeCompare(String(a.data().updatedAt ?? ''))) };
 
     // Resolve client names in parallel
     const clientCache = new Map();
@@ -426,6 +414,9 @@ export async function getMasterSheet(req, res) {
           pendingFrom: pendingFromOf(d),
           approvalPendingFrom: approvalPendingFromOf(d),
           referralSource: d.referralSource ?? '',
+          // LT #368 / #369: the admin's audit mark and remarks (last columns).
+          auditStatus: d.auditStatus === 'audited' ? 'audited' : 'unaudited',
+          adminRemarks: d.adminRemarks ?? '',
         };
       })
     );
@@ -435,7 +426,7 @@ export async function getMasterSheet(req, res) {
         'Task ID', 'Client', 'Organisation', 'Service', 'Created', 'Step', 'Total Steps', 'Status',
         'Priority', 'Assigned To', 'Professional', 'Pending Reason', 'Pending From',
         'Approval Pending From', 'Payment Status', 'Total Fees', 'Amount Paid',
-        'Amount Due', 'Payment Mode', 'Referral Source', 'Last Updated',
+        'Amount Due', 'Payment Mode', 'Referral Source', 'Last Updated', 'Audit Status', 'Admin Remarks',
       ];
       const escape = (v) => `"${String(v ?? '').replace(/"/g, '""')}"`;
       const csvLines = [
@@ -446,6 +437,7 @@ export async function getMasterSheet(req, res) {
             r.priority, r.assignedTo, r.professional, r.pendingReason, r.pendingFrom,
             r.approvalPendingFrom, r.paymentStatus, r.totalFees, r.amountPaid,
             r.amountDue, r.paymentMode, r.referralSource, r.lastUpdated,
+            r.auditStatus === 'audited' ? 'Audited' : 'Un-audited', r.adminRemarks,
           ]
             .map(escape)
             .join(',')
@@ -492,14 +484,16 @@ export async function getRevenueAnalytics(req, res) {
       const due = d.amountDue ?? 0;
       collected += paid;
       totalFees += d.totalCost ?? paid + due;
-      if (!['completed', 'cancelled', 'rejected', 'archived'].includes(d.status)) outstanding += due;
+      // LT #365: Outstanding = what is still to be collected, the Master Sheet's
+      // "Has amount due" (a completed matter with a balance still owes it).
+      if (hasAmountDue(d)) outstanding += due;
 
       const month = (d.createdAt ?? '').slice(0, 7);
       if (month) byMonth.set(month, (byMonth.get(month) ?? 0) + paid);
 
       const service = d.serviceName ?? d.workflowType ?? 'Unknown';
       const s = byService.get(service) ?? { collected: 0, outstanding: 0 };
-      s.collected += paid; s.outstanding += due;
+      s.collected += paid; if (hasAmountDue(d)) s.outstanding += due; // LT #365: same rule as the card
       byService.set(service, s);
 
       const teamName = await resolveName(d.assignedTo);

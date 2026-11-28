@@ -105,6 +105,12 @@ export interface Task {
   /** #292: a GST return matter's filing period ("September 2026", "Q2 2026-27"),
    *  server-derived by the GST Return Filing sheet's rules; absent on other matters. */
   gstFilingPeriodLabel?: string | null;
+  /** LT #368: the admin's audit mark (staff only; absent = un-audited). */
+  auditStatus?: 'audited' | 'unaudited';
+  auditedAt?: string | null;
+  auditedByName?: string | null;
+  /** LT #369: the admin's remarks on the matter (staff only). */
+  adminRemarks?: string | null;
   /** #219: matter detail only — monthly or quarterly, as the matter was created. */
   gstFrequency?: 'monthly' | 'quarterly';
   /** #219: matter detail only — the subject every email about this GST return matter carries. */

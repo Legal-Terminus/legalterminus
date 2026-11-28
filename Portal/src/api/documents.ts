@@ -47,8 +47,9 @@ export const ALLOWED_DOC_TYPES = [
   'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // .xlsx (#77)
   'application/vnd.ms-excel', // .xls (#77)
   'text/csv', 'application/json', 'text/plain', 'application/zip', // #219
+  'application/vnd.rar', // #373
 ];
-export const ALLOWED_DOC_EXT = '.pdf,.jpg,.jpeg,.png,.docx,.xlsx,.xls,.csv,.json,.txt,.zip';
+export const ALLOWED_DOC_EXT = '.pdf,.jpg,.jpeg,.png,.docx,.xlsx,.xls,.csv,.json,.txt,.zip,.rar';
 export const MAX_DOC_BYTES = 10 * 1024 * 1024;
 
 /** MIME by extension — the fallback when the browser gives an empty/wrong
@@ -65,11 +66,14 @@ const EXT_TO_MIME: Record<string, string> = {
   json: 'application/json',
   txt: 'text/plain',
   zip: 'application/zip',
+  rar: 'application/vnd.rar', // #373
 };
 
 /** #219: browsers disagree on these (Windows reports a .csv as Excel and a .zip
- *  as application/x-zip-compressed), so they are always typed by extension. */
-const TYPED_BY_EXTENSION = new Set(['csv', 'json', 'txt', 'zip']);
+ *  as application/x-zip-compressed), so they are always typed by extension.
+ *  #373: .rar too — browsers report it as application/x-rar-compressed, as
+ *  application/vnd.rar, or not at all. */
+const TYPED_BY_EXTENSION = new Set(['csv', 'json', 'txt', 'zip', 'rar']);
 
 /** Prefer the browser's MIME if it's on the allow-list; otherwise resolve from
  *  the file extension. Returns '' when neither is recognized. */
@@ -117,7 +121,7 @@ async function uploadDocumentNow(
   // effective content type from the extension so those still upload (#77).
   const contentType = effectiveContentType(file);
   if (!ALLOWED_DOC_TYPES.includes(contentType)) {
-    throw new Error('Unsupported file type. Allowed: PDF, JPG, PNG, DOCX, XLSX, XLS, CSV, JSON, TXT, ZIP.');
+    throw new Error('Unsupported file type. Allowed: PDF, JPG, PNG, DOCX, XLSX, XLS, CSV, JSON, TXT, ZIP, RAR.');
   }
 
   // Step 1 — signed PUT URL + a pre-created metadata doc.

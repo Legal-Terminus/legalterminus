@@ -260,6 +260,20 @@ export const saveFilingDate = (taskId: string, stepNumber: number, date: string 
     { method: 'PUT', body: JSON.stringify({ date }) },
   );
 
+/** LT #369: the admin's remarks on a matter (Master Sheet). Blank clears them. */
+export const saveAdminRemarks = (taskId: string, adminRemarks: string) =>
+  apiFetch<{ taskId: string; adminRemarks: string | null; adminRemarksAt: string }>(
+    `/api/tasks/${taskId}/admin-remarks`,
+    { method: 'PUT', body: JSON.stringify({ adminRemarks }) },
+  );
+
+/** LT #368: mark a matter Audited (only once fully paid) or Un-audited. Admin only. */
+export const saveAudit = (taskId: string, audited: boolean) =>
+  apiFetch<{ taskId: string; auditStatus: 'audited' | 'unaudited'; auditedAt?: string | null; auditedByName?: string | null; changed: boolean }>(
+    `/api/tasks/${taskId}/audit`,
+    { method: 'PUT', body: JSON.stringify({ audited }) },
+  );
+
 /* ── #167: recurring matters ──────────────────────────────────────────────── */
 
 export type Recurrence = 'monthly' | 'quarterly';
